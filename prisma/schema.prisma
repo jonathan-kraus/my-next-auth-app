@@ -1,30 +1,63 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/"
 }
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["neon_auth"]
+  schemas  = ["neon_auth", "public"]
 }
 
-model users_sync {
-  raw_json   Json
-  id         String    @id @default(dbgenerated("(raw_json ->> 'id'::text)"))
-  name       String?   @default(dbgenerated("(raw_json ->> 'display_name'::text)"))
-  email      String?   @default(dbgenerated("(raw_json ->> 'primary_email'::text)"))
-  created_at DateTime? @default(dbgenerated("to_timestamp((trunc((((raw_json ->> 'signed_up_at_millis'::text))::bigint)::double precision) / (1000)::double precision))")) @db.Timestamptz(6)
-  updated_at DateTime? @db.Timestamptz(6)
-  deleted_at DateTime? @db.Timestamptz(6)
-
-  @@index([deleted_at])
-  @@schema("neon_auth")
+model User {
+  id             String   @id @default(cuid())
+  name           String?
+  email          String?  @unique
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+  
+  @@schema("public")
 }
 
-model jtemp {
-  id         Int       @id @default(autoincrement())
-  name       String
-  email      String?   @unique
-  created_at DateTime? @default(now()) @db.Timestamp(6)
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
-  @@schema("neon_auth")
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+
+  @@schema("public")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id])
+
+@@schema("public")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+
+  @@schema("public")
 }
