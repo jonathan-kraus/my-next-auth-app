@@ -1,6 +1,6 @@
 // lib/db.ts
 
-import { PrismaClient } from "@/src/generated/client"; // Your custom path
+import { PrismaClient } from '@prisma/client';
 
 // Define a global property for the Prisma Client instance
 // We still use 'global.prisma' for internal persistence (as per convention)
