@@ -11,7 +11,7 @@
     "security": "pnpm audit",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
-    "postinstall": "pnpm install",
+    "postinstall": "prisma generate",
     "test": "vitest run",
     "test:ci": "vitest run --coverage"
   },
