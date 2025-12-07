@@ -31,6 +31,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
       - name: Audit Dependencies (Optional but recommended)
         run: pnpm audit
 
@@ -54,3 +55,4 @@ jobs:
         run: pnpm build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
