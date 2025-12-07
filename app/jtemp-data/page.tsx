@@ -37,7 +37,7 @@ export default function JTempDataPage() {
 
   return (
     <div>
-      <h2>JTemp API Data Display !!!</h2>
+      <h2>JTemp API Data Display 🚀</h2>
       
       {loading && <p>Loading data...</p>}
       
