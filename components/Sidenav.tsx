@@ -25,7 +25,7 @@ export default function Sidenav() {
         <li>
           <Link
             href="/"
-            className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150"
+            className="block py-2 px-3 bg-blue-900 text-yellow-500 rounded hover:bg-gray-700 transition duration-150"
           >
             🏠 Home
           </Link>
