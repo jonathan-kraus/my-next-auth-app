@@ -29,7 +29,8 @@ jobs:
           corepack prepare pnpm@latest --activate
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
-
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Audit Dependencies (Optional but recommended)
         run: pnpm audit
 
@@ -39,3 +40,5 @@ jobs:
       - name: Build
         # This checks if the project compiles.
         run: pnpm build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
