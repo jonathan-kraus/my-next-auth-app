@@ -27,16 +27,25 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@latest --activate
+
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
+        
+          # 🎯 NEW STEP: Generate the Prisma Client explicitly
+      - name: Run Prisma Generate for Type-Check
+        run: pnpm prisma generate --no-hints
+        env:
+        # CRITICAL: Must have DATABASE_URL for prisma generate to run
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Audit Dependencies (Optional but recommended)
         run: pnpm audit
 
       - name: Lint and Typecheck
-        run: pnpm lint && pnpm type-check # Assumes you have these scripts
+        run: pnpm lint && pnpm type-check
       
       - name: Check for outdated dependencies
         run: pnpm outdated
