@@ -1,45 +1,31 @@
-// app/components/Sidenav.tsx
-'use client';
+// src/components/Sidenav.tsx (Example)
 
 import Link from 'next/link';
-import { useSession, signIn, signOut } from 'next-auth/react';
+// ... other imports
 
-export default function Sidenav() {
-  const { data: session, status } = useSession();
-  const loading = status === 'loading';
-
+export function Sidenav() {
   return (
-    <div style={{ 
-        width: '200px', 
-        height: '100vh', 
-        padding: '20px', 
-        borderRight: '1px solid #ccc',
-        backgroundColor: '#f8f8f8',
-        position: 'fixed' // Makes it stay on the left
-      }}>
-      
-      <h3>App Navigation</h3>
-      <ul style={{ listStyleType: 'none', padding: 0 }}>
+    <nav className="p-4 bg-gray-800 text-white h-full w-64 fixed">
+      <ul className="space-y-2">
         
-        {/* JTemp Link */}
-        <li style={{ marginBottom: '10px' }}>
-          <Link href="/jtemp-data">JTemp API Data</Link>
+        {/* 🎯 NEW: HOME LINK */}
+        <li>
+          <Link href="/" className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150">
+            🏠 Home
+          </Link>
         </li>
         
-        {/* Authentication Section */}
-        <li style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-          {loading ? (
-            <div>Loading...</div>
-          ) : session ? (
-            <>
-              <p>Signed in as <b>{session.user?.email || 'User'}</b></p>
-              <button onClick={() => signOut()}>Sign Out</button>
-            </>
-          ) : (
-            <button onClick={() => signIn('github')}>Sign In with GitHub</button>
-          )}
+        {/* Existing Link */}
+        <li>
+          <Link href="/jtemp-data" className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150">
+            📊 JTemp Data
+          </Link>
         </li>
+        
+        {/* The Sign In/Out Component */}
+        {/* ... (Your AuthButton component) */}
+        
       </ul>
-    </div>
+    </nav>
   );
 }
