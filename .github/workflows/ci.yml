@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Enable Corepack and pnpm
         run: |
@@ -40,4 +40,4 @@ jobs:
         # This checks if the project compiles.
         # NOTE: If you need access to secrets (like DATABASE_URL)
         # for a full build, you'll need to configure them in GitHub Secrets.
-        run: pnpm build    
+        run: pnpm build

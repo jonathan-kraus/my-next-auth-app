@@ -10,19 +10,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-<body className={`antialiased`}>
-           <div style={{ display: 'flex' }}>
-             <Providers>
-               <Sidenav /> {/* 👈 Add the Sidenav */}
-               <h1>Jonathan's Next.js App</h1>
-               {/* Content area is shifted to the right */}
-               <main style={{ marginLeft: '220px', padding: '20px', flexGrow: 1 }}>
-                 {children}
-               </main>
-               
-             </Providers>
-           </div>
-</body>
-</html>
-);
+      <body className={`antialiased`}>
+        <div style={{ display: "flex" }}>
+          <Providers>
+            <Sidenav /> {/* 👈 Add the Sidenav */}
+            <h1>Jonathan's Next.js App</h1>
+            {/* Content area is shifted to the right */}
+            <main style={{ marginLeft: "220px", padding: "20px", flexGrow: 1 }}>
+              {children}
+            </main>
+          </Providers>
+        </div>
+      </body>
+    </html>
+  );
 }
