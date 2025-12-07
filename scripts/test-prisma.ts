@@ -1,10 +1,16 @@
 // scripts/test-prisma.ts
-import { PrismaClient } from '@/generated/client';
+import { PrismaClient } from "@/generated/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import dotenv from "dotenv";
+import db from "@/lib/db";
 
-const prisma = new PrismaClient();
+dotenv.config();
+const connectionString = `${process.env.DATABASE_URL}`;
 
+const adapter = new PrismaNeon({ connectionString });
+const prisma = new PrismaClient({ adapter });
 async function main() {
-  const rows = await prisma.jtemp.findMany();
+  const rows = await db.jtemp.findMany();
   console.log("jtemp rows:", rows);
 }
 

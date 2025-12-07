@@ -8,7 +8,9 @@ export default function Home() {
   if (session) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-8">
-        <h1 className="text-2xl font-bold mb-4">Signed in as {session.user?.email}</h1>
+        <h1 className="text-2xl font-bold mb-4">
+          Signed in as {session.user?.email}
+        </h1>
         <button
           onClick={() => signOut()}
           className="px-4 py-2 bg-red-500 text-white rounded"

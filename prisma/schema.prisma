@@ -1,11 +1,22 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/"
+  engineType = "client"
 }
 
 datasource db {
   provider = "postgresql"
   schemas  = ["neon_auth", "public"]
+}
+
+model jtemp {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
+  created_at  DateTime @default(now())
+
+  @@map("jtemp") // Ensures Prisma uses the lowercase table name
+  @@schema("public")
 }
 
 model User {
