@@ -27,7 +27,23 @@ model User {
   image          String?
   accounts       Account[]
   sessions       Session[]
-  
+  logs           Log[]
+  @@schema("public")
+}
+
+// Your Log model, updated to include a User relationship
+model Log {
+  id        String   @id @default(uuid()) // Using uuid for Log IDs
+  userId    String   // 🎯 NEW: Foreign key to User
+  severity  String
+  source    String   
+  message   String
+  requestId String?
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  // Relationship to the User model
+  user      User     @relation(fields: [userId], references: [id])
   @@schema("public")
 }
 
