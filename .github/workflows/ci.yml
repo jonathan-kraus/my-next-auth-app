@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Audit, lint, test, and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Clean workspace
+        run: git clean -fdx
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack and pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit Dependencies (Optional but recommended)
+        run: pnpm audit
+
+      - name: Lint and Typecheck
+        run: pnpm lint && pnpm typecheck # Assumes you have these scripts
+
+      - name: Build
+        # This checks if the project compiles.
+        # NOTE: If you need access to secrets (like DATABASE_URL)
+        # for a full build, you'll need to configure them in GitHub Secrets.
+        run: pnpm build    
