@@ -1,18 +1,10 @@
 // lib/db.ts
 
-import { PrismaClient } from '@/src/generated/client';
-// ❌ DELETE OR COMMENT OUT THIS LINE: import { Pool } from '@neondatabase/serverless';
-import { PrismaNeon } from "@prisma/adapter-neon";
+// 1. 🎯 Import PrismaClient from the custom generated path
+//    (This path is needed because of the 'output = "../src/generated/"' in schema.prisma)
+import { PrismaClient } from '@/src/generated/client'; 
 
-// 1. Get the connection string
-const connectionString: string = process.env.DATABASE_URL!;
-
-// 2. Initialize the Prisma Adapter by passing the connectionString directly
-//    This skips the manual Pool instantiation that is causing the TypeError.
-const adapter = new PrismaNeon({ connectionString });
-
-// 3. Initialize the Prisma Client, passing the adapter
-//    Note: You may still need the 'as any' or casting if TypeScript complains
-const db = new PrismaClient({ adapter });
+// 2. Initialize the standard Prisma client
+const db = new PrismaClient(); 
 
 export default db;
