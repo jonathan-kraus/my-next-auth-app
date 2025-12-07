@@ -24,10 +24,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@prisma/client": [
-        "src/generated/"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
