@@ -18,10 +18,21 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching jtemp data:", error);
 
-    // 3. Handle and log any errors during the database query
+    // --- MUST USE THIS SAFE TYPE CHECK ---
+    let errorMessage = "An unknown error occurred.";
+    // Check if the error object is an instance of the built-in Error class
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } 
+    // Otherwise, try to safely check for a message property if it's an object
+    else if (typeof error === 'object' && error !== null && 'message' in error) {
+      errorMessage = (error as { message: string }).message;
+    }
+    // ------------------------------------
+
     return NextResponse.json({
       message: "Failed to fetch data from jtemp table.",
-      error: error.message,
+      error: errorMessage, // 👈 Now using the safe variable
     }, { status: 500 });
   }
 }
