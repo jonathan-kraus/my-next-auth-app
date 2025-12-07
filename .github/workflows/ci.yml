@@ -47,6 +47,29 @@ jobs:
       - name: Lint and Typecheck
         run: pnpm lint && pnpm type-check
       
+      - name: Apply Prettier Fix and Commit
+        id: prettier
+        run: |
+          # Apply the fix
+          pnpm prettier:fix
+        
+          # Check if files were changed
+          if [[ $(git diff --stat) != '' ]]; then
+            echo "Changes found. Committing formatted files."
+            git config user.name github-actions[bot]
+            git config user.email github-actions[bot]@users.noreply.github.com
+            git add .
+            git commit -m "style: apply automatic prettier formatting"
+            # Push the changes back to the branch
+            git push
+          else
+            echo "No formatting changes needed."
+          fi
+
+      - name: Audit, Lint, and Type Check
+      # Run checks AFTER potential fixes
+        run: pnpm lint && pnpm type-check && pnpm prettier:check
+      
       - name: Check for outdated dependencies
         run: pnpm outdated
         
