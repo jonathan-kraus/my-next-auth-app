@@ -35,7 +35,7 @@ jobs:
         run: pnpm audit
 
       - name: Lint and Typecheck
-        run: pnpm lint && pnpm typecheck # Assumes you have these scripts
+        run: pnpm lint && pnpm type-check # Assumes you have these scripts
 
       - name: Build
         # This checks if the project compiles.
