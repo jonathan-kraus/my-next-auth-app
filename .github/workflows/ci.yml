@@ -10,6 +10,11 @@ jobs:
   build:
     name: Audit, lint, test, and build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+      checks: write
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
