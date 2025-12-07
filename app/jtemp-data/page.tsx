@@ -26,7 +26,16 @@ export default function JTempDataPage() {
         const result = await response.json();
         setData(result.data);
       } catch (err) {
-        setError(err.message || 'Failed to fetch data');
+        let errorMessage = 'Failed to fetch data';
+
+        // 🎯 FIX: Safely check if the error has a message property
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'object' && err !== null && 'message' in err) {
+          errorMessage = (err as { message: string }).message;
+        }
+
+        setError(errorMessage); // Use the safely checked variable
       } finally {
         setLoading(false);
       }
