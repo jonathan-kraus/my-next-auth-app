@@ -38,6 +38,4 @@ jobs:
 
       - name: Build
         # This checks if the project compiles.
-        # NOTE: If you need access to secrets (like DATABASE_URL)
-        # for a full build, you'll need to configure them in GitHub Secrets.
         run: pnpm build
