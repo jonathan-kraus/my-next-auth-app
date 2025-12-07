@@ -39,8 +39,8 @@ jobs:
         run: pnpm lint && pnpm type-check # Assumes you have these scripts
       
       - name: Check for outdated dependencies
-        run: pnpm outdated | grep -v -E '(prisma|@prisma)' || true
-
+        run: pnpm outdated
+        
       - name: Show .prettierignore contents
         run: |
           echo ".prettierignore exists?"; test -f .prettierignore && echo "yes" || echo "no"
