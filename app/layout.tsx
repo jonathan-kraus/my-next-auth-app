@@ -1,6 +1,6 @@
 // app/layout.tsx (Server Component)
 import Providers from "../components/Providers"; // 👈 ONLY import this
-import  Sidenav  from "../components/Sidenav"; // 👈 Import the Sidenav
+import { Sidenav } from "../components/Sidenav"; // 👈 Import the Sidenav
 import "./globals.css";
 
 export default function RootLayout({

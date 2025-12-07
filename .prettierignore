@@ -1,0 +1,13 @@
+pnpm-lock.yaml
+.env*
+.npmrc
+.github/
+.next/
+prisma/generated/
+next-env.d.ts
+eslint*
+coverage
+coverage/**
+junit.xml
+.vercel
+/src/generated/
