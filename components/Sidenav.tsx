@@ -21,7 +21,7 @@ export function Sidenav() {
             📊 JTemp Data
           </Link>
         </li>
-        
+        <li></li>
         {/* The Sign In/Out Component */}
         {/* ... (Your AuthButton component) */}
         
