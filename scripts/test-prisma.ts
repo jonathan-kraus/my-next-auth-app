@@ -1,8 +1,8 @@
 // scripts/test-prisma.ts
-import { PrismaClient } from "@/generated/client";
+import { PrismaClient } from "@/src/generated/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import dotenv from "dotenv";
-import db from "@/lib/db";
+import db from "../lib/db";
 
 dotenv.config();
 const connectionString = `${process.env.DATABASE_URL}`;
