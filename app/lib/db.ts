@@ -1,6 +1,6 @@
-// src/lib/prisma.ts
+// app/lib/db.ts
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '../src/generated/client';
 // ❌ DELETE OR COMMENT OUT THIS LINE: import { Pool } from '@neondatabase/serverless';
 import { PrismaNeon } from "@prisma/adapter-neon";
 
