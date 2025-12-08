@@ -1,51 +1,32 @@
-// src/components/Sidenav.tsx (Example)
+// components/Sidenav.tsx
 
-import Link from "next/link";
-// ... other imports
+import Link from 'next/link';
 
-export function Sidenav() {
+export const Sidenav = () => {
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
+    { name: 'Log Explorer', href: '/logs', icon: '🔍' },
+    { name: 'Settings', href: '/settings', icon: '⚙️' },
+  ];
+
   return (
-    <nav className="p-4 bg-blue-900 text-yellow-500 h-full w-64 fixed">
-      <ul className="space-y-2">
-        {/* 🎯 NEW: HOME LINK */}
-        <li>
-          <Link
-            href="/"
-            className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150"
+    <div className="w-64 bg-gray-800 text-white p-6 shadow-2xl">
+      <div className="text-2xl font-extrabold mb-8 text-indigo-400">App Monitor</div>
+      
+      <nav className="space-y-3">
+        {navItems.map((item) => (
+          <Link 
+            key={item.name} 
+            href={item.href} 
+            className="flex items-center space-x-3 p-3 rounded-lg 
+                       transition-all duration-200 
+                       hover:bg-indigo-600 hover:scale-[1.03] hover:shadow-lg"
           >
-            🏠 Home
+            <span className="text-xl">{item.icon}</span>
+            <span className="font-semibold">{item.name}</span>
           </Link>
-        </li>
-
-        {/* Existing Link */}
-        <li>
-          <Link
-            href="/jtemp-data"
-            className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150"
-          >
-            📊 JTemp Data
-          </Link>
-        </li>
-        <li></li>
-        <li>
-          <Link
-            href="/api/test-log"
-            className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150"
-          >
-            📊 Test Log
-          </Link>
-        </li>
-                <li>
-          <Link
-            href="api/dashboard-metrics"
-            className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150"
-          >
-            📊 Dashboard
-          </Link>
-        </li>
-        {/* The Sign In/Out Component */}
-        {/* ... (Your AuthButton component) */}
-      </ul>
-    </nav>
+        ))}
+      </nav>
+    </div>
   );
-}
+};
