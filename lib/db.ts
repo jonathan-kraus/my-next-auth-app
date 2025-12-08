@@ -1,5 +1,5 @@
 // lib/db.ts
-import { PrismaClient } from '../src/generated';
+import { PrismaClient } from "../src/generated";
 
 declare global {
   // Avoid multiple instances in dev
@@ -8,7 +8,7 @@ declare global {
 
 let db: PrismaClient;
 
-if (typeof window === 'undefined') {
+if (typeof window === "undefined") {
   if (!global.prisma) {
     global.prisma = new PrismaClient();
   }
