@@ -1,6 +1,8 @@
 // lib/logger.ts
 
-import db from "./db";
+import { Prisma } from "@/src/generated/edge";
+
+import db from './db';
 
 /**
  * Logger API Severity Levels
@@ -40,15 +42,21 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
   console.log("--- LOG END ---"); // New line for debugging
 
   // 2. Database Persistence (Wrap this entire block in a local try/catch)
-  try {
+try {
     await db.log.create({
       data: {
         userId: entry.userId,
         severity: entry.severity,
         source: entry.source,
         message: entry.message,
-        requestId: entry.requestId,
-        metadata: entry.metadata,
+        
+        // 🎯 FIX 1: Explicitly pass null for optional fields if undefined.
+        // This is often required by adapters.
+        requestId: entry.requestId || null, 
+        
+        // 🎯 FIX 2: Ensure metadata is passed as null if it's undefined.
+        // If your metadata field is required, it needs a default '[]' or '{}'.
+        metadata: entry.metadata || Prisma.JsonNull,
       },
     });
     console.log(`Successfully saved log to DB for source: ${entry.source}`);
