@@ -1,4 +1,5 @@
 // app/logs/page.tsx
+export const dynamic = "force-dynamic";
 import { getLogs } from "@/lib/logs";
 import { format } from "date-fns";
 import { createLogger, createRequestId } from "@/lib/logger";
