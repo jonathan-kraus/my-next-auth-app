@@ -1,6 +1,6 @@
 // lib/logger.ts
 
-import db from './db'; // 🎯 CRITICAL: Your Prisma Client instance
+import db from './db'; 
 
 /**
  * Logger API Severity Levels
@@ -26,7 +26,7 @@ export interface LogEntry {
  * The core function that handles writing the log entry to both console and DB.
  */
 const writeLog = async (entry: LogEntry): Promise<void> => {
-  // 1. Console Output (Keep this for local development visibility)
+  // 1. Console Output (Always runs and should appear in Vercel logs)
   const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || 'N/A'}) (User: ${entry.userId}) - ${entry.message}`;
 
   switch (entry.severity) {
@@ -36,12 +36,15 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
     case 'warn':
       console.warn(formattedOutput, entry.metadata || '');
       break;
-    default:
+    case 'info':
+    case 'debug':
       console.log(formattedOutput, entry.metadata || '');
+      break;
   }
 
   // 2. Database Persistence
   try {
+    // 🎯 CRITICAL: Use the client to create the log entry.
     await db.log.create({
       data: {
         userId: entry.userId,
@@ -49,13 +52,14 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
         source: entry.source,
         message: entry.message,
         requestId: entry.requestId,
-        // Prisma expects JSON for the Json type, so we convert the metadata object.
+        // The Json type in Prisma expects a plain object in the code.
         metadata: entry.metadata, 
-        // timestamp defaults to now() in the schema
       },
     });
   } catch (dbError) {
-    // 🚨 IMPORTANT: Log failures to save logs, but do NOT crash the main application process.
+    // 🚨 Log failures to save logs, but do NOT crash the main application process.
+    // If THIS fails, it points to a database WRITE permission or connection issue 
+    // that is specific to the Log table operation.
     console.error(`🚨 FATAL LOGGING ERROR: Failed to save log to DB for source ${entry.source}. This is a non-critical failure.`, dbError);
   }
 };
@@ -64,7 +68,6 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
 
 /**
  * Defines the ASYNCHRONOUS interface for the log functions.
- * They now return a Promise because they write to the DB.
  */
 export interface Logger {
   info: (message: string, userId: string, requestId?: string, metadata?: Record<string, any>) => Promise<void>;
@@ -84,7 +87,7 @@ export const createLogger = (source: string): Logger => {
     requestId?: string,
     metadata?: Record<string, any>
   ) => {
-    // 🎯 We run the async writeLog and return its promise
+    // We run the async writeLog and return its promise
     return writeLog({
       userId,
       severity,
@@ -107,6 +110,5 @@ export const createLogger = (source: string): Logger => {
 // --- UUID API for Request Tracing ---
 
 export const createRequestId = (): string => {
-  // Using a simple unique ID generator
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
