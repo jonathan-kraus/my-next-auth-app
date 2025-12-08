@@ -14,6 +14,30 @@ const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
 const log = createLogger("Initiating_Logs_Page");
 const requestId = createRequestId();
 await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
+// change the span to a button and add state (in a client component)
+"use client";
+
+import { useState } from "react";
+
+export async function LiveToggle() {
+  const [isLive, setIsLive] = useState(true);
+    await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
+  return (
+    <button
+      type="button"
+      onClick={() => setIsLive((v) => !v)}
+      className={
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition " +
+        (isLive
+          ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/50"
+          : "bg-slate-800/80 text-slate-300 ring-1 ring-slate-700/80")
+      }
+    >
+      <span className="mr-1 h-1.5 w-1.5 rounded-full bg-current" />
+      {isLive ? "Live view" : "Paused"}
+    </button>
+  );
+}
 
 export default async function LogsPage({
   searchParams,
@@ -43,7 +67,8 @@ export default async function LogsPage({
               Application Logs
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Inspect structured logs with severity, source, and context metadata.
+              Inspect structured logs with severity, source, and context
+              metadata.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -92,7 +117,7 @@ export default async function LogsPage({
               </span>
             </div>
             <span className="rounded-full bg-slate-800/80 px-3 py-1 text-xs font-medium text-slate-300">
-              Live view
+              <LiveToggle />
             </span>
           </div>
 

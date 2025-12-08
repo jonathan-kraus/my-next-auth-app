@@ -7,9 +7,7 @@ const requestId = createRequestId();
 await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
 export async function getLogs(options?: { severity?: string }) {
   const logs = await db.log.findMany({
-    where: options?.severity
-      ? { severity: options.severity }
-      : undefined,
+    where: options?.severity ? { severity: options.severity } : undefined,
     orderBy: { timestamp: "desc" },
     take: 500,
     include: {
