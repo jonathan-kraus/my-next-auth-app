@@ -4,7 +4,9 @@ import Link from "next/link";
 
 export const Sidenav = () => {
   const navItems = [
+    { name: "Home", href: "/", icon: "🏠" },
     { name: "Dashboard", href: "/dashboard", icon: "🏠" },
+    { name: "Jtemp", href: "/jtemp", icon: "🏠" },
     { name: "Log Explorer", href: "/logs", icon: "🔍" },
     { name: "Settings", href: "/settings", icon: "⚙️" },
   ];

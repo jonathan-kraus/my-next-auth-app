@@ -14,30 +14,10 @@ const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
 const log = createLogger("Initiating_Logs_Page");
 const requestId = createRequestId();
 await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
-// change the span to a button and add state (in a client component)
-"use client";
 
-import { useState } from "react";
+//import { useState } from "react";
+import { LiveToggle } from "./LiveToggle";
 
-export async function LiveToggle() {
-  const [isLive, setIsLive] = useState(true);
-    await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
-  return (
-    <button
-      type="button"
-      onClick={() => setIsLive((v) => !v)}
-      className={
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition " +
-        (isLive
-          ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/50"
-          : "bg-slate-800/80 text-slate-300 ring-1 ring-slate-700/80")
-      }
-    >
-      <span className="mr-1 h-1.5 w-1.5 rounded-full bg-current" />
-      {isLive ? "Live view" : "Paused"}
-    </button>
-  );
-}
 
 export default async function LogsPage({
   searchParams,
@@ -51,7 +31,7 @@ export default async function LogsPage({
 
   const filtered = q
     ? logs.filter((log) =>
-        [log.source, log.message, log.requestId, log.user?.email]
+        [log.source, log.message, log.requestId, log.user?.name]
           .filter(Boolean)
           .some((field) => field!.toLowerCase().includes(q)),
       )
@@ -187,7 +167,7 @@ export default async function LogsPage({
                         )}
                         {log.user && (
                           <div className="mt-1 truncate text-[11px] text-slate-400">
-                            {log.user.email}
+                            {log.user.name ?? "Unknown User"}
                           </div>
                         )}
                       </td>
