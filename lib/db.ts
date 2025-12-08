@@ -1,20 +1,18 @@
-// lib/db.ts
-import { PrismaClient } from "../src/generated";
+import { PrismaClient } from '@prisma/client';
 
-declare global {
-  // Avoid multiple instances in dev
-  var prisma: PrismaClient | undefined;
-}
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-let db: PrismaClient;
+export const db =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ['query', 'error', 'warn'],
+  });
 
-if (typeof window === "undefined") {
-  if (!global.prisma) {
-    global.prisma = new PrismaClient();
-  }
-  db = global.prisma;
-} else {
-  db = new PrismaClient();
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = db;
 }
 
 export default db;
+export type { PrismaClient };
