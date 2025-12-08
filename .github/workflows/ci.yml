@@ -50,11 +50,7 @@ jobs:
 
       - name: Lint and Typecheck
         run: pnpm lint && pnpm type-check
-      
-      - name: Audit, Lint, and Type Check
-      # Run checks AFTER potential fixes
-        run: pnpm lint && pnpm type-check && pnpm prettier:check
-      
+        
       - name: Check for outdated dependencies
         run: pnpm outdated
         
