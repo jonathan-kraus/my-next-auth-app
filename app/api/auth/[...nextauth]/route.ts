@@ -3,7 +3,7 @@ import GitHub from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import db from "@/lib/db";
 // 👇 force Node runtime so Prisma doesn't get bundled into client engine
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 const handler = NextAuth({
   adapter: PrismaAdapter(db as any), // 👈 cast fixes the TS type mismatch
   providers: [
