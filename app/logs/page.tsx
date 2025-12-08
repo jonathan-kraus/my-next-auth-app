@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { createLogger, createRequestId } from "@/lib/logger";
 import { LocalTime } from "./LocalTime";
 
-
 const severityStyles: Record<string, string> = {
   INFO: "bg-blue-50 text-blue-700 ring-blue-600/20",
   WARN: "bg-amber-50 text-amber-700 ring-amber-600/20",
