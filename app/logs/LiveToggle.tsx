@@ -2,17 +2,15 @@
 "use client";
 
 import { useState } from "react";
-import { createRequestId } from "@/lib/logger";
 
-const requestId = createRequestId();
-console.log("LiveToggle requestId:", requestId);
+console.log("LiveToggle component loaded");
 export function LiveToggle() {
   const [isLive, setIsLive] = useState(true);
 
   const handleClick = () => {
     setIsLive((v) => !v);
     // fire-and-forget; do not await in an event handler
-    };
+  };
 
   return (
     <button
