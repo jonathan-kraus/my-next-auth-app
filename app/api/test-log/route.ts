@@ -1,13 +1,23 @@
 // app/api/test-log/route.ts
 
+import { createLogger, createRequestId } from "@/lib/logger";
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 
-// We'll use a dynamic name/email to ensure the record is new every time
-const TEST_NAME = `TestUser-${Date.now()}`;
-const TEST_EMAIL = `test-${Date.now()}@example.com`;
+// Variables and logger instantiation can be defined outside the function
+// since they don't rely on request-specific data.
+const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
+const log = createLogger("Prisma_Test_Script");
 
 export async function GET(request: Request) {
+  const requestId = createRequestId();
+
+  // Variables that rely on dynamic data (like Date.now()) must be defined inside the handler
+  const TEST_NAME = `TestUser-${Date.now()}`;
+  const TEST_EMAIL = `test-${Date.now()}@example.com`;
+
+  // Log the starting point
+  await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
   console.log(`--- STARTING JTEMP WRITE TEST ---`);
 
   try {
@@ -20,33 +30,37 @@ export async function GET(request: Request) {
       },
     });
 
-    // 2. Attempt to READ all jtemp rows to confirm the write worked
-    const allJtempRows = await db.jtemp.findMany();
+    // Log success!
+    await log.info("JTemp write successful.", TEST_USER_ID, requestId, {
+      newId: newJtempRow.id,
+    });
 
-    console.log(`--- JTEMP WRITE SUCCESSFUL ---`);
-    console.log(`New row created with ID: ${newJtempRow.id}`);
+    console.log(`--- JTEMP WRITE SUCCESSFUL --- New ID: ${newJtempRow.id}`);
 
+    // 2. Return success response
     return NextResponse.json({
       success: true,
-      message: "JTemp record created and verified.",
+      message: "JTemp created.",
       newRow: newJtempRow,
-      totalRows: allJtempRows.length,
     });
   } catch (error) {
-    let errorMessage = "An error occurred during jtemp write test.";
+    let errorMessage = "An unknown database error occurred.";
 
+    // Safely extract the error message
     if (error instanceof Error) {
       errorMessage = error.message;
     }
 
-    console.error(`--- JTEMP WRITE FAILED ---`, errorMessage);
+    // Log error!
+    await log.error("JTemp write failed.", TEST_USER_ID, requestId, {
+      errorMessage: errorMessage,
+    });
 
+    console.error(`--- JTEMP WRITE FAILED --- Error: ${errorMessage}`);
+
+    // 3. Return error response
     return NextResponse.json(
-      {
-        success: false,
-        message: "JTemp write failed.",
-        error: errorMessage,
-      },
+      { success: false, message: "JTemp failed.", error: errorMessage },
       { status: 500 },
     );
   }
