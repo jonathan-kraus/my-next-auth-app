@@ -18,7 +18,6 @@ await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
 //import { useState } from "react";
 import { LiveToggle } from "./LiveToggle";
 
-
 export default async function LogsPage({
   searchParams,
 }: {
