@@ -22,7 +22,6 @@
     "paths": {
       "@/*": ["./*"],
       "@prisma/client": ["src/generated"],
-      "@prisma/client/runtime/library": ["./src/generated/index.d.ts"]
     }
   },
   "include": [
