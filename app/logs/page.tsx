@@ -2,6 +2,8 @@
 import { getLogs } from "@/lib/logs";
 import { format } from "date-fns";
 import { createLogger, createRequestId } from "@/lib/logger";
+import { LocalTime } from "./LocalTime";
+
 
 const severityStyles: Record<string, string> = {
   INFO: "bg-blue-50 text-blue-700 ring-blue-600/20",
@@ -135,7 +137,7 @@ export default async function LogsPage({
                       className="hover:bg-slate-900/80 transition-colors"
                     >
                       <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
-                        {format(new Date(log.timestamp), "yyyy-MM-dd HH:mm:ss")}
+                        <LocalTime value={log.timestamp.toString()} />
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <span
