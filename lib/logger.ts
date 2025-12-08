@@ -25,26 +25,22 @@ export interface LogEntry {
 /**
  * The core function that handles writing the log entry to both console and DB.
  */
+// Inside lib/logger.ts
+
+/**
+ * The core function that handles writing the log entry to both console and DB.
+ */
 const writeLog = async (entry: LogEntry): Promise<void> => {
-  // 1. Console Output (Always runs and should appear in Vercel logs)
-  const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || "N/A"}) (User: ${entry.userId}) - ${entry.message}`;
+  // 🎯 CRITICAL TEST: Console Output MUST be the first thing.
+  const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || 'N/A'}) (User: ${entry.userId}) - ${entry.message}`;
 
-  switch (entry.severity) {
-    case "error":
-      console.error(formattedOutput, entry.metadata || "");
-      break;
-    case "warn":
-      console.warn(formattedOutput, entry.metadata || "");
-      break;
-    case "info":
-    case "debug":
-      console.log(formattedOutput, entry.metadata || "");
-      break;
-  }
-
-  // 2. Database Persistence
+  // 1. Console Output - If this fails, the issue is outside the function call.
+  console.log("--- LOG START ---"); // New line for debugging
+  console.log(formattedOutput, entry.metadata || '');
+  console.log("--- LOG END ---"); // New line for debugging
+  
+  // 2. Database Persistence (Wrap this entire block in a local try/catch)
   try {
-    // 🎯 CRITICAL: Use the client to create the log entry.
     await db.log.create({
       data: {
         userId: entry.userId,
@@ -52,20 +48,16 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
         source: entry.source,
         message: entry.message,
         requestId: entry.requestId,
-        // The Json type in Prisma expects a plain object in the code.
-        metadata: entry.metadata,
+        metadata: entry.metadata, 
       },
     });
+    console.log(`Successfully saved log to DB for source: ${entry.source}`);
   } catch (dbError) {
-    // 🚨 Log failures to save logs, but do NOT crash the main application process.
-    // If THIS fails, it points to a database WRITE permission or connection issue
-    // that is specific to the Log table operation.
-    console.error(
-      `🚨 FATAL LOGGING ERROR: Failed to save log to DB for source ${entry.source}. This is a non-critical failure.`,
-      dbError,
-    );
+    // 🚨 Log failures to save logs—this should now be visible if the console logs fire.
+    console.error(`🚨 FATAL LOGGING ERROR: Failed to save log to DB for source ${entry.source}.`, dbError);
   }
 };
+// ... rest of the file ...
 
 // --- Logger Factory and Interface ---
 
