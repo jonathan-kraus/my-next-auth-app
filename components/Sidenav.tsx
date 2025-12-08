@@ -27,6 +27,14 @@ export function Sidenav() {
           </Link>
         </li>
         <li></li>
+        <li>
+          <Link
+            href="/api/test-log"
+            className="block py-2 px-3 rounded hover:bg-gray-700 transition duration-150"
+          >
+            📊 Test Log
+          </Link>
+        </li>
         {/* The Sign In/Out Component */}
         {/* ... (Your AuthButton component) */}
       </ul>
