@@ -1,77 +1,51 @@
 // app/api/test-log/route.ts
 
-import { createLogger, createRequestId } from "@/lib/logger";
-import db from "@/lib/db"; // Import your Prisma client instance
-import { NextResponse } from "next/server";
+import db from '@/lib/db'; 
+import { NextResponse } from 'next/server';
 
-// 🚨 IMPORTANT: Ensure this userId is a valid, existing user ID in your database!
-const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
-
-// Create a logger instance for this module
-const log = createLogger("Prisma_Test_Script");
+// We'll use a dynamic name/email to ensure the record is new every time
+const TEST_NAME = `TestUser-${Date.now()}`;
+const TEST_EMAIL = `test-${Date.now()}@example.com`;
 
 export async function GET(request: Request) {
-  const requestId = createRequestId();
-
-  // Console log the request ID immediately (will appear in Vercel/terminal logs)
-  console.log(`Request ID: ${requestId}`);
-
-  // 1. Log the start of the request. Must be AWAITED.
-  await log.info(
-    `Handling GET request with Request ID: ${requestId}`,
-    TEST_USER_ID,
-    requestId,
-  );
-
+  console.log(`--- STARTING JTEMP WRITE TEST ---`); 
+  
   try {
-    // 2. Run the main database logic
-    const rows = await db.jtemp.findMany();
-
-    // Log the successful database operation. Must be AWAITED.
-    await log.info(
-      "Successfully fetched jtemp rows.",
-      TEST_USER_ID,
-      requestId,
-      {
-        rowCount: rows.length,
-        ipAddress: request.headers.get("x-forwarded-for"),
+    // 1. Attempt to CREATE a new record in the jtemp table
+    const newJtempRow = await db.jtemp.create({
+      data: {
+        name: TEST_NAME,
+        email: TEST_EMAIL,
+        // Assuming 'created_at' is set to @default(now()) in your schema
       },
-    );
-
-    // Console log the data fetched
-    console.log("jtemp rows:", rows);
-
-    // 3. Return the response
-    return NextResponse.json({
-      success: true,
-      message: "Logs generated and jtemp queried.",
-      data: rows,
     });
-  } catch (error) {
-    let errorMessage = "An unknown error occurred during the test.";
-    let errorStack = "";
 
-    // 🎯 FIX: Safely check if the error is a standard Error object
+    // 2. Attempt to READ all jtemp rows to confirm the write worked
+    const allJtempRows = await db.jtemp.findMany();
+    
+    console.log(`--- JTEMP WRITE SUCCESSFUL ---`);
+    console.log(`New row created with ID: ${newJtempRow.id}`);
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'JTemp record created and verified.', 
+      newRow: newJtempRow,
+      totalRows: allJtempRows.length
+    });
+
+  } catch (error) {
+    let errorMessage = 'An error occurred during jtemp write test.';
+    
     if (error instanceof Error) {
       errorMessage = error.message;
-      errorStack = error.stack || "";
     }
-
-    // 4. Log any errors encountered during the process. Must be AWAITED.
-    await log.error(
-      "An error occurred during jtemp fetch or logging.",
-      TEST_USER_ID,
-      requestId,
-      {
-        errorMessage: errorMessage,
-        errorStack: errorStack,
-      },
-    );
-
-    // Return an error response
-    return NextResponse.json(
-      { success: false, message: "Process failed.", error: errorMessage },
-      { status: 500 },
-    );
+    
+    console.error(`--- JTEMP WRITE FAILED ---`, errorMessage);
+    
+    return NextResponse.json({ 
+      success: false, 
+      message: 'JTemp write failed.', 
+      error: errorMessage 
+    }, { status: 500 });
   }
 }
