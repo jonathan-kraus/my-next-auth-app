@@ -4,6 +4,8 @@ import { getLogs } from "@/lib/logs";
 import { format } from "date-fns";
 import { createLogger, createRequestId } from "@/lib/logger";
 import { LocalTime } from "./LocalTime";
+import { LiveToggle } from "./LiveToggle";
+import { getCurrentUser } from "@/lib/currentUser";
 
 const severityStyles: Record<string, string> = {
   INFO: "bg-blue-50 text-blue-700 ring-blue-600/20",
@@ -12,13 +14,11 @@ const severityStyles: Record<string, string> = {
   DEBUG: "bg-slate-50 text-slate-700 ring-slate-600/20",
 };
 const formatted = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
+const user = await getCurrentUser() ?? "Anonymous User";
 const log = createLogger("Initiating_Logs_Page");
 const requestId = createRequestId();
-await log.info(`Starting Jtemp write test.`, TEST_USER_ID, requestId);
 
-//import { useState } from "react";
-import { LiveToggle } from "./LiveToggle";
+await log.info(`In logs page`, user as string, requestId);
 
 export default async function LogsPage({
   searchParams,
