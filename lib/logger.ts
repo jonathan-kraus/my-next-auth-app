@@ -1,11 +1,11 @@
 // lib/logger.ts
 
-import db from './db'; 
+import db from "./db";
 
 /**
  * Logger API Severity Levels
  */
-export type LogSeverity = 'info' | 'warn' | 'error' | 'debug';
+export type LogSeverity = "info" | "warn" | "error" | "debug";
 
 /**
  * Standard Log Entry Structure (Used internally)
@@ -27,18 +27,18 @@ export interface LogEntry {
  */
 const writeLog = async (entry: LogEntry): Promise<void> => {
   // 1. Console Output (Always runs and should appear in Vercel logs)
-  const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || 'N/A'}) (User: ${entry.userId}) - ${entry.message}`;
+  const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || "N/A"}) (User: ${entry.userId}) - ${entry.message}`;
 
   switch (entry.severity) {
-    case 'error':
-      console.error(formattedOutput, entry.metadata || '');
+    case "error":
+      console.error(formattedOutput, entry.metadata || "");
       break;
-    case 'warn':
-      console.warn(formattedOutput, entry.metadata || '');
+    case "warn":
+      console.warn(formattedOutput, entry.metadata || "");
       break;
-    case 'info':
-    case 'debug':
-      console.log(formattedOutput, entry.metadata || '');
+    case "info":
+    case "debug":
+      console.log(formattedOutput, entry.metadata || "");
       break;
   }
 
@@ -53,14 +53,17 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
         message: entry.message,
         requestId: entry.requestId,
         // The Json type in Prisma expects a plain object in the code.
-        metadata: entry.metadata, 
+        metadata: entry.metadata,
       },
     });
   } catch (dbError) {
     // 🚨 Log failures to save logs, but do NOT crash the main application process.
-    // If THIS fails, it points to a database WRITE permission or connection issue 
+    // If THIS fails, it points to a database WRITE permission or connection issue
     // that is specific to the Log table operation.
-    console.error(`🚨 FATAL LOGGING ERROR: Failed to save log to DB for source ${entry.source}. This is a non-critical failure.`, dbError);
+    console.error(
+      `🚨 FATAL LOGGING ERROR: Failed to save log to DB for source ${entry.source}. This is a non-critical failure.`,
+      dbError,
+    );
   }
 };
 
@@ -70,10 +73,30 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
  * Defines the ASYNCHRONOUS interface for the log functions.
  */
 export interface Logger {
-  info: (message: string, userId: string, requestId?: string, metadata?: Record<string, any>) => Promise<void>;
-  warn: (message: string, userId: string, requestId?: string, metadata?: Record<string, any>) => Promise<void>;
-  error: (message: string, userId: string, requestId?: string, metadata?: Record<string, any>) => Promise<void>;
-  debug: (message: string, userId: string, requestId?: string, metadata?: Record<string, any>) => Promise<void>;
+  info: (
+    message: string,
+    userId: string,
+    requestId?: string,
+    metadata?: Record<string, any>,
+  ) => Promise<void>;
+  warn: (
+    message: string,
+    userId: string,
+    requestId?: string,
+    metadata?: Record<string, any>,
+  ) => Promise<void>;
+  error: (
+    message: string,
+    userId: string,
+    requestId?: string,
+    metadata?: Record<string, any>,
+  ) => Promise<void>;
+  debug: (
+    message: string,
+    userId: string,
+    requestId?: string,
+    metadata?: Record<string, any>,
+  ) => Promise<void>;
 }
 
 /**
@@ -85,7 +108,7 @@ export const createLogger = (source: string): Logger => {
     message: string,
     userId: string, // Required
     requestId?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ) => {
     // We run the async writeLog and return its promise
     return writeLog({
@@ -100,15 +123,22 @@ export const createLogger = (source: string): Logger => {
   };
 
   return {
-    info: (message, userId, requestId, metadata) => log('info', message, userId, requestId, metadata),
-    warn: (message, userId, requestId, metadata) => log('warn', message, userId, requestId, metadata),
-    error: (message, userId, requestId, metadata) => log('error', message, userId, requestId, metadata),
-    debug: (message, userId, requestId, metadata) => log('debug', message, userId, requestId, metadata),
+    info: (message, userId, requestId, metadata) =>
+      log("info", message, userId, requestId, metadata),
+    warn: (message, userId, requestId, metadata) =>
+      log("warn", message, userId, requestId, metadata),
+    error: (message, userId, requestId, metadata) =>
+      log("error", message, userId, requestId, metadata),
+    debug: (message, userId, requestId, metadata) =>
+      log("debug", message, userId, requestId, metadata),
   };
 };
 
 // --- UUID API for Request Tracing ---
 
 export const createRequestId = (): string => {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
 };
