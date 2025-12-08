@@ -1,4 +1,3 @@
-// components/CountUpCard.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,34 +18,40 @@ export const CountUpCard: React.FC<CountUpCardProps> = ({
   const [currentValue, setCurrentValue] = useState(0);
 
   useEffect(() => {
-    // We'll use a simple linear interpolation for the counting effect
-    if (value === 0) return setCurrentValue(0);
+    let frameId: number | null = null;
 
+    // Handle zero (or negative) values without running the animation
+    if (value <= 0) {
+      queueMicrotask(() => setCurrentValue(0));
+      return;
+    }
+
+    const duration = 1500; // ms
     let startTimestamp: number | null = null;
-    const duration = 1500; // Animation duration in milliseconds
 
     const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = timestamp - startTimestamp;
+      if (startTimestamp === null) startTimestamp = timestamp;
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+      const current = Math.floor(value * progress);
 
-      // Calculate the current value based on progress
-      const current = Math.min(value, (progress / duration) * value);
+      setCurrentValue(current);
 
-      setCurrentValue(Math.floor(current));
-
-      if (progress < duration) {
-        window.requestAnimationFrame(step);
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(step);
       } else {
-        // Ensure the final value is exactly the target value
         setCurrentValue(value);
       }
     };
 
-    window.requestAnimationFrame(step);
+    frameId = window.requestAnimationFrame(step);
 
-    // Cleanup function
     return () => {
-      setCurrentValue(0); // Reset on unmount or value change
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+      // Reset asynchronously to avoid sync setState in cleanup
+      queueMicrotask(() => setCurrentValue(0));
     };
   }, [value]);
 
