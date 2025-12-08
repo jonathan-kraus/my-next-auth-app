@@ -1,6 +1,6 @@
 // app/jtemp-data/page.tsx
 "use client";
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 import { useState, useEffect } from "react";
 
 // Define the expected structure of the jtemp record
