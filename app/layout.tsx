@@ -14,7 +14,6 @@ export default function RootLayout({
         <div style={{ display: "flex" }}>
           <Providers>
             <Sidenav /> {/* 👈 Add the Sidenav */}
-            <h1>Jonathan Next.js Neon Auth App</h1>
             {/* Content area is shifted to the right */}
             <main style={{ marginLeft: "220px", padding: "20px", flexGrow: 1 }}>
               {children}

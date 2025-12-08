@@ -1,7 +1,7 @@
 // components/CountUpCard.tsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface CountUpCardProps {
   title: string;
@@ -10,7 +10,12 @@ interface CountUpCardProps {
   description: string;
 }
 
-export const CountUpCard: React.FC<CountUpCardProps> = ({ title, value, unit = '', description }) => {
+export const CountUpCard: React.FC<CountUpCardProps> = ({
+  title,
+  value,
+  unit = "",
+  description,
+}) => {
   const [currentValue, setCurrentValue] = useState(0);
 
   useEffect(() => {
@@ -23,7 +28,7 @@ export const CountUpCard: React.FC<CountUpCardProps> = ({ title, value, unit = '
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = timestamp - startTimestamp;
-      
+
       // Calculate the current value based on progress
       const current = Math.min(value, (progress / duration) * value);
 
@@ -32,8 +37,8 @@ export const CountUpCard: React.FC<CountUpCardProps> = ({ title, value, unit = '
       if (progress < duration) {
         window.requestAnimationFrame(step);
       } else {
-         // Ensure the final value is exactly the target value
-         setCurrentValue(value);
+        // Ensure the final value is exactly the target value
+        setCurrentValue(value);
       }
     };
 
