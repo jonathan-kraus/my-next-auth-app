@@ -2,20 +2,17 @@
 "use client";
 
 import { useState } from "react";
-import { createLogger, createRequestId } from "@/lib/logger";
+import { createRequestId } from "@/lib/logger";
 
-const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
-const log = createLogger("Initiating_Logs_Page");
 const requestId = createRequestId();
-
+console.log("LiveToggle requestId:", requestId);
 export function LiveToggle() {
   const [isLive, setIsLive] = useState(true);
 
   const handleClick = () => {
     setIsLive((v) => !v);
     // fire-and-forget; do not await in an event handler
-    log.info("Log explorer live toggle", TEST_USER_ID, requestId);
-  };
+    };
 
   return (
     <button
