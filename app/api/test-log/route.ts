@@ -4,14 +4,14 @@ import { dbFetch } from "@/lib/dbFetch";
 
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
-
+  const USER_ID = "70044dfe-d497-41d9-99ae-3d9e39761e6d"; // Melissa's id
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-
+console.log("About to write log with userId:", USER_ID);
   // 1. Write a log row
   await dbFetch(({ db }) =>
     db.log.create({
       data: {
-        userId: "70044dfe-d497-41d9-99ae-3d9e39761e6d", // test user id
+        userId: USER_ID, // test user id
         severity: "INFO",
         source: "test-log",
         message: "Invoked /api/test-log",
