@@ -18,7 +18,7 @@ export async function GET(request: Request) {
         "Unknown",
     };
     console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-    const log = await dbFetch({ requireUser: true }, ({ db, user }) =>
+    const log = await dbFetch({ requireUser: true }, ({ db }) =>
       db.log.create({
         data: {
           userId: user!.id,
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   async function POST(req: Request) {
     //const body = await req.json();
 
-    const jtemp = await dbFetch({ requireUser: true }, ({ db, user }) =>
+    const jtemp = await dbFetch({ requireUser: true }, ({ db }) =>
       db.jtemp.create({
         data: {
           name: user!.id,
