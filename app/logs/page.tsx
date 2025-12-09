@@ -13,16 +13,14 @@ const severityStyles: Record<string, string> = {
   DEBUG: "bg-slate-50 text-slate-700 ring-slate-600/20",
 };
 
-const user = await getCurrentUser() ?? "Anonymous User";
-const log = createLogger("Initiating_Logs_Page");
-const requestId = createRequestId();
-
-
 export default async function LogsPage({
   searchParams,
 }: {
   searchParams?: { severity?: string; q?: string };
 }) {
+  const user = await getCurrentUser() ?? "Anonymous User";
+  const log = createLogger("Initiating_Logs_Page");
+  const requestId = createRequestId();
   await log.info(`In logs page`, user as string, requestId);
 
   const severity = searchParams?.severity;
