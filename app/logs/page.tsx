@@ -1,7 +1,6 @@
 // app/logs/page.tsx
 export const dynamic = "force-dynamic";
 import { getLogs } from "@/lib/logs";
-import { format } from "date-fns";
 import { createLogger, createRequestId } from "@/lib/logger";
 import { LocalTime } from "./LocalTime";
 import { LiveToggle } from "./LiveToggle";
@@ -13,18 +12,19 @@ const severityStyles: Record<string, string> = {
   ERROR: "bg-rose-50 text-rose-700 ring-rose-600/20",
   DEBUG: "bg-slate-50 text-slate-700 ring-slate-600/20",
 };
-const formatted = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+
 const user = await getCurrentUser() ?? "Anonymous User";
 const log = createLogger("Initiating_Logs_Page");
 const requestId = createRequestId();
 
-await log.info(`In logs page`, user as string, requestId);
 
 export default async function LogsPage({
   searchParams,
 }: {
   searchParams?: { severity?: string; q?: string };
 }) {
+  await log.info(`In logs page`, user as string, requestId);
+
   const severity = searchParams?.severity;
   const q = searchParams?.q?.toLowerCase() ?? "";
 
