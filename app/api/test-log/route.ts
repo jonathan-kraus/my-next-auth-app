@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp} from "@/stack/server";
 import { useUser } from '@stackframe/stack';
-
+  const user2 = await useUser();
+  console.log("Current user:", user2);
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
   const USER_ID = "70044dfe-d497-41d9-99ae-3d9e39761e6d"; // Melissa's id
@@ -13,8 +14,7 @@ export async function GET(request: Request) {
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
   const user1 = await stackServerApp.getUser();
   console.log("Current user:", user1);
-  const user2 = await useUser();
-  console.log("Current user:", user2);
+
   console.log("About to write log with userId:", USER_ID);
   // 1. Write a log row
   await dbFetch(({ db }) =>
