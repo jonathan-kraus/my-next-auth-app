@@ -5,8 +5,8 @@ import { getCurrentUser } from "@/lib/currentUser";
 
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
-  //const USER_ID = "70044dfe-d497-41d9-99ae-3d9e39761e6d"; // Melissa's id
-  const USER_ID = "cmivgk9b2000004lgnewb1boe"; // Jonathan's id
+  const USER_ID = "70044dfe-d497-41d9-99ae-3d9e39761e6d"; // Melissa's id
+  //const USER_ID = "cmivgk9b2000004lgnewb1boe"; // Jonathan's id
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
   const user = getCurrentUser();
   console.log("Current user:", user);
