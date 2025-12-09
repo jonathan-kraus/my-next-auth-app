@@ -6,10 +6,11 @@ import { dbFetch } from "./dbFetch";
 // const requestId = createRequestId();
 //console.log("logs module loaded");
 export async function getLogs(options?: { severity?: string }) {
+  const normalizedSeverity = options?.severity?.toLowerCase();
   //await log.info(`Starting log viewer`, TEST_USER_ID, requestId);
-    const logs = await dbFetch(({ db }) =>
+  const logs = await dbFetch(({ db }) =>
     db.log.findMany({
-      // optional: filter by user?.id if you want
+      where: normalizedSeverity ? { severity: normalizedSeverity } : undefined,
       orderBy: { timestamp: "desc" },
       take: 200,
       include: { user: { select: { email: true } } },
