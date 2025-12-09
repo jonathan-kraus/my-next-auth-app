@@ -8,9 +8,9 @@ export async function GET(request: Request) {
   const USER_ID = "70044dfe-d497-41d9-99ae-3d9e39761e6d"; // Melissa's id
   //const USER_ID = "cmivgk9b2000004lgnewb1boe"; // Jonathan's id
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   console.log("Current user:", user);
-console.log("About to write log with userId:", USER_ID);
+  console.log("About to write log with userId:", USER_ID);
   // 1. Write a log row
   await dbFetch(({ db }) =>
     db.log.create({
@@ -22,12 +22,12 @@ console.log("About to write log with userId:", USER_ID);
         requestId: null,
         metadata: {
           userAgent: request.headers.get("User-Agent") || "Unknown",
-          
+
           ip:
             request.headers.get("X-Forwarded-For") ||
             request.headers.get("Remote-Addr") ||
             "Unknown",
-            user: user as any,
+          user: user as any,
         },
       },
     }),
