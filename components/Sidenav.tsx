@@ -7,6 +7,7 @@ export const Sidenav = () => {
     { name: "Home", href: "/", icon: "🏠" },
     { name: "Dashboard", href: "/dashboard", icon: "🏠" },
     { name: "Jtemp", href: "/jtemp-data", icon: "🏠" },
+    { name: "Test-log", href: "/api/test-log", icon: "🏠" },
     { name: "Log Explorer", href: "/logs", icon: "🔍" },
     { name: "Settings", href: "/settings", icon: "⚙️" },
   ];
