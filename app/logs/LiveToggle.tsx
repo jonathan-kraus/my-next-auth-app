@@ -1,15 +1,27 @@
 // app/logs/LiveToggle.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-console.log("LiveToggle component loaded");
+const POLL_MS = 30_000; // 30 seconds
+
 export function LiveToggle() {
   const [isLive, setIsLive] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLive) return;
+
+    const id = setInterval(() => {
+      router.refresh(); // re-runs LogsPage and refetches logs
+    }, POLL_MS);
+
+    return () => clearInterval(id);
+  }, [isLive, router]);
 
   const handleClick = () => {
     setIsLive((v) => !v);
-    // fire-and-forget; do not await in an event handler
   };
 
   return (
@@ -24,7 +36,7 @@ export function LiveToggle() {
       }
     >
       <span className="mr-1 h-1.5 w-1.5 rounded-full bg-current" />
-      {isLive ? "Live view" : "Paused"}
+      {isLive ? "Live view (30s)" : "Paused"}
     </button>
   );
 }
