@@ -23,7 +23,7 @@ export default async function LogsPage({
   const requestId = createRequestId();
   await log.info(
     `In logs page`,
-    user?.id ?? "70044dfe-d497-41d9-99ae-3d9e39761e6d",
+    user?.name ?? "70044dfe-d497-41d9-99ae-3d9e39761e6d",
     requestId,
   );
   const severity = searchParams?.severity;
