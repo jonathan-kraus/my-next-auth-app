@@ -18,11 +18,14 @@ export default async function LogsPage({
 }: {
   searchParams?: { severity?: string; q?: string };
 }) {
-  const user = await getCurrentUser() ?? "Anonymous User";
+  const user = await getCurrentUser();
   const log = createLogger("Initiating_Logs_Page");
   const requestId = createRequestId();
-  await log.info(`In logs page`, user as string, requestId);
-
+  await log.info(
+    `In logs page`,
+    user?.id ?? "70044dfe-d497-41d9-99ae-3d9e39761e6d",
+    requestId,
+  );
   const severity = searchParams?.severity;
   const q = searchParams?.q?.toLowerCase() ?? "";
 
