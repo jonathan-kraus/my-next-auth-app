@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useUser } from "@stackframe/stack";
+import { useSession, signOut } from "next-auth/react";
 import {
   HomeIcon,
   ChartBarIcon,
@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 export const Sidenav = () => {
-  const user = useUser();
+  const { data: session } = useSession();
 
   const navItems = [
     { name: "Home", href: "/", icon: HomeIcon },
@@ -25,6 +25,9 @@ export const Sidenav = () => {
     { name: "Log Explorer", href: "/logs", icon: MagnifyingGlassIcon },
   ];
 
+  const displayName = session?.user?.name ?? "Unknown User";
+  const email = session?.user?.email ?? "";
+
   return (
     <div className="w-64 bg-gray-800 text-white p-6 shadow-2xl">
       {/* App title */}
@@ -33,16 +36,24 @@ export const Sidenav = () => {
       </div>
 
       {/* Current user */}
-      {user && (
+      {session ? (
         <div className="mb-6 flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white">
-            {user.displayName?.charAt(0).toUpperCase() ?? "U"}
+            {displayName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold">{user.displayName ?? "Unknown User"}</p>
-            <p className="text-sm text-gray-400">{user.primaryEmail ?? ""}</p>
+            <p className="font-semibold">{displayName}</p>
+            <p className="text-sm text-gray-400">{email}</p>
+            <button
+              onClick={() => signOut()}
+              className="mt-2 text-xs px-2 py-1 bg-red-500 rounded hover:bg-red-600"
+            >
+              Logout
+            </button>
           </div>
         </div>
+      ) : (
+        <div className="mb-6 text-gray-400">Not signed in</div>
       )}
 
       {/* Navigation */}
