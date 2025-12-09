@@ -6,6 +6,7 @@ export const Sidenav = () => {
   const navItems = [
     { name: "Home", href: "/", icon: "🏠" },
     { name: "Dashboard", href: "/dashboard", icon: "🏠" },
+    { name: "Notes", href: "/notes", icon: "📝" },
     { name: "Jtemp", href: "/jtemp-data", icon: "🏠" },
     { name: "Test-log", href: "/api/test-log", icon: "🏠" },
     { name: "Test user", href: "/test", icon: "🏠" },
