@@ -1,7 +1,7 @@
 // app/api/test-log/route.ts
 import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
-import { getCurrentUser } from "@/lib/currentUser";
+import { myUser } from "@/lib/currentUser";
 
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   //   const session = await auth(); // or getServerSession(...)
   // const userId = session?.user?.id ?? null;
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-  const user = await getCurrentUser();
+  const user = await myUser();
   console.log("Current user:", user);
   console.log("About to write log with userId:", USER_ID);
   // 1. Write a log row
