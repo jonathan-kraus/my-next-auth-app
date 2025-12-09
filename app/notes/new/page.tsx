@@ -19,7 +19,7 @@ export default function NewNote() {
     const res = await fetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...formData, authorId: 'your-user-id-here' }) // Replace with auth
+      body: JSON.stringify({ ...formData, authorId: 'cmiz0p9ro000004ldrxgn3a1c' }) 
     })
 
     if (res.ok) {
