@@ -33,7 +33,7 @@ export default async function LogsPage({
 
   const filtered = q
     ? logs.filter((log) =>
-        [log.source, log.message, log.requestId, log.user?.name]
+        [log.source, log.message, log.requestId, log.user?.email]
           .filter(Boolean)
           .some((field) => field!.toLowerCase().includes(q)),
       )
@@ -169,7 +169,7 @@ export default async function LogsPage({
                         )}
                         {log.user && (
                           <div className="mt-1 truncate text-[11px] text-slate-400">
-                            {log.user.name ?? "Unknown User"}
+                            {log.user.email ?? "Unknown User"}
                           </div>
                         )}
                       </td>
