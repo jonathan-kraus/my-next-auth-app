@@ -1,1 +1,16 @@
-[{"id":"70044dfe-d497-41d9-99ae-3d9e39761e6d","name":"Melissa","email":"melissa2@email.com","emailVerified":null,"image":null},{"id":"cmivgk9b2000004lgnewb1boe","name":"jonathan-kraus","email":"jonathanckraus@gmail.com","emailVerified":"2025-12-01 00:00:00","image":"https://avatars.githubusercontent.com/u/225720566?v=4"}]
+[
+  {
+    "id": "70044dfe-d497-41d9-99ae-3d9e39761e6d",
+    "name": "Melissa",
+    "email": "melissa2@email.com",
+    "emailVerified": null,
+    "image": null
+  },
+  {
+    "id": "cmivgk9b2000004lgnewb1boe",
+    "name": "jonathan-kraus",
+    "email": "jonathanckraus@gmail.com",
+    "emailVerified": "2025-12-01 00:00:00",
+    "image": "https://avatars.githubusercontent.com/u/225720566?v=4"
+  }
+]

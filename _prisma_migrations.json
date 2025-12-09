@@ -1,1 +1,22 @@
-[{"id":"9d84e8c3-94df-4d16-9b22-7df3c692e6a4","checksum":"1a7e69c7d03056654119b56f09287b1349f3d249d46e86d2a035f3d09cc024f8","finished_at":"2025-12-07 08:24:29.249732+00","migration_name":"20251207082428_create_log_table","logs":null,"rolled_back_at":null,"started_at":"2025-12-07 08:24:29.112242+00","applied_steps_count":1},{"id":"ed546040-4793-4e8e-b34a-ec8e623ecf7a","checksum":"7ccf227196e408497d82520938e34b460be090aa6fb67f1c1a67fdfba20b929e","finished_at":"2025-12-07 08:18:09.107806+00","migration_name":"20251206012444_init_auth_clean","logs":null,"rolled_back_at":null,"started_at":"2025-12-07 08:18:08.937621+00","applied_steps_count":1}]
+[
+  {
+    "id": "9d84e8c3-94df-4d16-9b22-7df3c692e6a4",
+    "checksum": "1a7e69c7d03056654119b56f09287b1349f3d249d46e86d2a035f3d09cc024f8",
+    "finished_at": "2025-12-07 08:24:29.249732+00",
+    "migration_name": "20251207082428_create_log_table",
+    "logs": null,
+    "rolled_back_at": null,
+    "started_at": "2025-12-07 08:24:29.112242+00",
+    "applied_steps_count": 1
+  },
+  {
+    "id": "ed546040-4793-4e8e-b34a-ec8e623ecf7a",
+    "checksum": "7ccf227196e408497d82520938e34b460be090aa6fb67f1c1a67fdfba20b929e",
+    "finished_at": "2025-12-07 08:18:09.107806+00",
+    "migration_name": "20251206012444_init_auth_clean",
+    "logs": null,
+    "rolled_back_at": null,
+    "started_at": "2025-12-07 08:18:08.937621+00",
+    "applied_steps_count": 1
+  }
+]
