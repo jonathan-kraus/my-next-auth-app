@@ -1,7 +1,8 @@
 // app/api/test-log/route.ts
 import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
-import { myUser } from "@/lib/currentUser";
+import { stackServerApp} from "@/stack/server";
+import { useUser } from '@stackframe/stack';
 
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
@@ -10,8 +11,10 @@ export async function GET(request: Request) {
   //   const session = await auth(); // or getServerSession(...)
   // const userId = session?.user?.id ?? null;
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-  const user = await myUser();
-  console.log("Current user:", user);
+  const user1 = await stackServerApp.getUser();
+  console.log("Current user:", user1);
+  const user2 = await useUser();
+  console.log("Current user:", user2);
   console.log("About to write log with userId:", USER_ID);
   // 1. Write a log row
   await dbFetch(({ db }) =>
@@ -29,7 +32,7 @@ export async function GET(request: Request) {
             request.headers.get("X-Forwarded-For") ||
             request.headers.get("Remote-Addr") ||
             "Unknown",
-          user: user as any,
+          user: user1 as any,
         },
       },
     }),
