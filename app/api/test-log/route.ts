@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   // Variables that rely on dynamic data (like Date.now()) must be defined inside the handler
   const TEST_NAME = `TestUser-${Date.now()}`;
-  const TEST_EMAIL = `test-${Date.now()}@example.com`;
+
 
   // Log the starting point
   async function logit(req: Request) {
@@ -47,7 +47,9 @@ export async function GET(request: Request) {
 
     console.log(`JTemp record created with ID: ${jtemp.id}`);
   }
-
+ // Actually run the work
+  await logit(request);
+  await POST(request);
   console.log(`--- JTEMP WRITE SUCCESSFUL --- `);
 
   // 2. Return success response
