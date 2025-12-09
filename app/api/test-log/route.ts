@@ -1,8 +1,7 @@
 // app/api/test-log/route.ts
 import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
-import { stackServerApp} from "@/stack/server";
-
+import { stackServerApp } from "@/stack/server";
 
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;

@@ -1,14 +1,14 @@
-import { stackServerApp } from "@/stack/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 export default async function TestPage() {
-  // This runs on the server at render time
-  const user = await stackServerApp.getUser();
+  const session = await getServerSession(authOptions);
 
   return (
     <div>
       <h1>Server Component Test</h1>
-      {user ? (
-        <pre>{JSON.stringify(user, null, 2)}</pre>
+      {session ? (
+        <pre>{JSON.stringify(session.user, null, 2)}</pre>
       ) : (
         <p>No user logged in</p>
       )}
