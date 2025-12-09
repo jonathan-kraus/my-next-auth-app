@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Toaster, toast } from 'sonner'
 
 export default function NewNote() {
   const [formData, setFormData] = useState({
@@ -15,7 +16,9 @@ export default function NewNote() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    
+    //const res = await fetch('/api/users')  // ← Uses your db.user.findMany()
+//const users = await res.json()
+//setAuthorId(users[0].id)  // Gets real user ID
     const res = await fetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
