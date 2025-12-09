@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from "react";
 import { CountUpCard } from "@/components/CountUpCard";
-import { Sidenav } from "@/components/Sidenav";
 
 interface DashboardData {
   totalLogs: number;

@@ -12,7 +12,7 @@ export async function GET() {
     // 2. Return the data as a JSON response
     return NextResponse.json(
       {
-        message: "Data fetched successfully from jtemp table.",
+        message: "Data fetched successfully from jtemp table",
         data: data,
       },
       { status: 200 },
