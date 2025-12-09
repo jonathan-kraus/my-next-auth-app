@@ -68,4 +68,5 @@ jobs:
         run: pnpm build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          STACK_SECRET_SERVER_KEY: ${{ secrets.STACK_SECRET_SERVER_KEY }}
           NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
