@@ -16,7 +16,7 @@
   },
   "pnpm": {
     "overrides": {
-      "cookie": "^0.7.0"
+      "cookie": "^1.0.0"
     }
   },
   "dependencies": {
