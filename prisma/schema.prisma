@@ -34,7 +34,7 @@ model User {
 // Your Log model, updated to include a User relationship
 model Log {
   id        String   @id @default(uuid()) // Using uuid for Log IDs
-  userId    String   // 🎯 NEW: Foreign key to User
+  userId    String?   // 🎯 NEW: Foreign key to User
   severity  String
   source    String   
   message   String
@@ -43,7 +43,7 @@ model Log {
   timestamp DateTime @default(now())
 
   // Relationship to the User model
-  user      User     @relation(fields: [userId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
   @@schema("public")
 }
 
