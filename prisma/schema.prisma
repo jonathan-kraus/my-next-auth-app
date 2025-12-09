@@ -28,6 +28,7 @@ model User {
   accounts       Account[]
   sessions       Session[]
   logs           Log[]
+  notes          Note[]
   @@schema("public")
 }
 
@@ -44,6 +45,19 @@ model Log {
 
   // Relationship to the User model
   user      User?     @relation(fields: [userId], references: [id])
+  @@schema("public")
+}
+model Note {
+  id            Int       @id @default(autoincrement())
+  title         String
+  content       String
+  published     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id])
+  needsFollowUp Boolean   @default(false)
+  followUpDate  DateTime?
+  followUpNotes String?
   @@schema("public")
 }
 
