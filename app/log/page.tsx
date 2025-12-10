@@ -35,7 +35,10 @@ export default function LogsPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const seenIds = useRef<Set<string>>(new Set());
-
+useEffect(() => {
+  // fire-and-forget logging call
+  fetch("/api/log-view", { method: "POST" }).catch(() => {});
+}, []);
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);

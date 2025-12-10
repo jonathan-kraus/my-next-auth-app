@@ -4,6 +4,7 @@ import db from "@/lib/db";
 export type LogPayload = {
   severity: "info" | "warning" | "error";
   source: string;
+  userId?: string;
   message: string;
   requestId?: string;
   metadata?: Record<string, any>;
@@ -11,7 +12,7 @@ export type LogPayload = {
 
 function enrichMetadata(metadata?: Record<string, any>) {
   const base: Record<string, any> = {};
-
+  const userId = "cmiz0p9ro000004ldrxgn3a1c"; // Replace with actual user ID retrieval logic
   if (typeof window !== "undefined") {
     // Client-side extras
     base.userAgent = navigator.userAgent;
