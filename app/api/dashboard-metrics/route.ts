@@ -10,12 +10,17 @@ const get24HoursAgo = () => new Date(Date.now() - 24 * 3600 * 1000);
 // Use your working logger for internal monitoring of the dashboard API itself
 
 const log = createLogger("Dashboard_Metrics_API");
-const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe"; // Use a known user ID for logging this process
+const TEST_USER_ID = "cmiz0p9ro000004ldrxgn3a1c"; // Use a known user ID for logging this process
 
 export async function GET() {
   const requestId = createRequestId();
-  await log.info("Fetching dashboard metrics.", TEST_USER_ID, requestId);
-
+  await log.info("Fetching dashboard metrics.", TEST_USER_ID, requestId,
+              {
+                action: "FetchMetrics",
+                requestId,
+              },
+            );
+              
   try {
     const twentyFourHoursAgo = get24HoursAgo();
 
