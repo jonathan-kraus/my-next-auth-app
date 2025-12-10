@@ -12,7 +12,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:ci": "vitest run --coverage"
+    "test:ci": "vitest run --coverage",
+    "prepare": "husky"
   },
   "pnpm": {
     "overrides": {
