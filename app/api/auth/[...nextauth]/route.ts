@@ -14,6 +14,18 @@ const handler = NextAuth({
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
+  callbacks: {
+    async session({ session, token, user }) {
+      // If you are using a database adapter, user will be defined
+      if (user && "id" in user) {
+        session.user.id = user.id;
+      } else if (token && token.sub) {
+
+        session.user.id = token.sub;
+      }
+      return session;
+  },
+},
   secret: process.env.NEXTAUTH_SECRET,
 });
 
