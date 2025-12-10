@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [severity, setSeverity] = useState<string>(""); // filter by severity
-  const [userId, setUserId] = useState<string>("");     // filter by userId
+  const [userId, setUserId] = useState<string>(""); // filter by userId
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -64,8 +64,12 @@ export default function LogsPage() {
               <td className="p-2 border border-gray-700">{log.severity}</td>
               <td className="p-2 border border-gray-700">{log.source}</td>
               <td className="p-2 border border-gray-700">{log.message}</td>
-              <td className="p-2 border border-gray-700">{log.userId ?? "-"}</td>
-              <td className="p-2 border border-gray-700">{log.requestId ?? "-"}</td>
+              <td className="p-2 border border-gray-700">
+                {log.userId ?? "-"}
+              </td>
+              <td className="p-2 border border-gray-700">
+                {log.requestId ?? "-"}
+              </td>
             </tr>
           ))}
         </tbody>

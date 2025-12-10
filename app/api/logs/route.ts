@@ -1,13 +1,13 @@
 // app/api/logs/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/utils/db";
+import db from "@/lib/db";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const severity = searchParams.get("severity");
   const userId = searchParams.get("userId");
 
-  const logs = await prisma.log.findMany({
+  const logs = await db.log.findMany({
     where: {
       ...(severity ? { severity } : {}),
       ...(userId ? { userId } : {}),

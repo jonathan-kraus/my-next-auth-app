@@ -21,15 +21,16 @@ export default async function LogsPage({
 }) {
   const user = await getCurrentUser();
 
-// Safe fallback: either the email or "not known"
-const userEmail = user?.email ?? "not known";
+  // Safe fallback: either the email or "not known"
+  const userEmail = user?.email ?? "not known";
 
-const log = createLogger("Initiating_Logs_Page");
-const requestId = createRequestId();
+  const log = createLogger("Initiating_Logs_Page");
+  const requestId = createRequestId();
 
-await log.info("In logs page", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
-  action: "create log",
-  user: user});
+  await log.info("In logs page", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
+    action: "create log",
+    user: user,
+  });
   const severity = searchParams?.severity;
   const q = searchParams?.q?.toLowerCase() ?? "";
 

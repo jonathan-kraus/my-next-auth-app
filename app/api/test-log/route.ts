@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     db.log.create({
       data: {
         userId: USER_ID, // test user id
-        severity: "INFO",
+        severity: "info",
         source: "test-log",
         message: "Invoked /api/test-log",
         requestId: null,

@@ -17,7 +17,9 @@ export function getSha(payload: any): string | undefined {
 /**
  * Resolve the commit message from payload or GitHub API fallback.
  */
-export async function getCommitMessage(payload: any): Promise<string | undefined> {
+export async function getCommitMessage(
+  payload: any,
+): Promise<string | undefined> {
   // First try to get description directly from payload
   let description =
     payload.head_commit?.message || // push events
@@ -34,19 +36,19 @@ export async function getCommitMessage(payload: any): Promise<string | undefined
           {
             headers: {
               Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-              Accept: 'application/vnd.github+json',
+              Accept: "application/vnd.github+json",
             },
-          }
+          },
         );
 
         if (res.ok) {
           const data = await res.json();
           description = data?.commit?.message;
         } else {
-          console.error('GitHub API error:', res.status, await res.text());
+          console.error("GitHub API error:", res.status, await res.text());
         }
       } catch (err) {
-        console.error('Commit fetch failed:', err);
+        console.error("Commit fetch failed:", err);
       }
     }
   }
