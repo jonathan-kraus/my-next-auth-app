@@ -48,4 +48,4 @@ export function UnpublishButton({ id }: { id: number }) {
       {pending ? "Unpublishing..." : "Unpublish"}
     </button>
   );
-}}
+}
