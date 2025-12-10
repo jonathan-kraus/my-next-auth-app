@@ -4,9 +4,9 @@ import db from "@/lib/db";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }  // note: Promise
+  context: { params: Promise<{ id: string }> }, // note: Promise
 ) {
-  const { id } = await context.params;          // await the params
+  const { id } = await context.params; // await the params
   try {
     const { published } = await request.json();
 
@@ -20,7 +20,7 @@ export async function PATCH(
     console.error(error);
     return NextResponse.json(
       { error: "Failed to update published state" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
