@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { dbFetch } from "@/lib/dbFetch";
+import { createLogger } from '@/utils/logger';
 import { createRequestId } from "@/lib/uuidj";
 const requestId = createRequestId();
+const log = createLogger('app/log/page', requestId);
+log.info('log page rendering started', { action: 'page_load' });
+  
 // await dbFetch(({ db }) =>
 //   db.log.create({
 //     data: {
