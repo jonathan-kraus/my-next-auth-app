@@ -1,7 +1,8 @@
 // app/logs/page.tsx
 export const dynamic = "force-dynamic";
 import { getLogs } from "@/lib/logs";
-import { createLogger, createRequestId } from "@/lib/logger";
+import { createLogger } from "@/lib/logger";
+import { createRequestId } from "@/lib/uuidj";
 import { LocalTime } from "./LocalTime";
 import { LiveToggle } from "./LiveToggle";
 import { getCurrentUser } from "@/lib/currentUser";

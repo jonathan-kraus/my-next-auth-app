@@ -2,12 +2,13 @@
 
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
-
+import { createLogger } from "@/lib/logger";
+import { createRequestId } from "@/lib/uuidj";
 // Utility function to get the timestamp for 24 hours ago
 const get24HoursAgo = () => new Date(Date.now() - 24 * 3600 * 1000);
 
 // Use your working logger for internal monitoring of the dashboard API itself
-import { createLogger, createRequestId } from "@/lib/logger";
+
 const log = createLogger("Dashboard_Metrics_API");
 const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe"; // Use a known user ID for logging this process
 

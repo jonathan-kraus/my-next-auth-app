@@ -136,12 +136,3 @@ export const createLogger = (source: string): Logger => {
       log("debug", message, userId, requestId, metadata),
   };
 };
-
-// --- UUID API for Request Tracing ---
-
-export const createRequestId = (): string => {
-  return (
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15)
-  );
-};

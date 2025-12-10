@@ -12,7 +12,7 @@ export default function NewNote() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    published: true,          // default published
+    published: true, // default published
     needsFollowUp: false,
     followUpDate: "",
     followUpNotes: "",
