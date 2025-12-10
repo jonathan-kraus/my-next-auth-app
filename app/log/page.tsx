@@ -4,21 +4,21 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { dbFetch } from "@/lib/dbFetch";
 import { createRequestId } from "@/lib/uuidj";
 const requestId = createRequestId();
-await dbFetch(({ db }) =>
-  db.log.create({
-    data: {
-      userId: "cmiz0p9ro000004ldrxgn3a1c",
-      severity: "info",
-      source: "log",
-      message: "Invoking viewer",
-      requestId: requestId,
-      metadata: {
-        action: "view",
-        timestamp: new Date().toISOString(),
-      },
-    },
-  }),
-);
+// await dbFetch(({ db }) =>
+//   db.log.create({
+//     data: {
+//       userId: "cmiz0p9ro000004ldrxgn3a1c",
+//       severity: "info",
+//       source: "log",
+//       message: "Invoking viewer",
+//       requestId: requestId,
+//       metadata: {
+//         action: "view",
+//         timestamp: new Date().toISOString(),
+//       },
+//     },
+//   }),
+// );
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);

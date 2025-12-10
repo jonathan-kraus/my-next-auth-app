@@ -21,24 +21,24 @@ const requestId = createRequestId();
       router.refresh();
     });
   }
-(async () => {
-  await dbFetch(({ db }) =>
-    db.log.create({
-      data: {
-        userId: "cmiz0p9ro000004ldrxgn3a1c",
-        severity: "info",
-        source: "app/notes/PublishToggle.tsx",
-        message: "Unpublish record",
-        requestId: requestId,
-        metadata: {
-          action: "unpublish",
-          id: id,
-          timestamp: new Date().toISOString(),
-        },
-      },
-    }),
-  );
-})();
+// (async () => {
+//   await dbFetch(({ db }) =>
+//     db.log.create({
+//       data: {
+//         userId: "cmiz0p9ro000004ldrxgn3a1c",
+//         severity: "info",
+//         source: "app/notes/PublishToggle.tsx",
+//         message: "Unpublish record",
+//         requestId: requestId,
+//         metadata: {
+//           action: "unpublish",
+//           is: id,
+//           timestamp: new Date().toISOString(),
+//         },
+//       },
+//     }),
+//   );
+// })();
 
   return (
     <button
