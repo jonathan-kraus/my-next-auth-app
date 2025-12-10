@@ -9,8 +9,8 @@ export async function GET(req: Request) {
 
   const logs = await db.log.findMany({
     where: {
-      ...(severity ? { severity } : {}),
-      ...(userId ? { userId } : {}),
+      ...(severity ? { severity: { equals: severity, mode: "insensitive" } } : {}),
+      ...(userId ? { userId: { equals: userId, mode: "insensitive" } } : {}),
     },
     orderBy: { timestamp: "desc" },
     take: 150,
