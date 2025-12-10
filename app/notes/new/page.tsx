@@ -4,42 +4,27 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { dbFetch } from "@/lib/dbFetch";
 
 const requestId = crypto.randomUUID();
+
 export default function NewNote() {
   const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    published: false,
+    published: true,          // default published
     needsFollowUp: false,
     followUpDate: "",
     followUpNotes: "",
   });
-
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-  const USER_ID = "cmiz0p9ro000004ldrxgn3a1c";
+
   const authorId = session?.user?.id as string | undefined;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await dbFetch(({ db }) =>
-      db.log.create({
-        data: {
-          userId: USER_ID, // test user id
-          severity: "INFO",
-          source: "NewNote",
-          message: "After NewNote function called",
-          requestId: requestId,
-          metadata: {
-            action: "Create Note",
-            user: session?.user,
-          },
-        },
-      }),
-    );
+
     if (status === "loading") {
       toast.error("Still loading session, please wait.");
       return;
@@ -59,6 +44,7 @@ export default function NewNote() {
         body: JSON.stringify({
           ...formData,
           authorId,
+          requestId, // pass to server for logging
         }),
       });
 
@@ -72,114 +58,115 @@ export default function NewNote() {
       router.push("/notes");
       router.refresh();
     } catch (err) {
-      toast.error("Network error while creating note.");
       console.error(err);
+      toast.error("Network error while creating note.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <>
-      <div className="max-w-2xl mx-auto p-8">
-        <h1 className="text-3xl font-bold mb-8">New Note</h1>
+    <div className="max-w-2xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-8">New Note</h1>
 
-        {/* Debug / status bar */}
-        <div className="mb-6 p-4 rounded-lg bg-blue-50 text-sm text-blue-900 flex flex-wrap gap-3 items-center">
-          <span className="font-semibold">Auth status:</span>
-          <span className="px-2 py-1 rounded bg-white border">{status}</span>
-          <span className="ml-4 font-semibold">User ID:</span>
-          <code className="px-2 py-1 rounded bg-white border">
-            {authorId ?? "none"}
-          </code>
+      <div className="mb-6 p-4 rounded-lg bg-blue-50 text-sm text-blue-900 flex flex-wrap gap-3 items-center">
+        <span className="font-semibold">Auth status:</span>
+        <span className="px-2 py-1 rounded bg-white border">{status}</span>
+        <span className="ml-4 font-semibold">User ID:</span>
+        <code className="px-2 py-1 rounded bg-white border">
+          {authorId ?? "none"}
+        </code>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* title */}
+        <div>
+          <label className="block text-lg font-medium mb-2">Title</label>
+          <input
+            name="title"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            required
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-lg font-medium mb-2">Title</label>
+        {/* content */}
+        <div>
+          <label className="block text-lg font-medium mb-2">Content</label>
+          <textarea
+            name="content"
+            value={formData.content}
+            onChange={(e) =>
+              setFormData({ ...formData, content: e.target.value })
+            }
+            rows={8}
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        {/* toggles */}
+        <div className="flex flex-wrap gap-6">
+          <label className="flex items-center gap-2">
             <input
-              name="title"
-              value={formData.title}
+              type="checkbox"
+              checked={formData.published}
               onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
+                setFormData({ ...formData, published: e.target.checked })
               }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
             />
-          </div>
+            Published
+          </label>
 
-          <div>
-            <label className="block text-lg font-medium mb-2">Content</label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.needsFollowUp}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  needsFollowUp: e.target.checked,
+                })
+              }
+            />
+            Needs Follow-up
+          </label>
+        </div>
+
+        {/* follow-up details */}
+        {formData.needsFollowUp && (
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+            <input
+              type="date"
+              value={formData.followUpDate}
+              onChange={(e) =>
+                setFormData({ ...formData, followUpDate: e.target.value })
+              }
+              className="w-full p-3 border rounded-lg"
+            />
             <textarea
-              name="content"
-              value={formData.content}
+              placeholder="Follow-up notes..."
+              value={formData.followUpNotes}
               onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
+                setFormData({ ...formData, followUpNotes: e.target.value })
               }
-              rows={8}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              required
+              rows={3}
+              className="w-full p-3 border rounded-lg"
             />
           </div>
+        )}
 
-          <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={formData.published}
-                onChange={(e) =>
-                  setFormData({ ...formData, published: e.target.checked })
-                }
-              />
-              Published
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={formData.needsFollowUp}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    needsFollowUp: e.target.checked,
-                  })
-                }
-              />
-              Needs Follow-up
-            </label>
-          </div>
-
-          {formData.needsFollowUp && (
-            <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-              <input
-                type="date"
-                value={formData.followUpDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, followUpDate: e.target.value })
-                }
-                className="w-full p-3 border rounded-lg"
-              />
-              <textarea
-                placeholder="Follow-up notes..."
-                value={formData.followUpNotes}
-                onChange={(e) =>
-                  setFormData({ ...formData, followUpNotes: e.target.value })
-                }
-                rows={3}
-                className="w-full p-3 border rounded-lg"
-              />
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={submitting || status !== "authenticated"}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? "Creating..." : "Create Note"}
-          </button>
-        </form>
-      </div>
-    </>
+        <button
+          type="submit"
+          disabled={submitting || status !== "authenticated"}
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {submitting ? "Creating..." : "Create Note"}
+        </button>
+      </form>
+    </div>
   );
 }
