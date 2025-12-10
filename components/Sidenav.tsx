@@ -37,9 +37,14 @@ export const Sidenav = () => {
         App Monitor
       </div>
 
-      <div className="text-sm text-gray-400">
-        Version {versionInfo.version} released {versionInfo.date}
-      </div>
+     <div className="text-sm text-gray-400 flex flex-col leading-tight">
+  <span className="font-bold text-indigo-300">
+    Version {versionInfo.version}
+  </span>
+  <span className="text-gray-500">
+    released {versionInfo.date}
+  </span>
+</div>
       {/* Current user */}
       {session ? (
         <div className="mb-6 flex items-center space-x-3">
