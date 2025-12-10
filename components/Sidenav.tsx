@@ -11,6 +11,7 @@ import {
   UserIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import versionInfo from "../version.json";
 
 export const Sidenav = () => {
   const { data: session } = useSession();
@@ -36,6 +37,9 @@ export const Sidenav = () => {
         App Monitor
       </div>
 
+      <div className="text-sm text-gray-400">
+        Version {versionInfo.version} released {versionInfo.date}
+      </div>
       {/* Current user */}
       {session ? (
         <div className="mb-6 flex items-center space-x-3">
