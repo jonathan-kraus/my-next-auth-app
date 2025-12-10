@@ -1,15 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import db from "@/lib/db";
 
 export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }  // note: Promise
 ) {
+  const { id } = await context.params;          // await the params
   try {
-    const { published } = await req.json();
+    const { published } = await request.json();
 
     const note = await db.note.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: { published: !!published },
     });
 
