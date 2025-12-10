@@ -20,12 +20,11 @@ const handler = NextAuth({
       if (user && "id" in user) {
         session.user.id = user.id;
       } else if (token && token.sub) {
-
         session.user.id = token.sub;
       }
       return session;
+    },
   },
-},
   secret: process.env.NEXTAUTH_SECRET,
 });
 

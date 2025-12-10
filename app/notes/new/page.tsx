@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { dbFetch } from "@/lib/dbFetch";
 
+const requestId = crypto.randomUUID();
 export default function NewNote() {
   const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
@@ -15,14 +17,29 @@ export default function NewNote() {
     followUpDate: "",
     followUpNotes: "",
   });
+
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-
+  const USER_ID = "cmiz0p9ro000004ldrxgn3a1c";
   const authorId = session?.user?.id as string | undefined;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
+    await dbFetch(({ db }) =>
+      db.log.create({
+        data: {
+          userId: USER_ID, // test user id
+          severity: "INFO",
+          source: "NewNote",
+          message: "After NewNote function called",
+          requestId: requestId,
+          metadata: {
+            action: "Create Note",
+            user: session?.user,
+          },
+        },
+      }),
+    );
     if (status === "loading") {
       toast.error("Still loading session, please wait.");
       return;
@@ -64,16 +81,13 @@ export default function NewNote() {
 
   return (
     <>
-      <Toaster richColors position="top-right" />
       <div className="max-w-2xl mx-auto p-8">
         <h1 className="text-3xl font-bold mb-8">New Note</h1>
 
         {/* Debug / status bar */}
         <div className="mb-6 p-4 rounded-lg bg-blue-50 text-sm text-blue-900 flex flex-wrap gap-3 items-center">
           <span className="font-semibold">Auth status:</span>
-          <span className="px-2 py-1 rounded bg-white border">
-            {status}
-          </span>
+          <span className="px-2 py-1 rounded bg-white border">{status}</span>
           <span className="ml-4 font-semibold">User ID:</span>
           <code className="px-2 py-1 rounded bg-white border">
             {authorId ?? "none"}
