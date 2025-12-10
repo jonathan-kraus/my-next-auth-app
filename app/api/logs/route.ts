@@ -9,7 +9,9 @@ export async function GET(req: Request) {
 
   const logs = await db.log.findMany({
     where: {
-      ...(severity ? { severity: { equals: severity, mode: "insensitive" } } : {}),
+      ...(severity
+        ? { severity: { equals: severity, mode: "insensitive" } }
+        : {}),
       ...(userId ? { userId: { equals: userId, mode: "insensitive" } } : {}),
     },
     include: { user: true }, // ✅ pull in related User

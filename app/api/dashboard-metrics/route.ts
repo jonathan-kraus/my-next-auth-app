@@ -14,13 +14,11 @@ const TEST_USER_ID = "cmiz0p9ro000004ldrxgn3a1c"; // Use a known user ID for log
 
 export async function GET() {
   const requestId = createRequestId();
-  await log.info("Fetching dashboard metrics.", TEST_USER_ID, requestId,
-              {
-                action: "FetchMetrics",
-                requestId,
-              },
-            );
-              
+  await log.info("Fetching dashboard metrics.", TEST_USER_ID, requestId, {
+    action: "FetchMetrics",
+    requestId,
+  });
+
   try {
     const twentyFourHoursAgo = get24HoursAgo();
 

@@ -16,12 +16,10 @@ export default function LogsPage() {
   const requestId = createRequestId();
   const USER_ID = "cmiz0p9ro000004ldrxgn3a1c";
 
-   log.info("Fetching logs.", USER_ID, requestId,
-              {
-                action: "FetchLogs",
-                requestId,
-              },
-            );
+  // log.info("Fetching logs.", USER_ID, requestId, {
+  //   action: "FetchLogs",
+  //   requestId,
+  // });
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);
@@ -70,7 +68,9 @@ export default function LogsPage() {
 
   return (
     <main className="p-8 bg-gray-900 min-h-screen text-gray-100">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-400">Application Logs</h1>
+      <h1 className="text-3xl font-bold mb-6 text-indigo-400">
+        Application Logs
+      </h1>
 
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <select
@@ -95,7 +95,9 @@ export default function LogsPage() {
         <button
           onClick={() => setAutoRefresh((prev) => !prev)}
           className={`px-4 py-2 rounded font-semibold ${
-            autoRefresh ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
+            autoRefresh
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-700 hover:bg-gray-600"
           }`}
         >
           {autoRefresh ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
@@ -132,12 +134,18 @@ export default function LogsPage() {
                   {new Date(log.timestamp).toLocaleString()}
                 </td>
                 <td className="p-2 border border-gray-700">
-                  <span className={severityBadge(log.severity)}>{log.severity}</span>
+                  <span className={severityBadge(log.severity)}>
+                    {log.severity}
+                  </span>
                 </td>
                 <td className="p-2 border border-gray-700">{log.source}</td>
                 <td className="p-2 border border-gray-700">{log.message}</td>
-                <td className="p-2 border border-gray-700">{log.user?.name ?? "-"}</td>
-                <td className="p-2 border border-gray-700">{log.requestId ?? "-"}</td>
+                <td className="p-2 border border-gray-700">
+                  {log.user?.name ?? "-"}
+                </td>
+                <td className="p-2 border border-gray-700">
+                  {log.requestId ?? "-"}
+                </td>
               </tr>
             ))}
           </tbody>
