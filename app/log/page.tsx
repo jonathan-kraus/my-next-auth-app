@@ -1,31 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { createLogger } from "@/utils/logger";
 import { createRequestId } from "@/lib/uuidj";
-const requestId = createRequestId();
-const log = createLogger("app/log/page", requestId);
-try {
-  log.info("log page rendering started", { action: "page_load" });
-} catch (error) {
-  console.error("Error during log page rendering:", error);
-}
-
-// await dbFetch(({ db }) =>
-//   db.log.create({
-//     data: {
-//       userId: "cmiz0p9ro000004ldrxgn3a1c",
-//       severity: "info",
-//       source: "log",
-//       message: "Invoking viewer",
-//       requestId: requestId,
-//       metadata: {
-//         action: "view",
-//         timestamp: new Date().toISOString(),
-//       },
-//     },
-//   }),
-// );
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -35,10 +11,10 @@ export default function LogsPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const seenIds = useRef<Set<string>>(new Set());
-useEffect(() => {
-  // fire-and-forget logging call
-  fetch("/api/log-view", { method: "POST" }).catch(() => {});
-}, []);
+  useEffect(() => {
+    // fire-and-forget logging call
+    fetch("/api/log-view", { method: "POST" }).catch(() => {});
+  }, []);
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);
