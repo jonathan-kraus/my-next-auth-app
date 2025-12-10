@@ -7,8 +7,9 @@ export default function LogsPage() {
   const [severity, setSeverity] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // ✅ Memoized fetch function
+  // Memoized fetch function
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);
@@ -16,7 +17,10 @@ export default function LogsPage() {
 
     fetch(`/api/logs?${params.toString()}`)
       .then((res) => res.json())
-      .then((data) => setLogs(data));
+      .then((data) => {
+        setLogs(data);
+        setLastUpdated(new Date()); // ✅ update timestamp
+      });
   }, [severity, userId]);
 
   // Initial + filter refresh
@@ -31,12 +35,27 @@ export default function LogsPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchLogs]);
 
+  // Helper for severity badge styling
+  const severityBadge = (sev: string) => {
+    const base = "px-2 py-1 rounded text-xs font-bold";
+    switch (sev.toUpperCase()) {
+      case "INFO":
+        return `${base} bg-green-700 text-green-100`;
+      case "WARN":
+        return `${base} bg-yellow-600 text-yellow-100`;
+      case "ERROR":
+        return `${base} bg-red-700 text-red-100`;
+      default:
+        return `${base} bg-gray-700 text-gray-100`;
+    }
+  };
+
   return (
     <main className="p-8 bg-gray-900 min-h-screen text-gray-100">
       <h1 className="text-3xl font-bold mb-6 text-indigo-400">Application Logs</h1>
 
       {/* Filters + Auto-refresh */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-4 mb-4">
         <select
           value={severity}
           onChange={(e) => setSeverity(e.target.value)}
@@ -66,6 +85,13 @@ export default function LogsPage() {
         </button>
       </div>
 
+      {/* Last updated indicator */}
+      {lastUpdated && (
+        <p className="text-sm text-gray-400 mb-6">
+          Last updated at {lastUpdated.toLocaleTimeString()}
+        </p>
+      )}
+
       {/* Logs Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-700 text-sm">
@@ -85,7 +111,9 @@ export default function LogsPage() {
                 <td className="p-2 border border-gray-700">
                   {new Date(log.timestamp).toLocaleString()}
                 </td>
-                <td className="p-2 border border-gray-700 text-yellow-300">{log.severity}</td>
+                <td className="p-2 border border-gray-700">
+                  <span className={severityBadge(log.severity)}>{log.severity}</span>
+                </td>
                 <td className="p-2 border border-gray-700">{log.source}</td>
                 <td className="p-2 border border-gray-700">{log.message}</td>
                 <td className="p-2 border border-gray-700">{log.userId ?? "-"}</td>
