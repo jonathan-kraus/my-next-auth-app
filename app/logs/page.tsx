@@ -27,7 +27,7 @@ const userEmail = user?.email ?? "not known";
 const log = createLogger("Initiating_Logs_Page");
 const requestId = createRequestId();
 
-await log.info("In logs page.", userEmail, requestId, {
+await log.info("In logs page.", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
   action: "create log",
   user: user});
   const severity = searchParams?.severity;
