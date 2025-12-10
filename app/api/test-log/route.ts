@@ -2,7 +2,8 @@
 import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp } from "@/stack/server";
-
+import { createRequestId } from "@/lib/uuidj";
+const requestId = createRequestId();
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
   const USER_ID = "70044dfe-d497-41d9-99ae-3d9e39761e6d"; // Melissa's id
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
         severity: "info",
         source: "test-log",
         message: "Invoked /api/test-log",
-        requestId: null,
+        requestId: requestId,
         metadata: {
           userAgent: request.headers.get("User-Agent") || "Unknown",
 
