@@ -1,5 +1,7 @@
 "use client";
 
+import { createLogger } from "@/lib/logger";
+import { createRequestId } from "@/lib/uuidj";
 import { useEffect, useState, useCallback } from "react";
 
 export default function LogsPage() {
@@ -8,7 +10,16 @@ export default function LogsPage() {
   const [userId, setUserId] = useState<string>("");
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const log = createLogger("LogsPage");
+  const requestId = createRequestId();
+  const USER_ID = "cmiz0p9ro000004ldrxgn3a1c";
 
+   log.info("Fetching logs.", USER_ID, requestId,
+              {
+                action: "FetchLogs",
+                requestId,
+              },
+            );
   // Memoized fetch function
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
