@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
-  const [severity, setSeverity] = useState<string>(""); // filter by severity
-  const [userId, setUserId] = useState<string>(""); // filter by userId
+  const [severity, setSeverity] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+  const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
 
-  useEffect(() => {
+  // ✅ Memoized fetch function
+  const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);
     if (userId) params.append("userId", userId);
@@ -17,16 +19,28 @@ export default function LogsPage() {
       .then((data) => setLogs(data));
   }, [severity, userId]);
 
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Application Logs</h1>
+  // Initial + filter refresh
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
-      {/* Filters */}
-      <div className="flex space-x-4 mb-6">
+  // Auto-refresh every 10s when enabled
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(fetchLogs, 10000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, fetchLogs]);
+
+  return (
+    <main className="p-8 bg-gray-900 min-h-screen text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 text-indigo-400">Application Logs</h1>
+
+      {/* Filters + Auto-refresh */}
+      <div className="flex flex-wrap items-center gap-4 mb-6">
         <select
           value={severity}
           onChange={(e) => setSeverity(e.target.value)}
-          className="border rounded p-2"
+          className="bg-gray-800 text-white border border-gray-600 rounded p-2"
         >
           <option value="">All Severities</option>
           <option value="INFO">INFO</option>
@@ -39,41 +53,48 @@ export default function LogsPage() {
           placeholder="Filter by User ID"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
-          className="border rounded p-2"
+          className="bg-gray-800 text-white border border-gray-600 rounded p-2"
         />
+
+        <button
+          onClick={() => setAutoRefresh((prev) => !prev)}
+          className={`px-4 py-2 rounded font-semibold ${
+            autoRefresh ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
+          }`}
+        >
+          {autoRefresh ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
+        </button>
       </div>
 
       {/* Logs Table */}
-      <table className="w-full border-collapse border border-gray-700 text-sm">
-        <thead>
-          <tr className="bg-gray-800 text-white">
-            <th className="p-2 border border-gray-700">Timestamp</th>
-            <th className="p-2 border border-gray-700">Severity</th>
-            <th className="p-2 border border-gray-700">Source</th>
-            <th className="p-2 border border-gray-700">Message</th>
-            <th className="p-2 border border-gray-700">User</th>
-            <th className="p-2 border border-gray-700">Request ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => (
-            <tr key={log.id} className="hover:bg-gray-100">
-              <td className="p-2 border border-gray-700">
-                {new Date(log.timestamp).toLocaleString()}
-              </td>
-              <td className="p-2 border border-gray-700">{log.severity}</td>
-              <td className="p-2 border border-gray-700">{log.source}</td>
-              <td className="p-2 border border-gray-700">{log.message}</td>
-              <td className="p-2 border border-gray-700">
-                {log.userId ?? "-"}
-              </td>
-              <td className="p-2 border border-gray-700">
-                {log.requestId ?? "-"}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-700 text-sm">
+          <thead>
+            <tr className="bg-gray-800 text-indigo-300">
+              <th className="p-2 border border-gray-700">Timestamp</th>
+              <th className="p-2 border border-gray-700">Severity</th>
+              <th className="p-2 border border-gray-700">Source</th>
+              <th className="p-2 border border-gray-700">Message</th>
+              <th className="p-2 border border-gray-700">User</th>
+              <th className="p-2 border border-gray-700">Request ID</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {logs.map((log) => (
+              <tr key={log.id} className="hover:bg-gray-800">
+                <td className="p-2 border border-gray-700">
+                  {new Date(log.timestamp).toLocaleString()}
+                </td>
+                <td className="p-2 border border-gray-700 text-yellow-300">{log.severity}</td>
+                <td className="p-2 border border-gray-700">{log.source}</td>
+                <td className="p-2 border border-gray-700">{log.message}</td>
+                <td className="p-2 border border-gray-700">{log.userId ?? "-"}</td>
+                <td className="p-2 border border-gray-700">{log.requestId ?? "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }
