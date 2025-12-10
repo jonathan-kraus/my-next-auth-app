@@ -116,7 +116,7 @@ export default function LogsPage() {
                 </td>
                 <td className="p-2 border border-gray-700">{log.source}</td>
                 <td className="p-2 border border-gray-700">{log.message}</td>
-                <td className="p-2 border border-gray-700">{log.userId ?? "-"}</td>
+                <td className="p-2 border border-gray-700">{log.user?.name ?? "-"}</td>
                 <td className="p-2 border border-gray-700">{log.requestId ?? "-"}</td>
               </tr>
             ))}

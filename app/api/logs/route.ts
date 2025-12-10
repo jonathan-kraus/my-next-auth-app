@@ -12,6 +12,7 @@ export async function GET(req: Request) {
       ...(severity ? { severity: { equals: severity, mode: "insensitive" } } : {}),
       ...(userId ? { userId: { equals: userId, mode: "insensitive" } } : {}),
     },
+    include: { user: true }, // ✅ pull in related User
     orderBy: { timestamp: "desc" },
     take: 150,
   });
