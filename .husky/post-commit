@@ -1,0 +1,3 @@
+# Create a Git tag for the new version
+VERSION=$(node -p "require('./version.json').version")
+git tag -a "v$VERSION" -m "Release v$VERSION"

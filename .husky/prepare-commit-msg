@@ -1,4 +1,8 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# Prefix commit message with version
+VERSION=$(node -p "require('./version.json').version")
+COMMIT_MSG_FILE=$1
 
-node scripts/prefixCommit.js "$1"
+MSG=$(cat "$COMMIT_MSG_FILE")
+if ! echo "$MSG" | grep -q "v$VERSION:"; then
+  echo "v$VERSION: $MSG" > "$COMMIT_MSG_FILE"
+fi
