@@ -27,11 +27,12 @@ const requestId = createRequestId();
       data: {
         userId: "cmiz0p9ro000004ldrxgn3a1c",
         severity: "info",
-        source: "log",
-        message: "Invoking viewer",
+        source: "app/notes/PublishToggle.tsx",
+        message: "Unpublish record",
         requestId: requestId,
         metadata: {
-          action: "view",
+          action: "unpublish",
+          id: id,
           timestamp: new Date().toISOString(),
         },
       },
