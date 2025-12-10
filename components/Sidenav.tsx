@@ -23,6 +23,7 @@ export const Sidenav = () => {
     { name: "Test-log", href: "/api/test-log", icon: BugAntIcon },
     { name: "Test user", href: "/test", icon: UserIcon },
     { name: "Log Explorer", href: "/logs", icon: MagnifyingGlassIcon },
+    { name: "Log", href: "/log", icon: MagnifyingGlassIcon },
   ];
 
   const displayName = session?.user?.name ?? "Unknown User";
