@@ -1,8 +1,7 @@
 "use client";
-
 import { createLogger } from "@/lib/logger";
 import { createRequestId } from "@/lib/uuidj";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -10,6 +9,9 @@ export default function LogsPage() {
   const [userId, setUserId] = useState<string>("");
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Keep track of seen log IDs
+  const seenIds = useRef<Set<string>>(new Set());
   const log = createLogger("LogsPage");
   const requestId = createRequestId();
   const USER_ID = "cmiz0p9ro000004ldrxgn3a1c";
@@ -20,7 +22,6 @@ export default function LogsPage() {
                 requestId,
               },
             );
-  // Memoized fetch function
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);
@@ -29,24 +30,30 @@ export default function LogsPage() {
     fetch(`/api/logs?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        setLogs(data);
-        setLastUpdated(new Date()); // ✅ update timestamp
+        // Mark new logs
+        const updated = data.map((log: any) => ({
+          ...log,
+          isNew: !seenIds.current.has(log.id),
+        }));
+
+        // Update seen IDs
+        updated.forEach((log: any) => seenIds.current.add(log.id));
+
+        setLogs(updated);
+        setLastUpdated(new Date());
       });
   }, [severity, userId]);
 
-  // Initial + filter refresh
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
 
-  // Auto-refresh every 10s when enabled
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(fetchLogs, 10000);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchLogs]);
 
-  // Helper for severity badge styling
   const severityBadge = (sev: string) => {
     const base = "px-2 py-1 rounded text-xs font-bold";
     switch (sev.toUpperCase()) {
@@ -65,7 +72,6 @@ export default function LogsPage() {
     <main className="p-8 bg-gray-900 min-h-screen text-gray-100">
       <h1 className="text-3xl font-bold mb-6 text-indigo-400">Application Logs</h1>
 
-      {/* Filters + Auto-refresh */}
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <select
           value={severity}
@@ -96,14 +102,12 @@ export default function LogsPage() {
         </button>
       </div>
 
-      {/* Last updated indicator */}
       {lastUpdated && (
         <p className="text-sm text-gray-400 mb-6">
           Last updated at {lastUpdated.toLocaleTimeString()}
         </p>
       )}
 
-      {/* Logs Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-700 text-sm">
           <thead>
@@ -118,7 +122,12 @@ export default function LogsPage() {
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="hover:bg-gray-800">
+              <tr
+                key={log.id}
+                className={`hover:bg-gray-800 ${
+                  log.isNew ? "bg-blue-900 animate-pulse" : ""
+                }`}
+              >
                 <td className="p-2 border border-gray-700">
                   {new Date(log.timestamp).toLocaleString()}
                 </td>
