@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   // Verify GitHub signature
   const isValid = await verifySignature(req, body);
   if (!isValid) {
-    await log.warn('Webhook signature verification failed', "userid", requestId);
+    await log.warn('Webhook signature verification failed', "cmiz0p9ro000004ldrxgn3a1c", requestId);
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const je = req.headers.get('x-github-event');
   const sha = getSha(payload);
   const commitMessage = getCommitMessage(payload);
-  log.info('Verifying webhook signature', "userid", requestId, {
+  log.info('Verifying webhook signature', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
     sha,
     commitMessage,
   });
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     case 'check_run':
       {
         const run = payload.check_run;
-        await log.info('✅ check.run 🏃', "userid", requestId, {
+        await log.info('✅ check.run 🏃', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           id: run.id,
           name: run.name,
           status: run.status,
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     case 'check_suite':
       {
         const suite = payload.check_suite;
-        await log.info(`✅ ${je} ✅`, "userid", requestId, {
+        await log.info(`✅ ${je} ✅`, "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           id: suite.id,
           status: suite.status,
           conclusion: suite.conclusion,
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     case 'deployment':
       {
         const deployment = payload.deployment;
-        await log.info('deployment.created', "userid", requestId, {
+        await log.info('deployment.created', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           environment: deployment.environment,
           sha: deployment.sha?.substring(0, 7),
           ref: deployment.ref,
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       {
         const deploymentStatus = payload.deployment_status;
         const deployment = payload.deployment;
-        await log.info('deployment.status', "userid", requestId, {
+        await log.info('deployment.status', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           state: deploymentStatus.state,
           environment: deployment.environment,
           sha: deployment.sha?.substring(0, 7),
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       {
         const comment = payload.comment;
         const issue = payload.issue;
-        await log.info('issue.comment', "userid", requestId, {
+        await log.info('issue.comment', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           event: je,
           commenter: comment.user?.login,
           comment_body: comment.body,
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     case 'issues':
       {
         const issue = payload.issue;
-        await log.info('issues', "userid", requestId, {
+        await log.info('issues', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           event: je,
           action: payload.action,
           issue_ID: issue.id,
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
           const severity = title.includes('major') ? 'warning' : 'info';
 
           if (payload.action === 'opened') {
-            await log.info('dependency.update.opened', "userid", requestId, {
+            await log.info('dependency.update.opened', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
               source: 'renovate',
               packageGroup,
               branch,
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
               requestId,
             });
           } else if (payload.action === 'closed' && pr.merged) {
-            await log.info('dependency.update.merged', "userid", requestId, {
+            await log.info('dependency.update.merged', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
               source: 'renovate',
               packageGroup,
               branch,
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
               requestId,
             });
           } else if (payload.action === 'synchronize') {
-            await log.info('dependency.update.synchronized', "userid", requestId, {
+            await log.info('dependency.update.synchronized', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
               source: 'renovate',
               packageGroup,
               branch,
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
       {
         const review = payload.review;
         const pr = payload.pull_request;
-        await log.info('pull_request.review', "userid", requestId, {
+        await log.info('pull_request.review', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           event: je,
           action: payload.action,
           keys: Object.keys(payload),
@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
       {
         const comment = payload.comment;
         const pr = payload.pull_request;
-        await log.info('pull_request.review_comment', "userid", requestId, {
+        await log.info('pull_request.review_comment', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           event: je,
           action: payload.action,
           keys: Object.keys(payload),
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
       {
         const commits = payload.commits || [];
         for (const commit of commits) {
-          await log.info('commit.pushed', "userid", requestId, {
+          await log.info('commit.pushed', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
             sha: commit.id.substring(0, 7),
             message: commit.message,
             author: commit.author?.name,
@@ -250,7 +250,7 @@ export async function POST(req: NextRequest) {
     case 'repository':
       {
         const repository = payload.repository;
-        await log.info('repository.event', "userid", requestId, {
+        await log.info('repository.event', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           id: repository.id,
           name: repository.name,
           fullName: repository.full_name,
@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
       }
       break;
     case 'status':
-      await log.info('commit.status', "userid", requestId, {
+      await log.info('commit.status', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
         state: payload.state,
         context: payload.context,
         description: payload.description,
@@ -274,7 +274,7 @@ export async function POST(req: NextRequest) {
     case 'workflow_job':
       {
         const job = payload.workflow_job;
-        await log.info('workflow.job', "userid", requestId, {
+        await log.info('workflow.job', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           jobName: job.name,
           action: payload.action,
           status: job.status,
@@ -292,7 +292,7 @@ export async function POST(req: NextRequest) {
     case 'workflow_run':
       {
         const workflow = payload.workflow_run;
-        await log.info('workflow.run', "userid", requestId, {
+        await log.info('workflow.run', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
           workflowName: workflow.name,
           status: workflow.status,
           conclusion: workflow.conclusion,
@@ -306,7 +306,7 @@ export async function POST(req: NextRequest) {
       }
       break;
     default:
-      await log.info('webhook.unhandled', "userid", requestId, {
+      await log.info('webhook.unhandled', "cmiz0p9ro000004ldrxgn3a1c", requestId, {
         event: je,
         action: payload.action,
         keys: Object.keys(payload),
