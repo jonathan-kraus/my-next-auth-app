@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { createLogger } from '@/utils/logger';
+import { createLogger } from "@/utils/logger";
 import { createRequestId } from "@/lib/uuidj";
 const requestId = createRequestId();
-const log = createLogger('app/log/page', requestId);
-log.info('log page rendering started', { action: 'page_load' });
-  
+const log = createLogger("app/log/page", requestId);
+try {
+  log.info("log page rendering started", { action: "page_load" });
+} catch (error) {
+  console.error("Error during log page rendering:", error);
+}
+
 // await dbFetch(({ db }) =>
 //   db.log.create({
 //     data: {
