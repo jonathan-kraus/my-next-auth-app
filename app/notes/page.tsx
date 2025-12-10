@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import Link from "next/link";
+import { UnpublishButton } from "./PublishToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -110,6 +111,7 @@ export default async function NotesPage() {
                 <div className="flex justify-between items-center text-sm text-gray-500">
                   <span>By {note.author.name || note.author.email}</span>
                   <span>{note.createdAt.toLocaleDateString()}</span>
+                  <UnpublishButton id={note.id} />
                   <Link
                     href={`/notes/${note.id}`}
                     className="text-blue-600 hover:underline font-medium"
