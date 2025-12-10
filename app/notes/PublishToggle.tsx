@@ -24,7 +24,7 @@ export function UnpublishButton({ id }: { id: number }) {
       },
       requestId,
     });
-  }, []);
+  }, [requestId]);
   async function handleUnpublish() {
     startTransition(async () => {
       await fetch(`/api/notes/${id}/publish`, {
