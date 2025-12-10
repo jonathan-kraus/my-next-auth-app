@@ -12,7 +12,6 @@ export function UnpublishButton({ id }: { id: number }) {
 
   const requestId = createRequestId();
 
-
   useEffect(() => {
     appLog({
       source: "app/notes/PublishToggle.tsx",
@@ -35,8 +34,6 @@ export function UnpublishButton({ id }: { id: number }) {
       router.refresh();
     });
   }
-
- 
 
   return (
     <button
