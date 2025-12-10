@@ -3,7 +3,8 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { dbFetch } from "@/lib/dbFetch";
+import { useEffect } from "react";
+import { appLog } from "@/utils/app-log";
 import { createRequestId } from "@/lib/uuidj";
 export function UnpublishButton({ id }: { id: number }) {
   const [pending, startTransition] = useTransition();
@@ -11,6 +12,19 @@ export function UnpublishButton({ id }: { id: number }) {
 
   const requestId = createRequestId();
 
+
+  useEffect(() => {
+    appLog({
+      source: "app/notes/PublishToggle.tsx",
+      message: "--Unpublish--",
+      metadata: {
+        action: "view",
+        requestId,
+        timestamp: new Date().toISOString(),
+      },
+      requestId,
+    });
+  }, []);
   async function handleUnpublish() {
     startTransition(async () => {
       await fetch(`/api/notes/${id}/publish`, {
@@ -21,24 +35,8 @@ export function UnpublishButton({ id }: { id: number }) {
       router.refresh();
     });
   }
-  // (async () => {
-  //   await dbFetch(({ db }) =>
-  //     db.log.create({
-  //       data: {
-  //         userId: "cmiz0p9ro000004ldrxgn3a1c",
-  //         severity: "info",
-  //         source: "app/notes/PublishToggle.tsx",
-  //         message: "Unpublish record",
-  //         requestId: requestId,
-  //         metadata: {
-  //           action: "unpublish",
-  //           is: id,
-  //           timestamp: new Date().toISOString(),
-  //         },
-  //       },
-  //     }),
-  //   );
-  // })();
+
+ 
 
   return (
     <button
@@ -50,4 +48,4 @@ export function UnpublishButton({ id }: { id: number }) {
       {pending ? "Unpublishing..." : "Unpublish"}
     </button>
   );
-}
+}}

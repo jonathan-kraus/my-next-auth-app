@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { createRequestId } from "@/lib/uuidj";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
