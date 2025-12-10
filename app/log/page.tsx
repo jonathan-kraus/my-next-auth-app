@@ -9,7 +9,6 @@ export default function LogsPage() {
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // Keep track of seen log IDs
   const seenIds = useRef<Set<string>>(new Set());
 
   const fetchLogs = useCallback(() => {
@@ -20,17 +19,22 @@ export default function LogsPage() {
     fetch(`/api/logs?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        // Mark new logs
         const updated = data.map((log: any) => ({
           ...log,
           isNew: !seenIds.current.has(log.id),
         }));
 
-        // Update seen IDs
         updated.forEach((log: any) => seenIds.current.add(log.id));
 
         setLogs(updated);
         setLastUpdated(new Date());
+
+        // Clear "isNew" after 4s
+        setTimeout(() => {
+          setLogs((prev) =>
+            prev.map((log) => ({ ...log, isNew: false }))
+          );
+        }, 4000);
       });
   }, [severity, userId]);
 
@@ -114,8 +118,8 @@ export default function LogsPage() {
             {logs.map((log) => (
               <tr
                 key={log.id}
-                className={`hover:bg-gray-800 ${
-                  log.isNew ? "bg-blue-900 animate-pulse" : ""
+                className={`hover:bg-gray-800 transition-colors duration-1000 ${
+                  log.isNew ? "bg-blue-900" : ""
                 }`}
               >
                 <td className="p-2 border border-gray-700">
