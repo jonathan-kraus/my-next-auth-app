@@ -3,10 +3,13 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-
+import { dbFetch } from "@/lib/dbFetch";
+import { createRequestId } from "@/lib/uuidj";
 export function UnpublishButton({ id }: { id: number }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+
+const requestId = createRequestId();
 
   async function handleUnpublish() {
     startTransition(async () => {
@@ -18,6 +21,23 @@ export function UnpublishButton({ id }: { id: number }) {
       router.refresh();
     });
   }
+(async () => {
+  await dbFetch(({ db }) =>
+    db.log.create({
+      data: {
+        userId: "cmiz0p9ro000004ldrxgn3a1c",
+        severity: "info",
+        source: "log",
+        message: "Invoking viewer",
+        requestId: requestId,
+        metadata: {
+          action: "view",
+          timestamp: new Date().toISOString(),
+        },
+      },
+    }),
+  );
+})();
 
   return (
     <button
