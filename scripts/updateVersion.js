@@ -26,4 +26,6 @@ versionData.version = `${major}.${minor}.${patch}`;
 versionData.date = new Date().toLocaleDateString("en-US");
 
 fs.writeFileSync(versionFile, JSON.stringify(versionData, null, 2));
-console.log(`Updated to version ${versionData.version} released ${versionData.date}`);
+console.log(
+  `Updated to version ${versionData.version} released ${versionData.date}`,
+);

@@ -41,9 +41,7 @@ export const Sidenav = () => {
         <span className="inline-block bg-indigo-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
           v{versionInfo.version}
         </span>
-        <span className="text-gray-500">
-          released {versionInfo.date}
-        </span>
+        <span className="text-gray-500">released {versionInfo.date}</span>
       </div>
 
       {/* Current user */}
