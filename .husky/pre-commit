@@ -1,2 +1,3 @@
 # Bump version + update date
 node scripts/updateVersion.js patch
+git add version.json
