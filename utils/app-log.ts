@@ -1,13 +1,13 @@
 // utils/app-log.ts
-import "server-only"; // ensures this file is only bundled on server
-
+import "server-only";
 import { dbFetch } from "@/lib/dbFetch";
 import { createRequestId } from "@/lib/uuidj";
+import type { Prisma } from "@prisma/client"; // important
 
 type LogInput = {
   source: string;
   message: string;
-  metadata?: unknown;
+  metadata?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
   userId?: string;
   severity?: "info" | "warn" | "error";
   requestId?: string;
@@ -31,7 +31,7 @@ async function logOnServer(input: LogInput) {
         source,
         message,
         requestId,
-        metadata,
+        metadata, // now correctly typed
       },
     }),
   );
@@ -39,14 +39,11 @@ async function logOnServer(input: LogInput) {
   return { requestId };
 }
 
-// This is the one helper you import everywhere
 export async function appLog(input: LogInput) {
-  // If there is no window, we're on the server
   if (typeof window === "undefined") {
     return logOnServer(input);
   }
 
-  // Client: call server via fetch
   try {
     const res = await fetch("/api/log", {
       method: "POST",
