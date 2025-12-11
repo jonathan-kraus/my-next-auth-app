@@ -1,4 +1,4 @@
-// app/components/WeatherCard.tsx
+// components/WeatherCard.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -31,21 +31,88 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
     return emoji[condition] || "🌡️";
   };
 
+  const isWindy = data.current.windSpeed > 10;
+  const isVeryWindy = data.current.windSpeed > 20;
+
+  // Wind animation variants
+  const windAnimation = {
+    animate: isWindy
+      ? {
+          x: [0, -3, 3, -3, 0],
+          rotate: [0, -1, 1, -1, 0],
+        }
+      : {},
+    transition: {
+      duration: isVeryWindy ? 0.5 : 1,
+      repeat: Infinity,
+      ease: "easeInOut",
+    },
+  };
+
+  // Floating leaves/particles animation for windy conditions
+  const WindIndicator = () => {
+    if (!isWindy) return null;
+
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
+        {[...Array(isVeryWindy ? 8 : 4)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute text-2xl"
+            initial={{
+              x: -20,
+              y: Math.random() * 100,
+              opacity: 0.6,
+            }}
+            animate={{
+              x: ["0%", "110%"],
+              y: [
+                `${Math.random() * 100}%`,
+                `${Math.random() * 100}%`,
+              ],
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: isVeryWindy ? 2 : 4,
+              repeat: Infinity,
+              delay: i * (isVeryWindy ? 0.3 : 0.6),
+              ease: "linear",
+            }}
+          >
+            🍃
+          </motion.div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="bg-linear-to-br from-blue-400 to-cyan-500 rounded-3xl p-8 text-white shadow-xl"
+      className="relative bg-gradient-to-br from-blue-400 to-cyan-500 rounded-3xl p-8 text-white shadow-xl overflow-hidden"
     >
+      {/* Wind particles */}
+      <WindIndicator />
+
       {/* Location */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-sm opacity-90 mb-4"
+        className="text-sm opacity-90 mb-4 relative z-10"
       >
         {data.location.displayName}
+        {isWindy && (
+          <motion.span
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+            className="ml-2"
+          >
+            💨
+          </motion.span>
+        )}
       </motion.div>
 
       {/* Main Temperature */}
@@ -53,7 +120,8 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring" }}
-        className="flex items-center justify-between mb-6"
+        className="flex items-center justify-between mb-6 relative z-10"
+        {...(isWindy ? windAnimation : {})}
       >
         <div>
           <div className="text-6xl font-bold">{data.current.temperature}°F</div>
@@ -61,9 +129,24 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
             Feels like {data.current.feelsLike}°F
           </div>
         </div>
-        <div className="text-8xl">
+        <motion.div
+          className="text-8xl"
+          animate={
+            isWindy
+              ? {
+                  rotate: [-5, 5, -5],
+                  scale: [1, 1.05, 1],
+                }
+              : {}
+          }
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
           {getWeatherEmoji(data.current.condition)}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Condition */}
@@ -71,9 +154,14 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="text-2xl font-semibold mb-8"
+        className="text-2xl font-semibold mb-8 relative z-10"
       >
         {data.current.condition}
+        {isVeryWindy && (
+          <span className="ml-2 text-base bg-yellow-500/30 px-3 py-1 rounded-full">
+            ⚠️ Very Windy
+          </span>
+        )}
       </motion.div>
 
       {/* Details Grid */}
@@ -81,24 +169,54 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-2 gap-4 relative z-10"
       >
         <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
           <div className="text-sm opacity-75">Humidity</div>
           <div className="text-2xl font-semibold">{data.current.humidity}%</div>
         </div>
-        <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-          <div className="text-sm opacity-75">Wind Speed</div>
+        <motion.div
+          className="bg-white/20 rounded-lg p-4 backdrop-blur-sm"
+          animate={
+            isWindy
+              ? {
+                  backgroundColor: [
+                    "rgba(255,255,255,0.2)",
+                    "rgba(255,255,255,0.3)",
+                    "rgba(255,255,255,0.2)",
+                  ],
+                }
+              : {}
+          }
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="text-sm opacity-75 flex items-center gap-1">
+            Wind Speed {isWindy && "💨"}
+          </div>
           <div className="text-2xl font-semibold">
             {data.current.windSpeed} mph
           </div>
-        </div>
-        <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
+        </motion.div>
+        <motion.div
+          className="bg-white/20 rounded-lg p-4 backdrop-blur-sm"
+          animate={
+            isVeryWindy
+              ? {
+                  backgroundColor: [
+                    "rgba(255,255,255,0.2)",
+                    "rgba(255,200,0,0.3)",
+                    "rgba(255,255,255,0.2)",
+                  ],
+                }
+              : {}
+          }
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
           <div className="text-sm opacity-75">Wind Gust</div>
           <div className="text-2xl font-semibold">
             {data.current.windGust} mph
           </div>
-        </div>
+        </motion.div>
         <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
           <div className="text-sm opacity-75">UV Index</div>
           <div className="text-2xl font-semibold">{data.current.uvIndex}</div>
@@ -110,7 +228,7 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-4 text-xs opacity-75 text-center"
+          className="mt-4 text-xs opacity-75 text-center relative z-10"
         >
           ⚠️ Using cached data (refreshed 15 min ago)
         </motion.div>
