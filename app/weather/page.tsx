@@ -1,7 +1,7 @@
 // app/weather/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { LocationSelector } from "@/components/LocationSelector";
@@ -17,54 +17,58 @@ export default function WeatherPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  const fetchWeather = async (location: LocationKey, forceRefresh = false) => {
-    setLoading(true);
-    setError(null);
-    const startTime = performance.now();
+  const fetchWeather = useCallback(
+    async (location: LocationKey, forceRefresh = false) => {
+      setLoading(true);
+      setError(null);
+      const startTime = performance.now();
 
-    try {
-      logger.info("Fetching weather", {
-        location,
-        forceRefresh,
-      });
-
-      const response = await fetch(
-        `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch weather data");
-      }
-
-      const data: ApiResponse<WeatherData> = await response.json();
-
-      if (data.success && data.data) {
-        setWeatherData(data.data);
-        setLastUpdate(new Date());
-
-        logger.info("Weather data loaded successfully", {
+      try {
+        logger.info("Fetching weather", {
           location,
-          temperature: data.data.current.temperature,
-          condition: data.data.current.condition,
-          cached: data.cached,
+          forceRefresh,
+        });
+
+        const response = await fetch(
+          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch weather data");
+        }
+
+        const data: ApiResponse<WeatherData> = await response.json();
+
+        if (data.success && data.data) {
+          setWeatherData(data.data);
+          setLastUpdate(new Date());
+
+          logger.info("Weather data loaded successfully", {
+            location,
+            temperature: data.data.current.temperature,
+            condition: data.data.current.condition,
+            cached: data.cached,
+            duration: Math.round(performance.now() - startTime),
+          });
+        } else {
+          throw new Error(data.error || "Unknown error");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMessage);
+
+        logger.error("Weather fetch failed", {
+          location,
+          error: errorMessage,
           duration: Math.round(performance.now() - startTime),
         });
-      } else {
-        throw new Error(data.error || "Unknown error");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setError(errorMessage);
-
-      logger.error("Weather fetch failed", {
-        location,
-        error: errorMessage,
-        duration: Math.round(performance.now() - startTime),
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [logger],
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -73,7 +77,7 @@ export default function WeatherPage() {
     });
 
     fetchWeather(selectedLocation);
-  }, [selectedLocation, logger]);
+  }, [selectedLocation, logger, fetchWeather]);
 
   const handleRefresh = () => {
     logger.info("Manual refresh triggered", {

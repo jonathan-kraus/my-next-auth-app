@@ -1,5 +1,6 @@
 // lib/weather/service.ts
 import db from "../db";
+import { Prisma } from "@/src/generated/client"; 
 import { LocationKey, LOCATIONS, WeatherData } from "./types";
 import { logger } from "@/lib/axiom/server";
 
@@ -16,9 +17,11 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     timezone: location.timezone,
     fields:
       "temperature,temperatureFeel,weatherCode,humidity,windSpeed,windGust,pressureSeaLevel,uvIndex,sunriseTime,sunsetTime,moonriseTime,moonsetTime,moonPhase",
-    timesteps: ["current", "1h", "1d"],
+    timesteps: ["current", "1h", "1d"].join(","),
   });
-
+// Helper to safely cast JSON from Prisma to WeatherData
+function jsonToWeatherData(json: Prisma.JsonValue): WeatherData {
+  return json as unknown as WeatherData;
   const response = await fetch(`${TOMORROW_API_URL}?${queryParams}`);
 
   if (!response.ok) {
@@ -146,13 +149,15 @@ export async function getWeather(
       });
 
       if (cached) {
-        const age = Date.now() - new Date(cached.updatedAt).getTime();
+  const age = Date.now() - new Date(cached.updatedAt).getTime();
 
-        if (age < CACHE_DURATION) {
-          const weatherData = {
-            ...(cached.data as WeatherData),
-            isCached: true,
-          };
+  if (age < CACHE_DURATION) {
+    const weatherData = {
+      ...jsonToWeatherData(cached.data),
+      isCached: true,
+    };
+    // ... rest
+``
 
           logger.info("Weather fetched from cache", {
             location: locationKey,
@@ -170,17 +175,17 @@ export async function getWeather(
     const weatherData = parseTomorrowIOData(rawData, locationKey);
 
     // Update cache
-    await db.weatherCache.upsert({
-      where: { location: locationKey },
-      create: {
-        location: locationKey,
-        data: weatherData,
-      },
-      update: {
-        data: weatherData,
-        updatedAt: new Date(),
-      },
-    });
+await db.weatherCache.upsert({
+  where: { location: locationKey },
+  create: {
+    location: locationKey,
+    data: weatherData as unknown as Prisma.InputJsonValue,
+  },
+  update: {
+    data: weatherData as unknown as Prisma.InputJsonValue,
+    updatedAt: new Date(),
+  },
+});
 
     logger.info("Weather fetched from Tomorrow.io", {
       location: locationKey,
@@ -203,7 +208,7 @@ export async function getWeather(
     });
 
     if (cached) {
-      const weatherData = { ...(cached.data as WeatherData), isCached: true };
+      const weatherData = { ...jsonToWeatherData(cached.data), isCached: true };
       logger.warn("Using stale cached weather data", {
         location: locationKey,
         age: Math.round(
