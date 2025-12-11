@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fetchDuration, setFetchDuration] = useState<number>(0);
-
+console.log("DashboardPage rendered -- logger.info:", logger);
   useEffect(() => {
     // Log page access
     logger.info("Dashboard page accessed", {
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         const result = await response.json();
         const duration = performance.now() - startTime;
         setFetchDuration(duration);
-
+console.log("Dashboard data fetched:", result);
         // Log successful fetch with metrics
         logger.info("Dashboard metrics fetched successfully", {
           duration: Math.round(duration),
