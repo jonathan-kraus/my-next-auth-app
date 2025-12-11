@@ -4,13 +4,12 @@ import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import { createLogger } from "@/lib/logger";
 import { createRequestId } from "@/lib/uuidj";
+
 // Utility function to get the timestamp for 24 hours ago
 const get24HoursAgo = () => new Date(Date.now() - 24 * 3600 * 1000);
 
-// Use your working logger for internal monitoring of the dashboard API itself
-
 const log = createLogger("Dashboard_Metrics_API");
-const TEST_USER_ID = "cmiz0p9ro000004ldrxgn3a1c"; // Use a known user ID for logging this process
+const TEST_USER_ID = "cmiz0p9ro000004ldrxgn3a1c";
 
 export async function GET() {
   const requestId = createRequestId();
@@ -46,11 +45,39 @@ export async function GET() {
       where: { timestamp: { gte: twentyFourHoursAgo } },
     });
 
+    // 4. Recent Commits (Last 10 from push events)
+    const recentCommits = await db.log.findMany({
+      where: {
+        message: { startsWith: "commit.pushed" },
+        timestamp: { gte: twentyFourHoursAgo },
+      },
+      orderBy: { timestamp: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        message: true,
+        metadata: true,
+        timestamp: true,
+      },
+    });
+
+    // Parse commit data from metadata
+    const commits = recentCommits.map((log) => {
+      const metadata = log.metadata as any;
+      return {
+        sha: metadata?.sha || "unknown",
+        message: metadata?.message || "No message",
+        author: metadata?.author || "Unknown",
+        branch: metadata?.branch || "unknown",
+        timestamp: log.timestamp,
+      };
+    });
+
     await log.info(
       "Metrics successfully calculated.",
       TEST_USER_ID,
       requestId,
-      { totalLogs, uniqueUserCount },
+      { totalLogs, uniqueUserCount, commitsCount: commits.length },
     );
 
     return NextResponse.json({
@@ -58,7 +85,8 @@ export async function GET() {
       data: {
         totalLogs,
         uniqueUserCount,
-        topErrorSources: topErrorSources,
+        topErrorSources,
+        recentCommits: commits,
       },
     });
   } catch (error) {
