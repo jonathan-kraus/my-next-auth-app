@@ -6,7 +6,8 @@ import { logger } from "@/lib/axiom/server";
 
 const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
-const TOMORROW_API_URL = "https://api.tomorrow.io/v4/weather/forecast";
+const TOMORROW_REALTIME_URL = "https://api.tomorrow.io/v4/weather/realtime";
+const TOMORROW_FORECAST_URL = "https://api.tomorrow.io/v4/weather/forecast";
 
 // Helper to safely cast JSON from Prisma to WeatherData
 function jsonToWeatherData(json: Prisma.JsonValue): WeatherData {
@@ -15,18 +16,16 @@ function jsonToWeatherData(json: Prisma.JsonValue): WeatherData {
 
 async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
   const location = LOCATIONS[locationKey];
+  const locationParam = `${location.latitude},${location.longitude}`;
 
-  // Tomorrow.io v4 API expects timesteps as separate parameters
-  const queryParams = new URLSearchParams({
-    location: `${location.latitude},${location.longitude}`,
+  // Fetch current/realtime data
+  const realtimeParams = new URLSearchParams({
+    location: locationParam,
     apikey: TOMORROW_API_KEY!,
     units: "imperial",
-    timezone: location.timezone,
-    timesteps: "current,1h,1d",
   });
 
-  // Add fields as separate parameters
-  const fields = [
+  const realtimeFields = [
     "temperature",
     "temperatureApparent",
     "weatherCode",
@@ -35,36 +34,80 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     "windGust",
     "pressureSurfaceLevel",
     "uvIndex",
+  ];
+
+  realtimeFields.forEach((field) => realtimeParams.append("fields", field));
+
+  // Fetch forecast data (hourly and daily)
+  const forecastParams = new URLSearchParams({
+    location: locationParam,
+    apikey: TOMORROW_API_KEY!,
+    units: "imperial",
+    timesteps: "1h,1d",
+  });
+
+  const forecastFields = [
+    "temperature",
+    "temperatureApparent",
+    "temperatureMax",
+    "temperatureMin",
+    "weatherCode",
+    "precipitationProbability",
+    "windSpeed",
     "sunriseTime",
     "sunsetTime",
     "moonPhase",
   ];
 
-  fields.forEach((field) => queryParams.append("fields", field));
+  forecastFields.forEach((field) => forecastParams.append("fields", field));
 
-  const url = `${TOMORROW_API_URL}?${queryParams}`;
+  const realtimeUrl = `${TOMORROW_REALTIME_URL}?${realtimeParams}`;
+  const forecastUrl = `${TOMORROW_FORECAST_URL}?${forecastParams}`;
 
   logger.debug("Fetching from Tomorrow.io", {
     location: locationKey,
-    url: url.replace(TOMORROW_API_KEY!, "***"),
+    realtimeUrl: realtimeUrl.replace(TOMORROW_API_KEY!, "***"),
+    forecastUrl: forecastUrl.replace(TOMORROW_API_KEY!, "***"),
   });
 
-  const response = await fetch(url);
+  // Fetch both endpoints in parallel
+  const [realtimeResponse, forecastResponse] = await Promise.all([
+    fetch(realtimeUrl),
+    fetch(forecastUrl),
+  ]);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    logger.error("Tomorrow.io API error", {
-      status: response.status,
-      statusText: response.statusText,
+  if (!realtimeResponse.ok) {
+    const errorText = await realtimeResponse.text();
+    logger.error("Tomorrow.io Realtime API error", {
+      status: realtimeResponse.status,
+      statusText: realtimeResponse.statusText,
       body: errorText,
       location: locationKey,
     });
     throw new Error(
-      `Tomorrow.io API error: ${response.status} ${response.statusText}`,
+      `Tomorrow.io API error: ${realtimeResponse.status} ${realtimeResponse.statusText}`,
     );
   }
 
-  return response.json();
+  if (!forecastResponse.ok) {
+    const errorText = await forecastResponse.text();
+    logger.error("Tomorrow.io Forecast API error", {
+      status: forecastResponse.status,
+      statusText: forecastResponse.statusText,
+      body: errorText,
+      location: locationKey,
+    });
+    throw new Error(
+      `Tomorrow.io API error: ${forecastResponse.status} ${forecastResponse.statusText}`,
+    );
+  }
+
+  const [realtimeData, forecastData] = await Promise.all([
+    realtimeResponse.json(),
+    forecastResponse.json(),
+  ]);
+
+  return { realtime: realtimeData, forecast: forecastData };
 }
 
 function parseTomorrowIOData(
@@ -72,27 +115,38 @@ function parseTomorrowIOData(
   locationKey: LocationKey,
 ): WeatherData {
   const location = LOCATIONS[locationKey];
-  const current = rawData.timelines.current[0].values;
-  const hourly = rawData.timelines["1h"].slice(0, 24);
-  const daily = rawData.timelines["1d"].slice(0, 7);
+  const current = rawData.realtime.data.values;
+  const hourly = rawData.forecast.timelines.hourly.slice(0, 24);
+  const daily = rawData.forecast.timelines.daily.slice(0, 7);
 
   const weatherCodeMap: Record<number, string> = {
-    0: "Clear",
-    1: "Cloudy",
-    2: "Mostly Cloudy",
-    3: "Partly Cloudy",
-    4: "Mostly Clear",
-    5: "Hazy",
-    6: "Foggy",
-    7: "Light Rain",
-    8: "Rain",
-    9: "Heavy Rain",
-    10: "Freezing Rain",
-    11: "Ice Pellets",
-    12: "Snow",
-    13: "Heavy Snow",
-    14: "Thunderstorm",
+    1000: "Clear",
+    1001: "Cloudy",
+    1100: "Mostly Clear",
+    1101: "Partly Cloudy",
+    1102: "Mostly Cloudy",
+    2000: "Fog",
+    2100: "Light Fog",
+    4000: "Drizzle",
+    4001: "Rain",
+    4200: "Light Rain",
+    4201: "Heavy Rain",
+    5000: "Snow",
+    5001: "Flurries",
+    5100: "Light Snow",
+    5101: "Heavy Snow",
+    6000: "Freezing Drizzle",
+    6001: "Freezing Rain",
+    6200: "Light Freezing Rain",
+    6201: "Heavy Freezing Rain",
+    7000: "Ice Pellets",
+    7101: "Heavy Ice Pellets",
+    7102: "Light Ice Pellets",
+    8000: "Thunderstorm",
   };
+
+  // Get sun/moon data from first daily forecast entry
+  const todayForecast = daily[0]?.values || {};
 
   return {
     location,
@@ -102,34 +156,30 @@ function parseTomorrowIOData(
       condition: weatherCodeMap[current.weatherCode] || "Unknown",
       humidity: current.humidity,
       windSpeed: Math.round(current.windSpeed),
-      windGust: Math.round(current.windGust),
+      windGust: Math.round(current.windGust || 0),
       pressure: current.pressureSurfaceLevel,
       uvIndex: current.uvIndex,
     },
     sun: {
-      rise: new Date(current.sunriseTime).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      set: new Date(current.sunsetTime).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      rise: todayForecast.sunriseTime
+        ? new Date(todayForecast.sunriseTime).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "N/A",
+      set: todayForecast.sunsetTime
+        ? new Date(todayForecast.sunsetTime).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "N/A",
     },
     moon: {
-      rise: current.moonriseTime
-        ? new Date(current.moonriseTime).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "N/A",
-      set: current.moonsetTime
-        ? new Date(current.moonsetTime).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "N/A",
-      phase: getMoonPhase(current.moonPhase),
+      rise: "N/A",
+      set: "N/A",
+      phase: todayForecast.moonPhase
+        ? getMoonPhase(todayForecast.moonPhase)
+        : "Unknown",
     },
     hourly: hourly.map((h: any) => ({
       time: new Date(h.time).toLocaleTimeString("en-US", {
@@ -169,8 +219,8 @@ function getMoonPhase(phase: number): string {
     "Last Quarter",
     "Waning Crescent",
   ];
-  const index = Math.round((phase / 100) * (phases.length - 1));
-  return phases[index];
+  const index = Math.round((phase / 4) * (phases.length - 1));
+  return phases[Math.min(index, phases.length - 1)];
 }
 
 export async function getWeather(
