@@ -11,7 +11,13 @@ interface WeatherCardProps {
 }
 
 // Move WindIndicator outside the component
-const WindIndicator = ({ isWindy, isVeryWindy }: { isWindy: boolean; isVeryWindy: boolean }) => {
+const WindIndicator = ({
+  isWindy,
+  isVeryWindy,
+}: {
+  isWindy: boolean;
+  isVeryWindy: boolean;
+}) => {
   // Move useMemo BEFORE the early return - hooks must be called unconditionally
   const particles = useMemo(() => {
     const count = isVeryWindy ? 8 : 4;
@@ -86,7 +92,7 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="relative bg-gradient-to-br from-blue-400 to-cyan-500 rounded-3xl p-8 text-white shadow-xl overflow-hidden"
+      className="relative bg-linear-to-br from-blue-400 to-cyan-500 rounded-3xl p-8 text-white shadow-xl overflow-hidden"
     >
       {/* Wind particles */}
       <WindIndicator isWindy={isWindy} isVeryWindy={isVeryWindy} />

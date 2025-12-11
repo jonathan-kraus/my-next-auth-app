@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { WeatherData, ApiResponse, LOCATIONS } from "@/lib/weather/types";
+import { WeatherData, ApiResponse } from "@/lib/weather/types";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -34,30 +34,62 @@ export default function Home() {
 
   if (!session) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-blue-400 via-blue-500 to-indigo-600 p-8">
+      <main className="min-h-screen bg-linear-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-8 relative overflow-hidden">
+        {/* Animated background circles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute -top-40 -right-40 w-96 h-96 bg-white/10 rounded-full blur-3xl"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-3xl"
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.5, 0.3, 0.5],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center text-white"
+          transition={{ duration: 0.8 }}
+          className="text-center text-white relative z-10"
         >
-          <h1 className="text-6xl font-bold mb-4">🌤️</h1>
-          <h2 className="text-4xl font-bold mb-6">App Monitor</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Sign in to access weather forecasts and monitoring tools
-          </p>
-          <Link
-            href="/api/auth/signin"
-            className="px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="text-8xl mb-6"
           >
-            Sign In
-          </Link>
+            🌤️
+          </motion.div>
+          <h2 className="text-6xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-white to-blue-100">
+            App Monitor
+          </h2>
+          <p className="text-2xl mb-8 text-blue-100 font-light">
+            Weather • Logs • Analytics
+          </p>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link
+              href="/api/auth/signin"
+              className="inline-block px-10 py-4 bg-white text-indigo-600 rounded-2xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-2xl shadow-black/20"
+            >
+              Sign In to Continue →
+            </Link>
+          </motion.div>
         </motion.div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
+    <main className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -65,10 +97,18 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-5xl font-bold text-gray-800 mb-2">
-            🌤️ Weather Dashboard
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200 }}
+            className="text-7xl mb-4"
+          >
+            🌤️
+          </motion.div>
+          <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 mb-3">
+            Weather Dashboard
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-xl text-gray-300">
             Real-time weather for all monitored locations
           </p>
         </motion.div>
@@ -78,69 +118,99 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
           >
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">Locations</div>
-              <div className="text-3xl font-bold text-blue-600">
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-linear-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-2xl p-6"
+            >
+              <div className="text-sm text-blue-100 mb-2 font-semibold">
+                📍 Locations
+              </div>
+              <div className="text-5xl font-bold text-white">
                 {weatherData.length}
               </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">Average Temp</div>
-              <div className="text-3xl font-bold text-orange-600">
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-linear-to-br from-orange-500 to-red-500 rounded-2xl shadow-2xl p-6"
+            >
+              <div className="text-sm text-orange-100 mb-2 font-semibold">
+                🌡️ Average Temp
+              </div>
+              <div className="text-5xl font-bold text-white">
                 {Math.round(
                   weatherData.reduce(
                     (sum, w) => sum + w.current.temperature,
                     0,
                   ) / weatherData.length,
                 )}
-                °F
+                <span className="text-3xl">°F</span>
               </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">Last Updated</div>
-              <div className="text-lg font-semibold text-gray-800">
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-linear-to-br from-purple-500 to-pink-500 rounded-2xl shadow-2xl p-6"
+            >
+              <div className="text-sm text-purple-100 mb-2 font-semibold">
+                🕐 Last Updated
+              </div>
+              <div className="text-2xl font-bold text-white">
                 {new Date().toLocaleTimeString()}
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
 
         {/* Loading State */}
         {loading && (
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1 }}
-            className="flex justify-center items-center h-64"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center h-64 space-y-4"
           >
-            <div className="text-6xl">⏳</div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+              className="text-7xl"
+            >
+              ⏳
+            </motion.div>
+            <p className="text-xl text-gray-400">Loading weather data...</p>
           </motion.div>
         )}
 
         {/* Weather Cards Grid */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {!loading && weatherData.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {weatherData.map((weather, index) => (
               <motion.div
                 key={weather.location.name}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.03, y: -10 }}
               >
                 <Link href="/weather">
-                  <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer">
-                    <div className="flex justify-between items-start mb-4">
+                  <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl p-8 hover:shadow-purple-500/20 transition-all cursor-pointer border border-purple-500/20 backdrop-blur-sm">
+                    <div className="flex justify-between items-start mb-6">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-800">
+                        <h3 className="text-2xl font-bold text-white mb-1">
                           {weather.location.name}
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-400 flex items-center gap-2">
                           {weather.location.flag}
                         </p>
                       </div>
-                      <div className="text-4xl">
+                      <motion.div
+                        className="text-6xl"
+                        animate={{
+                          rotate:
+                            weather.current.windSpeed > 10 ? [0, -5, 5, 0] : 0,
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
                         {weather.current.condition.includes("Clear")
                           ? "☀️"
                           : weather.current.condition.includes("Cloud")
@@ -150,51 +220,59 @@ export default function Home() {
                               : weather.current.condition.includes("Snow")
                                 ? "❄️"
                                 : "🌤️"}
-                      </div>
+                      </motion.div>
                     </div>
 
-                    <div className="mb-4">
-                      <div className="text-5xl font-bold text-gray-800">
+                    <div className="mb-6">
+                      <div className="text-6xl font-bold text-white mb-2">
                         {weather.current.temperature}°
                       </div>
-                      <div className="text-gray-600">
+                      <div className="text-lg text-purple-300 font-medium mb-1">
                         {weather.current.condition}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-400">
                         Feels like {weather.current.feelsLike}°
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-gray-500">Humidity</div>
-                        <div className="font-semibold">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <div className="text-xs text-gray-400 mb-1">
+                          💧 Humidity
+                        </div>
+                        <div className="text-xl font-bold text-blue-300">
                           {weather.current.humidity}%
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Wind</div>
-                        <div className="font-semibold">
+                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <div className="text-xs text-gray-400 mb-1">
+                          💨 Wind
+                        </div>
+                        <div className="text-xl font-bold text-cyan-300">
                           {weather.current.windSpeed} mph
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">UV Index</div>
-                        <div className="font-semibold">
+                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <div className="text-xs text-gray-400 mb-1">
+                          ☀️ UV Index
+                        </div>
+                        <div className="text-xl font-bold text-yellow-300">
                           {weather.current.uvIndex}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-gray-500">Pressure</div>
-                        <div className="font-semibold">
-                          {Math.round(weather.current.pressure)} mb
+                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <div className="text-xs text-gray-400 mb-1">
+                          🌪️ Pressure
+                        </div>
+                        <div className="text-xl font-bold text-purple-300">
+                          {Math.round(weather.current.pressure)}
                         </div>
                       </div>
                     </div>
 
                     {weather.isCached && (
-                      <div className="mt-4 text-xs text-gray-400 italic">
-                        📦 Cached data
+                      <div className="mt-4 text-xs text-gray-500 italic flex items-center gap-1">
+                        📦 Cached
                       </div>
                     )}
                   </div>
@@ -206,18 +284,22 @@ export default function Home() {
 
         {/* No Data State */}
         {!loading && weatherData.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🌍</div>
-            <h3 className="text-2xl font-semibold text-gray-700 mb-2">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <div className="text-8xl mb-6">🌍</div>
+            <h3 className="text-3xl font-bold text-gray-300 mb-4">
               No weather data available
             </h3>
             <Link
               href="/weather"
-              className="text-blue-600 hover:underline font-medium"
+              className="text-purple-400 hover:text-purple-300 font-semibold text-lg"
             >
               Go to Weather Page →
             </Link>
-          </div>
+          </motion.div>
         )}
       </div>
     </main>
