@@ -93,8 +93,8 @@ export default function Home() {
                 {Math.round(
                   weatherData.reduce(
                     (sum, w) => sum + w.current.temperature,
-                    0
-                  ) / weatherData.length
+                    0,
+                  ) / weatherData.length,
                 )}
                 °F
               </div>
@@ -137,7 +137,7 @@ export default function Home() {
                           {weather.location.name}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {weather.location.region}
+                            {weather.location.flag}
                         </p>
                       </div>
                       <div className="text-4xl">

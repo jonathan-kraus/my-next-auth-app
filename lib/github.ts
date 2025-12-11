@@ -63,9 +63,7 @@ export async function getCommitMessage(
           const data = await res.json();
           message = data?.commit?.message;
         } else {
-          console.error(
-            `GitHub API error: ${res.status} ${await res.text()}`
-          );
+          console.error(`GitHub API error: ${res.status} ${await res.text()}`);
         }
       } catch (err) {
         console.error("Commit fetch failed:", err);
@@ -82,7 +80,7 @@ export async function getCommitMessage(
 export async function getCommitDetails(
   owner: string,
   repo: string,
-  sha: string
+  sha: string,
 ): Promise<any> {
   try {
     const res = await fetch(
@@ -92,7 +90,7 @@ export async function getCommitDetails(
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
           Accept: "application/vnd.github+json",
         },
-      }
+      },
     );
 
     if (!res.ok) {
