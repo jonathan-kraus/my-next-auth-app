@@ -1,4 +1,4 @@
-// utils/github.ts
+// lib/github.ts
 
 /**
  * Resolve the commit SHA from different GitHub webhook event payloads.
@@ -15,24 +15,42 @@ export function getSha(payload: any): string | undefined {
 }
 
 /**
+ * Get repository info from payload
+ */
+export function getRepoInfo(payload: any): {
+  owner: string;
+  repo: string;
+} | null {
+  const repository = payload.repository;
+  if (!repository) return null;
+
+  return {
+    owner: repository.owner?.login || repository.owner?.name,
+    repo: repository.name,
+  };
+}
+
+/**
  * Resolve the commit message from payload or GitHub API fallback.
  */
 export async function getCommitMessage(
   payload: any,
 ): Promise<string | undefined> {
-  // First try to get description directly from payload
-  let description =
+  // First try to get message directly from payload
+  let message =
     payload.head_commit?.message || // push events
     payload.pull_request?.title || // PR title
     payload.deployment?.description; // deployment description
 
   // Fallback: fetch commit message from GitHub API
-  if (!description) {
+  if (!message) {
     const sha = getSha(payload);
-    if (sha) {
+    const repoInfo = getRepoInfo(payload);
+
+    if (sha && repoInfo) {
       try {
         const res = await fetch(
-          `https://api.github.com/repos/jonathan-kraus/my-vercel-neon-app/commits/${sha}`,
+          `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/commits/${sha}`,
           {
             headers: {
               Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
@@ -43,9 +61,11 @@ export async function getCommitMessage(
 
         if (res.ok) {
           const data = await res.json();
-          description = data?.commit?.message;
+          message = data?.commit?.message;
         } else {
-          console.error("GitHub API error:", res.status, await res.text());
+          console.error(
+            `GitHub API error: ${res.status} ${await res.text()}`
+          );
         }
       } catch (err) {
         console.error("Commit fetch failed:", err);
@@ -53,5 +73,35 @@ export async function getCommitMessage(
     }
   }
 
-  return description;
+  return message;
+}
+
+/**
+ * Get full commit details from GitHub API
+ */
+export async function getCommitDetails(
+  owner: string,
+  repo: string,
+  sha: string
+): Promise<any> {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`GitHub API error: ${res.status} ${await res.text()}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to get commit details:", error);
+    throw error;
+  }
 }
