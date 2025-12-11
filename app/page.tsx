@@ -137,7 +137,7 @@ export default function Home() {
                           {weather.location.name}
                         </h3>
                         <p className="text-sm text-gray-500">
-                            {weather.location.flag}
+                          {weather.location.flag}
                         </p>
                       </div>
                       <div className="text-4xl">

@@ -144,7 +144,9 @@ export default function DashboardPage() {
             </h2>
             <div className="bg-white shadow rounded-lg p-6">
               {data.recentCommits.length === 0 ? (
-                <p className="text-gray-500">No commits in the last 24 hours.</p>
+                <p className="text-gray-500">
+                  No commits in the last 24 hours.
+                </p>
               ) : (
                 <ul className="space-y-4">
                   {data.recentCommits.slice(0, 5).map((commit) => (

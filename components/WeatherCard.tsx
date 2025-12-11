@@ -9,6 +9,46 @@ interface WeatherCardProps {
   isLoading?: boolean;
 }
 
+// Move WindIndicator outside the component
+const WindIndicator = ({
+  isWindy,
+  isVeryWindy,
+}: {
+  isWindy: boolean;
+  isVeryWindy: boolean;
+}) => {
+  if (!isWindy) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
+      {[...Array(isVeryWindy ? 8 : 4)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-2xl"
+          initial={{
+            x: -20,
+            y: Math.random() * 100,
+            opacity: 0.6,
+          }}
+          animate={{
+            x: ["0%", "110%"],
+            y: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
+            rotate: [0, 360],
+          }}
+          transition={{
+            duration: isVeryWindy ? 2 : 4,
+            repeat: Infinity,
+            delay: i * (isVeryWindy ? 0.3 : 0.6),
+            ease: "linear",
+          }}
+        >
+          🍃
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
   const getWeatherEmoji = (condition: string) => {
     const emoji: Record<string, string> = {
@@ -34,67 +74,15 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
   const isWindy = data.current.windSpeed > 10;
   const isVeryWindy = data.current.windSpeed > 20;
 
-  // Wind animation variants
-  const windAnimation = {
-    animate: isWindy
-      ? {
-          x: [0, -3, 3, -3, 0],
-          rotate: [0, -1, 1, -1, 0],
-        }
-      : {},
-    transition: {
-      duration: isVeryWindy ? 0.5 : 1,
-      repeat: Infinity,
-      ease: "easeInOut",
-    },
-  };
-
-  // Floating leaves/particles animation for windy conditions
-  const WindIndicator = () => {
-    if (!isWindy) return null;
-
-    return (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
-        {[...Array(isVeryWindy ? 8 : 4)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-2xl"
-            initial={{
-              x: -20,
-              y: Math.random() * 100,
-              opacity: 0.6,
-            }}
-            animate={{
-              x: ["0%", "110%"],
-              y: [
-                `${Math.random() * 100}%`,
-                `${Math.random() * 100}%`,
-              ],
-              rotate: [0, 360],
-            }}
-            transition={{
-              duration: isVeryWindy ? 2 : 4,
-              repeat: Infinity,
-              delay: i * (isVeryWindy ? 0.3 : 0.6),
-              ease: "linear",
-            }}
-          >
-            🍃
-          </motion.div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="relative bg-gradient-to-br from-blue-400 to-cyan-500 rounded-3xl p-8 text-white shadow-xl overflow-hidden"
+      className="relative bg-linear-to-br from-blue-400 to-cyan-500 rounded-3xl p-8 text-white shadow-xl overflow-hidden"
     >
       {/* Wind particles */}
-      <WindIndicator />
+      <WindIndicator isWindy={isWindy} isVeryWindy={isVeryWindy} />
 
       {/* Location */}
       <motion.div
@@ -115,39 +103,54 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         )}
       </motion.div>
 
-      {/* Main Temperature */}
-      <motion.div
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: "spring" }}
-        className="flex items-center justify-between mb-6 relative z-10"
-        {...(isWindy ? windAnimation : {})}
-      >
-        <div>
-          <div className="text-6xl font-bold">{data.current.temperature}°F</div>
-          <div className="text-lg opacity-90">
-            Feels like {data.current.feelsLike}°F
-          </div>
-        </div>
-        <motion.div
-          className="text-8xl"
-          animate={
-            isWindy
-              ? {
-                  rotate: [-5, 5, -5],
-                  scale: [1, 1.05, 1],
-                }
-              : {}
+{/* Main Temperature */}
+<motion.div
+  initial={{ scale: 0.8 }}
+  animate={
+    isWindy
+      ? {
+          scale: 1,
+          x: [0, -3, 3, -3, 0],
+          rotate: [0, -1, 1, -1, 0],
+        }
+      : { scale: 1 }
+  }
+  transition={
+    isWindy
+      ? {
+          duration: isVeryWindy ? 0.5 : 1,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }
+      : { delay: 0.2, type: "spring" }
+  }
+  className="flex items-center justify-between mb-6 relative z-10"
+>
+  <div>
+    <div className="text-6xl font-bold">{data.current.temperature}°F</div>
+    <div className="text-lg opacity-90">
+      Feels like {data.current.feelsLike}°F
+    </div>
+  </div>
+  <motion.div
+    className="text-8xl"
+    animate={
+      isWindy
+        ? {
+            rotate: [-5, 5, -5],
+            scale: [1, 1.05, 1],
           }
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          {getWeatherEmoji(data.current.condition)}
-        </motion.div>
-      </motion.div>
+        : {}
+    }
+    transition={{
+      duration: 1.5,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  >
+    {getWeatherEmoji(data.current.condition)}
+  </motion.div>
+</motion.div>
 
       {/* Condition */}
       <motion.div
