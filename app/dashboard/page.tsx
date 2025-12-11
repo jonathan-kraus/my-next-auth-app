@@ -51,7 +51,7 @@ console.log("DashboardPage rendered -- logger.info:", logger);
         const result = await response.json();
         const duration = performance.now() - startTime;
         setFetchDuration(duration);
-console.log("Dashboard data fetched:", result);
+console.log(" Dashboard data fetched:", result);
         // Log successful fetch with metrics
         logger.info("Dashboard metrics fetched successfully", {
           duration: Math.round(duration),
