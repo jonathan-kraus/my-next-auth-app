@@ -11,6 +11,16 @@ export function UnpublishButton({ id }: { id: number }) {
   const router = useRouter();
 
   const requestId = createRequestId();
+console.log("PublishToggle requestId:", requestId);
+
+  useEffect(() => {
+    appLog({
+      source: "app/notes/PublishToggle.tsx",
+      message: "UnpublishButton mounted",
+      requestId,
+      metadata: { action: "mount" },
+    });
+  }, [requestId]);
 
   async function handleUnpublish() {
     await appLog({

@@ -1,6 +1,7 @@
 // app/api/log-view/route.ts
 import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
+import { appLog } from "@/utils/app-log";
 import { createRequestId } from "@/lib/uuidj";
 
 export async function POST() {

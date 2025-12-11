@@ -1,5 +1,6 @@
 "use client";
 
+import { appLog } from "@/utils/app-log";
 import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function LogsPage() {
@@ -10,6 +11,12 @@ export default function LogsPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const seenIds = useRef<Set<string>>(new Set());
+  async function logViewInvocation() {
+  await appLog({
+  source: "app/logs/page",
+  message: "CCCInvoking viewer",
+  metadata: { action: "view" },
+});}
   useEffect(() => {
     // fire-and-forget logging call
     fetch("/api/log-view", { method: "POST" }).catch(() => {});
