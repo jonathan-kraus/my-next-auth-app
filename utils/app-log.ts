@@ -2,8 +2,7 @@
 export type AppLogInput = {
   source: string;
   message: string;
-  metadata?: unknown; // must be JSON-serializable
-  userId?: string;
+  metadata?: unknown; // JSON-serializable
   severity?: "info" | "warn" | "error";
   requestId?: string;
 };
@@ -16,6 +15,6 @@ export async function appLog(input: AppLogInput) {
       body: JSON.stringify(input),
     });
   } catch {
-    // swallow on client – logging should never break UX
+    // ignore on client
   }
 }

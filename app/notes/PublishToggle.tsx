@@ -12,19 +12,12 @@ export function UnpublishButton({ id }: { id: number }) {
 
   const requestId = createRequestId();
 
-  useEffect(() => {
-    appLog({
-      source: "app/notes/PublishToggle.tsx",
-      message: "--Unpublish--",
-      metadata: {
-        action: "view",
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
-      requestId,
-    });
-  }, [requestId]);
   async function handleUnpublish() {
+    await appLog({
+      source: "app/notes/PublishToggle.tsx",
+      message: "unpublish button clicked",
+      metadata: { action: "view" },
+    });
     startTransition(async () => {
       await fetch(`/api/notes/${id}/publish`, {
         method: "PATCH",

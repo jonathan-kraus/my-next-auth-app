@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp } from "@/stack/server";
 import { createRequestId } from "@/lib/uuidj";
+import { appLog } from "@/utils/app-log";
 const requestId = createRequestId();
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
@@ -13,7 +14,11 @@ export async function GET(request: Request) {
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
   const user1 = await stackServerApp.getUser();
   console.log("Current user:", user1);
-
+  await appLog({
+    source: "app/api/test-log/route.ts",
+    message: "---test-log invoked---",
+    metadata: { action: "view" },
+  });
   console.log("About to write log with userId:", USER_ID);
   // 1. Write a log row
   await dbFetch(({ db }) =>
@@ -26,7 +31,7 @@ export async function GET(request: Request) {
         requestId: requestId,
         metadata: {
           userAgent: request.headers.get("User-Agent") || "Unknown",
-
+          action: "write jtemp",
           ip:
             request.headers.get("X-Forwarded-For") ||
             request.headers.get("Remote-Addr") ||
