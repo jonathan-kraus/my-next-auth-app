@@ -11,7 +11,7 @@ export function UnpublishButton({ id }: { id: number }) {
   const router = useRouter();
 
   const requestId = createRequestId();
-console.log("PublishToggle requestId:", requestId);
+  console.log("PublishToggle requestId:", requestId);
 
   useEffect(() => {
     appLog({

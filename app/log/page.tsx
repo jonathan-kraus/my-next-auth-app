@@ -12,11 +12,12 @@ export default function LogsPage() {
 
   const seenIds = useRef<Set<string>>(new Set());
   async function logViewInvocation() {
-  await appLog({
-  source: "app/logs/page",
-  message: "CCCInvoking viewer",
-  metadata: { action: "view" },
-});}
+    await appLog({
+      source: "app/logs/page",
+      message: "CCCInvoking viewer",
+      metadata: { action: "view" },
+    });
+  }
   useEffect(() => {
     // fire-and-forget logging call
     fetch("/api/log-view", { method: "POST" }).catch(() => {});
