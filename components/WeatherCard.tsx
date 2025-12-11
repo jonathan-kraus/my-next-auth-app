@@ -12,18 +12,19 @@ interface WeatherCardProps {
 
 // Move WindIndicator outside the component
 const WindIndicator = ({ isWindy, isVeryWindy }: { isWindy: boolean; isVeryWindy: boolean }) => {
-  if (!isWindy) return null;
-
-  // Generate stable random values using useMemo
+  // Move useMemo BEFORE the early return - hooks must be called unconditionally
   const particles = useMemo(() => {
     const count = isVeryWindy ? 8 : 4;
+    // Use a seeded approach instead of Math.random() for stable values
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      initialY: Math.random() * 100,
-      animateY1: Math.random() * 100,
-      animateY2: Math.random() * 100,
+      initialY: (i * 13.7 + 17) % 100, // Pseudo-random but stable
+      animateY1: (i * 23.3 + 31) % 100,
+      animateY2: (i * 41.1 + 53) % 100,
     }));
   }, [isVeryWindy]);
+
+  if (!isWindy) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
