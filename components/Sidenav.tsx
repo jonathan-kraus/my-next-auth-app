@@ -10,6 +10,7 @@ import {
   BugAntIcon,
   UserIcon,
   MagnifyingGlassIcon,
+  CloudIcon,
 } from "@heroicons/react/24/outline";
 import versionInfo from "../version.json";
 
@@ -19,6 +20,7 @@ export const Sidenav = () => {
   const navItems = [
     { name: "Home", href: "/", icon: HomeIcon },
     { name: "Dashboard", href: "/dashboard", icon: ChartBarIcon },
+    { name: "Weather", href: "/weather", icon: CloudIcon },
     { name: "Notes", href: "/notes", icon: PencilSquareIcon },
     { name: "Jtemp", href: "/jtemp-data", icon: DocumentTextIcon },
     { name: "Test-log", href: "/api/test-log", icon: BugAntIcon },
