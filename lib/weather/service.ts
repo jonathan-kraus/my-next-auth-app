@@ -15,19 +15,50 @@ function jsonToWeatherData(json: Prisma.JsonValue): WeatherData {
 
 async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
   const location = LOCATIONS[locationKey];
+
+  // Tomorrow.io v4 API expects timesteps as separate parameters
   const queryParams = new URLSearchParams({
     location: `${location.latitude},${location.longitude}`,
     apikey: TOMORROW_API_KEY!,
     units: "imperial",
     timezone: location.timezone,
-    fields:
-      "temperature,temperatureFeel,weatherCode,humidity,windSpeed,windGust,pressureSeaLevel,uvIndex,sunriseTime,sunsetTime,moonriseTime,moonsetTime,moonPhase",
-    timesteps: ["current", "1h", "1d"].join(","),
+    timesteps: "current,1h,1d",
   });
 
-  const response = await fetch(`${TOMORROW_API_URL}?${queryParams}`);
+  // Add fields as separate parameters
+  const fields = [
+    "temperature",
+    "temperatureApparent",
+    "weatherCode",
+    "humidity",
+    "windSpeed",
+    "windGust",
+    "pressureSurfaceLevel",
+    "uvIndex",
+    "sunriseTime",
+    "sunsetTime",
+    "moonPhase",
+  ];
+
+  fields.forEach((field) => queryParams.append("fields", field));
+
+  const url = `${TOMORROW_API_URL}?${queryParams}`;
+
+  logger.debug("Fetching from Tomorrow.io", {
+    location: locationKey,
+    url: url.replace(TOMORROW_API_KEY!, "***"),
+  });
+
+  const response = await fetch(url);
 
   if (!response.ok) {
+    const errorText = await response.text();
+    logger.error("Tomorrow.io API error", {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText,
+      location: locationKey,
+    });
     throw new Error(
       `Tomorrow.io API error: ${response.status} ${response.statusText}`,
     );
@@ -67,12 +98,12 @@ function parseTomorrowIOData(
     location,
     current: {
       temperature: Math.round(current.temperature),
-      feelsLike: Math.round(current.temperatureFeel),
+      feelsLike: Math.round(current.temperatureApparent),
       condition: weatherCodeMap[current.weatherCode] || "Unknown",
       humidity: current.humidity,
       windSpeed: Math.round(current.windSpeed),
       windGust: Math.round(current.windGust),
-      pressure: current.pressureSeaLevel,
+      pressure: current.pressureSurfaceLevel,
       uvIndex: current.uvIndex,
     },
     sun: {
@@ -86,14 +117,18 @@ function parseTomorrowIOData(
       }),
     },
     moon: {
-      rise: new Date(current.moonriseTime).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      set: new Date(current.moonsetTime).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      rise: current.moonriseTime
+        ? new Date(current.moonriseTime).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "N/A",
+      set: current.moonsetTime
+        ? new Date(current.moonsetTime).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "N/A",
       phase: getMoonPhase(current.moonPhase),
     },
     hourly: hourly.map((h: any) => ({
