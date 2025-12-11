@@ -9,6 +9,42 @@ datasource db {
   schemas  = ["neon_auth", "public"]
 }
 
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+
+  @@schema("public")
+}
+model ForecastEmail {
+  id        String   @id @default(cuid())
+  email     String
+  location  String
+  subject   String
+  status    String   // "pending" | "sent" | "failed"
+  error     String?
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+ 
+  @@schema("public")
+}
 model jtemp {
   id          Int      @id @default(autoincrement())
   name        String
@@ -18,20 +54,6 @@ model jtemp {
   @@map("jtemp") // Ensures Prisma uses the lowercase table name
   @@schema("public")
 }
-
-model User {
-  id             String   @id @default(cuid())
-  name           String?
-  email          String?  @unique
-  emailVerified  DateTime?
-  image          String?
-  accounts       Account[]
-  sessions       Session[]
-  logs           Log[]
-  notes          Note[]
-  @@schema("public")
-}
-
 // Your Log model, updated to include a User relationship
 model Log {
   id        String   @id @default(uuid()) // Using uuid for Log IDs
@@ -60,28 +82,6 @@ model Note {
   followUpNotes String?
   @@schema("public")
 }
-
-model Account {
-  id                String   @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@unique([provider, providerAccountId])
-
-  @@schema("public")
-}
-
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -92,7 +92,18 @@ model Session {
 
 @@schema("public")
 }
-
+model User {
+  id             String   @id @default(cuid())
+  name           String?
+  email          String?  @unique
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+  logs           Log[]
+  notes          Note[]
+  @@schema("public")
+}
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -102,3 +113,17 @@ model VerificationToken {
 
   @@schema("public")
 }
+model WeatherCache {
+  id        String   @id @default(cuid())
+  location  String   // "kop-pa" | "brookline-ma" | "williamstown-ma"
+  data      Json     // Full Tomorrow.io response
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([location])
+  @@index([location])
+  @@index([updatedAt])
+
+  @@schema("public")
+}
+
