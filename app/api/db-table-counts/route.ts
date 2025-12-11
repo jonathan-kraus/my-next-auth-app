@@ -25,6 +25,7 @@ export async function GET() {
       JOIN pg_namespace n ON n.oid = c.relnamespace
       WHERE c.relkind = 'r'
         AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+        AND c.reltuples >= 10           -- exclude very small tables
       ORDER BY schema_name, table_name;
     `),
   );
