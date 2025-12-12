@@ -162,7 +162,8 @@ export default function WeatherPage() {
       </>
     );
   }
-  logger.info("[debug] Astronomy indicators above", weatherData?.astronomy);
+  logger.info("[debug] Astronomy indicators sun", weatherData.astronomy.sunIndicator);
+  logger.info("[debug] Astronomy indicators moon", weatherData.astronomy.moonIndicator);
   const handleRefresh = () => {
     logger.info("Manual refresh triggered", { location: selectedLocation });
     fetchWeather(selectedLocation, true);
