@@ -21,6 +21,12 @@ type TableCount = {
   estimated_row_count: number;
 };
 
+type ColumnConfig = {
+  id: string;
+  header: string;
+  accessor: (log: LogRow) => string;
+};
+
 export default function LogsPage() {
   const [logs, setLogs] = useState<LogRow[]>([]);
   const [severity, setSeverity] = useState<string>("");
@@ -31,7 +37,43 @@ export default function LogsPage() {
   const [tableCounts, setTableCounts] = useState<TableCount[]>([]);
   const [tablesLoadedAt, setTablesLoadedAt] = useState<Date | null>(null);
 
+  const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
+
   const seenIds = useRef<Set<string>>(new Set());
+
+  // Column configuration - reorder these as needed!
+  const [columns, setColumns] = useState<ColumnConfig[]>([
+    {
+      id: "timestamp",
+      header: "Timestamp",
+      accessor: (log) => new Date(log.timestamp).toLocaleString(),
+    },
+    {
+      id: "severity",
+      header: "Severity",
+      accessor: (log) => log.severity,
+    },
+    {
+      id: "source",
+      header: "Source",
+      accessor: (log) => log.source,
+    },
+    {
+      id: "message",
+      header: "Message",
+      accessor: (log) => log.message,
+    },
+    {
+      id: "user",
+      header: "User",
+      accessor: (log) => log.user?.name ?? "-",
+    },
+    {
+      id: "metadata",
+      header: "Metadata",
+      accessor: (log) => JSON.stringify(log.metadata).slice(0, 50) + "...",
+    },
+  ]);
 
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
@@ -58,7 +100,6 @@ export default function LogsPage() {
       });
   }, [severity, userId]);
 
-  // initial logs + optional auto-refresh
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
@@ -69,7 +110,6 @@ export default function LogsPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchLogs]);
 
-  // load fast approximate table counts once
   useEffect(() => {
     fetch("/api/db-table-counts")
       .then((res) => res.json())
@@ -81,6 +121,34 @@ export default function LogsPage() {
         setTableCounts([]);
       });
   }, []);
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedColumn(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/html", e.currentTarget.innerHTML);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedColumn === null || draggedColumn === dropIndex) return;
+
+    const newColumns = [...columns];
+    const [draggedItem] = newColumns.splice(draggedColumn, 1);
+    newColumns.splice(dropIndex, 0, draggedItem);
+
+    setColumns(newColumns);
+    setDraggedColumn(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedColumn(null);
+  };
 
   const severityBadge = (sev: string) => {
     const base = "px-2 py-1 rounded text-xs font-bold";
@@ -106,6 +174,15 @@ export default function LogsPage() {
 
   const copyMetadata = (metadata: unknown) => {
     navigator.clipboard.writeText(JSON.stringify(metadata, null, 2));
+  };
+
+  const renderCell = (log: LogRow, column: ColumnConfig) => {
+    if (column.id === "severity") {
+      return (
+        <span className={severityBadge(log.severity)}>{log.severity}</span>
+      );
+    }
+    return column.accessor(log);
   };
 
   return (
@@ -202,16 +279,31 @@ export default function LogsPage() {
           </p>
         )}
 
+        <p className="text-xs text-gray-500 mb-2">
+          💡 Drag column headers to reorder
+        </p>
+
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-700 text-sm">
             <thead>
               <tr className="bg-gray-800 text-indigo-300">
-                <th className="p-2 border border-gray-700">Timestamp</th>
-                <th className="p-2 border border-gray-700">Severity</th>
-                <th className="p-2 border border-gray-700">Source</th>
-                <th className="p-2 border border-gray-700">Message</th>
-                <th className="p-2 border border-gray-700">User</th>
-                <th className="p-2 border border-gray-700">metadata</th>
+                {columns.map((column, index) => (
+                  <th
+                    key={column.id}
+                    className={`p-2 border border-gray-700 cursor-move select-none ${
+                      draggedColumn === index
+                        ? "opacity-50 bg-indigo-900"
+                        : "hover:bg-gray-700"
+                    }`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    {column.header}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -224,29 +316,19 @@ export default function LogsPage() {
                     } cursor-pointer`}
                     onClick={() => toggleExpand(log.id)}
                   >
-                    <td className="p-2 border border-gray-700">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="p-2 border border-gray-700">
-                      <span className={severityBadge(log.severity)}>
-                        {log.severity}
-                      </span>
-                    </td>
-                    <td className="p-2 border border-gray-700">{log.source}</td>
-                    <td className="p-2 border border-gray-700">
-                      {log.message}
-                    </td>
-                    <td className="p-2 border border-gray-700">
-                      {log.user?.name ?? "-"}
-                    </td>
-                    <td className="p-2 border border-gray-700">
-                      {log.id ?? "-"}
-                    </td>
+                    {columns.map((column) => (
+                      <td
+                        key={`${log.id}-${column.id}`}
+                        className="p-2 border border-gray-700"
+                      >
+                        {renderCell(log, column)}
+                      </td>
+                    ))}
                   </tr>
                   {log.expanded && (
                     <tr key={`${log.id}-meta`}>
                       <td
-                        colSpan={6}
+                        colSpan={columns.length}
                         className="bg-gray-800 text-gray-300 p-4 border border-gray-700"
                       >
                         <div className="flex justify-between items-center mb-2">
