@@ -142,7 +142,20 @@ export default function WeatherPage() {
     logger.info("Weather page loaded", { location: selectedLocation });
     fetchWeather(selectedLocation);
   }, [selectedLocation, logger, fetchWeather]);
-
+{weatherData && (
+  <>
+    {console.log("Rendering indicators:", weatherData.astronomy)}
+    <CountdownTimer
+      label="☀️ Sun"
+      indicator={weatherData.astronomy.sunIndicator}
+    />
+    <CountdownTimer
+      label="🌙 Moon"
+      indicator={weatherData.astronomy.moonIndicator}
+    />
+  </>
+)}
+logger.info("[debug] Astronomy indicators above", weatherData?.astronomy);
   const handleRefresh = () => {
     logger.info("Manual refresh triggered", { location: selectedLocation });
     fetchWeather(selectedLocation, true);
