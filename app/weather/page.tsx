@@ -92,7 +92,19 @@ export default function WeatherPage() {
         if (data.success && data.data) {
           setWeatherData(data.data);
           setLastUpdate(new Date());
-
+console.log("Weather data loaded successfully:", data.data);
+console.log("Sun", data.data.astronomy.sunIndicator);
+          console.log("Moon", data.data.astronomy.moonIndicator);
+          console.log("Weather data loaded successfully:", data.data);
+          console.log("Sun", data.data.astronomy.sunIndicator);
+          console.log("Moon", data.data.astronomy.moonIndicator);
+          console.log("Weather data loaded successfully:", data.data);
+          console.log("Sun", data.data.astronomy.sunIndicator);
+          console.log("Moon", data.data.astronomy.moonIndicator);
+          console.log("Weather data loaded successfully:", data.data);
+          console.log("Sun", data.data.astronomy.sunIndicator);
+          console.log("Moon", data.data.astronomy.moonIndicator);
+          console.log("Weather data loaded successfully:", data.data);
           logger.info("Weather data loaded successfully", {
             location,
             temperature: data.data.current.temperature,
