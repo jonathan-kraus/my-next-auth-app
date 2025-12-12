@@ -5,8 +5,37 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { LocationSelector } from "@/components/LocationSelector";
-import { LocationKey, WeatherData, ApiResponse } from "@/lib/weather/types";
+import { LocationKey, WeatherData, ApiResponse, BodyIndicator } from "@/lib/weather/types";
 import { useLogger } from "@/lib/axiom/client";
+
+// --- Countdown Timer Component ---
+function CountdownTimer({ label, indicator }: { label: string; indicator?: BodyIndicator }) {
+  const [countdown, setCountdown] = useState(indicator?.countdown);
+
+  useEffect(() => {
+    // update every minute
+    const interval = setInterval(() => {
+      setCountdown(indicator?.countdown);
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, [indicator]);
+
+  if (!indicator) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center text-lg font-medium text-gray-700 mb-4"
+    >
+      {label}: {indicator.status}
+      {indicator.countdown && (
+        <span className="ml-2 text-sm text-indigo-600">{indicator.countdown}</span>
+      )}
+    </motion.div>
+  );
+}
 
 export default function WeatherPage() {
   const logger = useLogger();
@@ -23,13 +52,10 @@ export default function WeatherPage() {
       const startTime = performance.now();
 
       try {
-        logger.info("Fetching weather", {
-          location,
-          forceRefresh,
-        });
+        logger.info("Fetching weather", { location, forceRefresh });
 
         const response = await fetch(
-          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
+          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`
         );
 
         if (!response.ok) {
@@ -53,8 +79,7 @@ export default function WeatherPage() {
           throw new Error(data.error || "Unknown error");
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Unknown error";
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
         setError(errorMessage);
 
         logger.error("Weather fetch failed", {
@@ -66,23 +91,17 @@ export default function WeatherPage() {
         setLoading(false);
       }
     },
-    [logger],
+    [logger]
   );
 
   // Initial fetch
   useEffect(() => {
-    logger.info("Weather page loaded", {
-      location: selectedLocation,
-    });
-
+    logger.info("Weather page loaded", { location: selectedLocation });
     fetchWeather(selectedLocation);
   }, [selectedLocation, logger, fetchWeather]);
 
   const handleRefresh = () => {
-    logger.info("Manual refresh triggered", {
-      location: selectedLocation,
-    });
-
+    logger.info("Manual refresh triggered", { location: selectedLocation });
     fetchWeather(selectedLocation, true);
   };
 
@@ -111,10 +130,7 @@ export default function WeatherPage() {
         </motion.p>
 
         {/* Location Selector */}
-        <LocationSelector
-          selectedLocation={selectedLocation}
-          onChange={setSelectedLocation}
-        />
+        <LocationSelector selectedLocation={selectedLocation} onChange={setSelectedLocation} />
 
         {/* Refresh Button */}
         <motion.div
@@ -153,6 +169,14 @@ export default function WeatherPage() {
           >
             ⚠️ {error}
           </motion.div>
+        )}
+
+        {/* Countdown Timer */}
+        {weatherData && (
+          <>
+            <CountdownTimer label="☀️ Sun" indicator={weatherData.astronomy.sunIndicator} />
+            <CountdownTimer label="🌙 Moon" indicator={weatherData.astronomy.moonIndicator} />
+          </>
         )}
 
         {/* Weather Card */}
