@@ -15,6 +15,13 @@ export function getSha(payload: any): string | undefined {
 }
 
 /**
+ * Detect an all-zero or missing SHA (e.g. branch delete events).
+ */
+function isZeroSha(sha: string | undefined): boolean {
+  return !sha || /^0{40}$/.test(sha);
+}
+
+/**
  * Get repository info from payload
  */
 export function getRepoInfo(payload: any): {
@@ -47,27 +54,30 @@ export async function getCommitMessage(
     const sha = getSha(payload);
     const repoInfo = getRepoInfo(payload);
 
-    if (sha && repoInfo) {
-      try {
-        const res = await fetch(
-          `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/commits/${sha}`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-              Accept: "application/vnd.github+json",
-            },
-          },
-        );
+    // If SHA is missing or all zeros (branch delete / special events), skip API call
+    if (!repoInfo || isZeroSha(sha)) {
+      return message; // still undefined, and that's fine
+    }
 
-        if (res.ok) {
-          const data = await res.json();
-          message = data?.commit?.message;
-        } else {
-          console.error(`GitHub API error: ${res.status} ${await res.text()}`);
-        }
-      } catch (err) {
-        console.error("Commit fetch failed:", err);
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/commits/${sha}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            Accept: "application/vnd.github+json",
+          },
+        },
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        message = data?.commit?.message;
+      } else {
+        console.error(`GitHub API error: ${res.status} ${await res.text()}`);
       }
+    } catch (err) {
+      console.error("Commit fetch failed:", err);
     }
   }
 
