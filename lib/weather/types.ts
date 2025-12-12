@@ -35,9 +35,14 @@ export interface WeatherData {
     moonrise: string | null;
     moonset: string | null;
     moonPhase: number; // 0 = new moon, 0.5 = full moon, 1 = new moon
+    moonPhaseDescription?: string; // NEW
+
+    rawSunrise?: string;
+    rawSunset?: string;
+    rawMoonrise?: string;
+    rawMoonset?: string;
     sunIndicator?: BodyIndicator; // NEW
     moonIndicator?: BodyIndicator; // NEW
-    moonPhaseDescription?: string; // NEW
   };
   forecast?: {
     hourly: Array<{
