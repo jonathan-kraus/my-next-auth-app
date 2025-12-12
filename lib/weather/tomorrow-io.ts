@@ -1,6 +1,6 @@
 // lib/weather/tomorrow-io.ts
 import { WeatherData } from "./types";
-import { DateTime } from "luxon";
+
 const API_KEY = process.env.TOMORROW_API_KEY!;
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
@@ -13,14 +13,6 @@ function getMoonPhaseDescription(phase: number): string {
   if (phase < 0.75) return "🌖 Waning Gibbous";
   if (phase === 0.75) return "🌗 Last Quarter";
   return "🌘 Waning Crescent";
-}
-function formatIsoTimeToLocal(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-
-  const dt = DateTime.fromISO(iso, { setZone: true }); // respect embedded timezone
-  if (!dt.isValid) return null;
-
-  return dt.toFormat("hh:mm a"); // e.g. "06:13 AM"
 }
 
 export async function fetchTomorrowIO(location: {
@@ -130,9 +122,9 @@ export async function fetchTomorrowIO(location: {
       condition: weatherCodeMap[current.weatherCode] || "Unknown",
     },
     astronomy: {
-      sunrise: formatIsoTimeToLocal(daily.sunriseTime) || "N/A",
-      sunset: formatIsoTimeToLocal(daily.sunsetTime) || "N/A",
-      moonrise: formatIsoTimeToLocal(daily.moonriseTime),
+      sunrise: daily.sunriseTime || "N/A",
+      sunset: daily.sunsetTime || "N/A",
+      moonrise: daily.moonriseTime,
       moonset: daily.moonsetTime,
       moonPhase: daily.moonPhase || 0,
     },
