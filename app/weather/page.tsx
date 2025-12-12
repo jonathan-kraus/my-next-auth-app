@@ -14,7 +14,13 @@ import {
 import { useLogger } from "@/lib/axiom/client";
 
 // --- Countdown Timer Component ---
-function CountdownTimer({ label, indicator }: { label: string; indicator?: BodyIndicator }) {
+function CountdownTimer({
+  label,
+  indicator,
+}: {
+  label: string;
+  indicator?: BodyIndicator;
+}) {
   const [countdown, setCountdown] = useState(indicator?.countdown);
 
   useEffect(() => {
@@ -38,7 +44,6 @@ function CountdownTimer({ label, indicator }: { label: string; indicator?: BodyI
       }`}
     >
       {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
-
       <AnimatePresence>
         {countdown && (
           <motion.span
@@ -94,24 +99,24 @@ export default function WeatherPage() {
             condition: data.data.current.condition,
             cached: data.cached,
             duration: Math.round(performance.now() - startTime),
-             // 🔍 Debug logging
+            // 🔍 Debug logging
           });
 
-  logger.info("[debug] Astronomy indicators", {
-    sun: data.data.astronomy.sunIndicator,
-    moon: data.data.astronomy.moonIndicator,
-  });
+          logger.info("[debug] Astronomy indicators", {
+            sun: data.data.astronomy.sunIndicator,
+            moon: data.data.astronomy.moonIndicator,
+          });
 
-  logger.info("[debug] Astronomy & Weather data loaded successfully", {
-    location,
-    sun: data.data.astronomy.sunIndicator,
-    moon: data.data.astronomy.moonIndicator,
-    temperature: data.data.current.temperature,
-    condition: data.data.current.condition,
-    cached: data.cached,
-    duration: Math.round(performance.now() - startTime),
-  });
-} else if (data.cached) {
+          logger.info("[debug] Astronomy & Weather data loaded successfully", {
+            location,
+            sun: data.data.astronomy.sunIndicator,
+            moon: data.data.astronomy.moonIndicator,
+            temperature: data.data.current.temperature,
+            condition: data.data.current.condition,
+            cached: data.cached,
+            duration: Math.round(performance.now() - startTime),
+          });
+        } else if (data.cached) {
           logger.info("Weather data loaded from cache", {
             location,
             cached: data.cached,
@@ -142,20 +147,22 @@ export default function WeatherPage() {
     logger.info("Weather page loaded", { location: selectedLocation });
     fetchWeather(selectedLocation);
   }, [selectedLocation, logger, fetchWeather]);
-{weatherData && (
-  <>
-    {console.log("Rendering indicators:", weatherData.astronomy)}
-    <CountdownTimer
-      label="☀️ Sun"
-      indicator={weatherData.astronomy.sunIndicator}
-    />
-    <CountdownTimer
-      label="🌙 Moon"
-      indicator={weatherData.astronomy.moonIndicator}
-    />
-  </>
-)}
-logger.info("[debug] Astronomy indicators above", weatherData?.astronomy);
+  {
+    weatherData && (
+      <>
+        {console.log("Rendering indicators:", weatherData.astronomy)}
+        <CountdownTimer
+          label="☀️ Sun"
+          indicator={weatherData.astronomy.sunIndicator}
+        />
+        <CountdownTimer
+          label="🌙 Moon"
+          indicator={weatherData.astronomy.moonIndicator}
+        />
+      </>
+    );
+  }
+  logger.info("[debug] Astronomy indicators above", weatherData?.astronomy);
   const handleRefresh = () => {
     logger.info("Manual refresh triggered", { location: selectedLocation });
     fetchWeather(selectedLocation, true);

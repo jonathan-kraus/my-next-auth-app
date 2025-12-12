@@ -22,6 +22,7 @@ export default function LogsPage() {
     // fire-and-forget logging call
     fetch("/api/log-view", { method: "POST" }).catch(() => {});
   }, []);
+  logViewInvocation();
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
     if (severity) params.append("severity", severity);
