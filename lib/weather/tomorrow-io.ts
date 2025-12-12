@@ -1,6 +1,8 @@
 // lib/weather/tomorrow-io.ts
+import { appLog } from "@/utils/app-log";
 import { WeatherData } from "./types";
-
+import { createRequestId } from '../uuidj';
+const requestId = createRequestId();
 const API_KEY = process.env.TOMORROW_API_KEY!;
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
@@ -100,6 +102,11 @@ export async function fetchTomorrowIO(location: {
     body: JSON.stringify(params),
   });
 
+  await appLog({
+    source: "app/api/test-log/route.ts",
+    message: "---test-log invoked---",
+    metadata: { response: response, requestId: requestId },
+  });
   if (!response.ok) {
     throw new Error(`Tomorrow.io API error: ${response.statusText}`);
   }
@@ -116,7 +123,22 @@ export async function fetchTomorrowIO(location: {
 
   const current = currentData.intervals[0].values;
   const daily = dailyData?.intervals?.[0]?.values || {};
-
+console.log("Astronomy raw vs formatted:", {
+  rawSunrise: daily.sunriseTime,
+  formattedSunrise: formatTime(daily.sunriseTime),
+});
+  console.log("Astronomy raw vs formatted:", {
+    rawSunset: daily.sunsetTime,
+    formattedSunset: formatTime(daily.sunsetTime),
+  });
+  console.log("Astronomy raw vs formatted:", {
+    rawMoonrise: daily.moonriseTime,
+    formattedMoonrise: formatTime(daily.moonriseTime),
+  });
+  console.log("Astronomy raw vs formatted:", {
+    rawMoonset: daily.moonsetTime,
+    formattedMoonset: formatTime(daily.moonsetTime),
+  });
   const weatherCodeMap: Record<number, string> = {
     1000: "Clear",
     1100: "Mostly Clear",
