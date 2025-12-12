@@ -1,4 +1,3 @@
-// app/weather/page.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -80,7 +79,7 @@ export default function WeatherPage() {
         logger.info("Fetching weather", { location, forceRefresh });
 
         const response = await fetch(
-          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
+          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`
         );
 
         if (!response.ok) {
@@ -92,46 +91,18 @@ export default function WeatherPage() {
         if (data.success && data.data) {
           setWeatherData(data.data);
           setLastUpdate(new Date());
-          {
-            weatherData &&
-              console.log("Astronomy with indicators:", weatherData.astronomy);
-          }
 
-          console.log("Weather data loaded successfully:", data.data);
-          console.log("Sun", data.data.astronomy.sunIndicator);
-          console.log("Moon", data.data.astronomy.moonIndicator);
-          console.log("Weather data loaded successfully:", data.data);
-          console.log("Sun", data.data.astronomy.sunIndicator);
-          console.log("Moon", data.data.astronomy.moonIndicator);
-          console.log("Weather data loaded successfully:", data.data);
-          console.log("Sun", data.data.astronomy.sunIndicator);
-          console.log("Moon", data.data.astronomy.moonIndicator);
-          console.log("Weather data loaded successfully:", data.data);
-          console.log("Sun", data.data.astronomy.sunIndicator);
-          console.log("Moon", data.data.astronomy.moonIndicator);
-          console.log("Weather data loaded successfully:", data.data);
           logger.info("Weather data loaded successfully", {
             location,
             temperature: data.data.current.temperature,
             condition: data.data.current.condition,
             cached: data.cached,
             duration: Math.round(performance.now() - startTime),
-            // 🔍 Debug logging
           });
 
           logger.info("[debug] Astronomy indicators", {
             sun: data.data.astronomy.sunIndicator,
             moon: data.data.astronomy.moonIndicator,
-          });
-
-          logger.info("[debug] Astronomy & Weather data loaded successfully", {
-            location,
-            sun: data.data.astronomy.sunIndicator,
-            moon: data.data.astronomy.moonIndicator,
-            temperature: data.data.current.temperature,
-            condition: data.data.current.condition,
-            cached: data.cached,
-            duration: Math.round(performance.now() - startTime),
           });
         } else if (data.cached) {
           logger.info("Weather data loaded from cache", {
@@ -156,7 +127,7 @@ export default function WeatherPage() {
         setLoading(false);
       }
     },
-    [logger, weatherData],
+    [logger]
   );
 
   // Initial fetch
@@ -164,33 +135,7 @@ export default function WeatherPage() {
     logger.info("Weather page loaded", { location: selectedLocation });
     fetchWeather(selectedLocation);
   }, [selectedLocation, logger, fetchWeather]);
-  {
-    weatherData && (
-      <>
-        {console.log("Rendering indicators:", weatherData.astronomy)}
-        <CountdownTimer
-          label="☀️ Sun"
-          indicator={weatherData.astronomy.sunIndicator}
-        />
-        <CountdownTimer
-          label="🌙 Moon"
-          indicator={weatherData.astronomy.moonIndicator}
-        />
-      </>
-    );
-  }
-  logger.info("[debug] Weather page loaded", { location: selectedLocation });
-  if (weatherData) {
-    logger.info("[debug] Weather data loaded successfully", weatherData);
-    logger.info(
-      "[debug] Astronomy indicators sun",
-      weatherData.astronomy.sunIndicator,
-    );
-    logger.info(
-      "[debug] Astronomy indicators moon",
-      weatherData.astronomy.moonIndicator,
-    );
-  }
+
   const handleRefresh = () => {
     logger.info("Manual refresh triggered", { location: selectedLocation });
     fetchWeather(selectedLocation, true);

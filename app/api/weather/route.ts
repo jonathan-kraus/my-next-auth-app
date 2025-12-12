@@ -1,4 +1,3 @@
-// app/api/weather/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { withAxiom, logger } from "@/lib/axiom/server";
 import { getWeather } from "@/lib/weather/service";
@@ -8,12 +7,12 @@ import {
   LocationKey,
   getLocationByName,
 } from "@/lib/weather/types";
+import { getIndicator, getMoonPhaseDescription } from "@/lib/weather/utils";
 
 export const GET = withAxiom(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
-    const locationParam = (searchParams.get("location") ||
-      "kop") as LocationKey;
+    const locationParam = (searchParams.get("location") || "kop") as LocationKey;
     const forceRefresh = searchParams.get("force") === "true";
     const refresh = searchParams.get("refresh") === "true";
 
@@ -37,7 +36,28 @@ export const GET = withAxiom(async (req: NextRequest) => {
       );
     }
 
+    // ✅ getWeather already reads from cache or live
     const weatherData = await getWeather(locationParam);
+
+    // ✅ Cast into WeatherData so TS knows the shape
+    const data = weatherData as WeatherData;
+
+    // ✅ Enrich astronomy with indicators and description
+    if (data.astronomy) {
+      data.astronomy.moonPhaseDescription = getMoonPhaseDescription(
+        data.astronomy.moonPhase ?? 0,
+      );
+
+      data.astronomy.sunIndicator =
+        data.astronomy.rawSunrise && data.astronomy.rawSunset
+          ? getIndicator(data.astronomy.rawSunrise, data.astronomy.rawSunset)
+          : undefined;
+
+      data.astronomy.moonIndicator =
+        data.astronomy.rawMoonrise && data.astronomy.rawMoonset
+          ? getIndicator(data.astronomy.rawMoonrise, data.astronomy.rawMoonset)
+          : undefined;
+    }
 
     console.log("[weather] success", {
       locationParam,
@@ -47,7 +67,7 @@ export const GET = withAxiom(async (req: NextRequest) => {
 
     const response: ApiResponse<WeatherData> = {
       success: true,
-      data: weatherData,
+      data,
       cached: weatherData.isCached,
       timestamp: new Date().toISOString(),
     };
