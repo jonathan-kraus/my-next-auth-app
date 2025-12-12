@@ -97,12 +97,14 @@ export async function fetchTomorrowIO(location: {
     8000: "Thunderstorm",
   };
 
-  const formatTime = (isoString: string | null) => {
-    if (!isoString) return null;
-    return new Date(isoString).toLocaleTimeString("en-US", {
+  const formatTime = (timeString?: string): string => {
+    if (!timeString) return "N/A";
+    // Use local time zone for display
+    return new Date(timeString).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
+      timeZoneName: "short",
     });
   };
 
@@ -122,10 +124,10 @@ export async function fetchTomorrowIO(location: {
       condition: weatherCodeMap[current.weatherCode] || "Unknown",
     },
     astronomy: {
-      sunrise: daily.sunriseTime || "N/A",
-      sunset: daily.sunsetTime || "N/A",
-      moonrise: daily.moonriseTime,
-      moonset: daily.moonsetTime,
+      sunrise: formatTime(daily.sunriseTime) ?? "N/A",
+      sunset: formatTime(daily.sunsetTime) ?? "N/A",
+      moonrise: formatTime(daily.moonriseTime),
+      moonset: formatTime(daily.moonsetTime),
       moonPhase: daily.moonPhase || 0,
     },
     isCached: false,

@@ -97,14 +97,16 @@ const weatherCodeMap: Record<number, string> = {
   8000: "Thunderstorm",
 };
 
-function formatTime(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  return new Date(iso).toLocaleTimeString("en-US", {
+const formatTime = (timeString?: string): string => {
+  if (!timeString) return "N/A";
+  // Use local time zone for display
+  return new Date(timeString).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
+    timeZoneName: "short",
   });
-}
+};
 
 function mapTomorrowIOToWeatherData(
   rawData: any,
