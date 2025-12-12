@@ -10,8 +10,7 @@ import { useLogger } from "@/lib/axiom/client";
 
 export default function WeatherPage() {
   const logger = useLogger();
-  const [selectedLocation, setSelectedLocation] =
-    useState<LocationKey>("kop-pa");
+  const [selectedLocation, setSelectedLocation] = useState<LocationKey>("kop");
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

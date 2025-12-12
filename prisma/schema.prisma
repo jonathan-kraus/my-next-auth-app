@@ -115,7 +115,7 @@ model VerificationToken {
 }
 model WeatherCache {
   id        String   @id @default(cuid())
-  location  String   // "kop-pa" | "brookline-ma" | "williamstown-ma"
+  location  String   // "kop" | "brookline-ma" | "williamstown-ma"
   data      Json     // Full Tomorrow.io response
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
