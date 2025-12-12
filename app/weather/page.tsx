@@ -92,8 +92,13 @@ export default function WeatherPage() {
         if (data.success && data.data) {
           setWeatherData(data.data);
           setLastUpdate(new Date());
-console.log("Weather data loaded successfully:", data.data);
-console.log("Sun", data.data.astronomy.sunIndicator);
+          {
+            weatherData &&
+              console.log("Astronomy with indicators:", weatherData.astronomy);
+          }
+
+          console.log("Weather data loaded successfully:", data.data);
+          console.log("Sun", data.data.astronomy.sunIndicator);
           console.log("Moon", data.data.astronomy.moonIndicator);
           console.log("Weather data loaded successfully:", data.data);
           console.log("Sun", data.data.astronomy.sunIndicator);
@@ -151,7 +156,7 @@ console.log("Sun", data.data.astronomy.sunIndicator);
         setLoading(false);
       }
     },
-    [logger],
+    [logger, weatherData],
   );
 
   // Initial fetch
@@ -177,8 +182,14 @@ console.log("Sun", data.data.astronomy.sunIndicator);
   logger.info("[debug] Weather page loaded", { location: selectedLocation });
   if (weatherData) {
     logger.info("[debug] Weather data loaded successfully", weatherData);
-    logger.info("[debug] Astronomy indicators sun", weatherData.astronomy.sunIndicator);
-  logger.info("[debug] Astronomy indicators moon", weatherData.astronomy.moonIndicator);
+    logger.info(
+      "[debug] Astronomy indicators sun",
+      weatherData.astronomy.sunIndicator,
+    );
+    logger.info(
+      "[debug] Astronomy indicators moon",
+      weatherData.astronomy.moonIndicator,
+    );
   }
   const handleRefresh = () => {
     logger.info("Manual refresh triggered", { location: selectedLocation });
