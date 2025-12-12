@@ -7,7 +7,8 @@ import {
   WeatherData,
 } from "@/lib/weather/types";
 
-const TOMORROW_IO_API_KEY = process.env.TOMORROW_API_KEY ?? process.env.TOMORROW_IO_API_KEY ?? "";
+const TOMORROW_IO_API_KEY =
+  process.env.TOMORROW_API_KEY ?? process.env.TOMORROW_IO_API_KEY ?? "";
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 const MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -133,6 +134,7 @@ function mapTomorrowIOToWeatherData(
   rawData: any,
   locationKey: LocationKey,
   isCached: boolean,
+  lastUpdatedIso: string,
 ): WeatherData {
   const location = LOCATIONS_BY_KEY[locationKey];
 
@@ -192,7 +194,7 @@ function mapTomorrowIOToWeatherData(
       daily,
     },
     isCached,
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: lastUpdatedIso,
   };
 }
 
@@ -211,7 +213,12 @@ export async function getWeather(
         locationKey,
         ageMs,
       });
-      return mapTomorrowIOToWeatherData(cached.data, locationKey, true);
+      return mapTomorrowIOToWeatherData(
+        cached.data,
+        locationKey,
+        true,
+        cached.createdAt.toISOString(),
+      );
     }
   }
 
@@ -220,9 +227,10 @@ export async function getWeather(
     const raw = await fetchFromTomorrowIO(locationKey);
     await saveCachedRaw(locationKey, raw);
 
+    const nowIso = new Date().toISOString();
     console.log("[weather] served live and cached", { locationKey });
 
-    return mapTomorrowIOToWeatherData(raw, locationKey, false);
+    return mapTomorrowIOToWeatherData(raw, locationKey, false, nowIso);
   } catch (error) {
     console.error("[weather] live fetch failed, falling back to cache", {
       locationKey,
@@ -230,7 +238,13 @@ export async function getWeather(
     });
 
     if (cached) {
-      return mapTomorrowIOToWeatherData(cached.data, locationKey, true);
+      // Fallback: serve stale cache rather than 500
+      return mapTomorrowIOToWeatherData(
+        cached.data,
+        locationKey,
+        true,
+        cached.createdAt.toISOString(),
+      );
     }
 
     throw error;
@@ -242,7 +256,6 @@ export async function getAllWeather(): Promise<WeatherData[]> {
   const results: WeatherData[] = [];
 
   for (const key of keys) {
-    // sequential is fine here; you can parallelize with Promise.all if needed
     const data = await getWeather(key);
     results.push(data);
   }
