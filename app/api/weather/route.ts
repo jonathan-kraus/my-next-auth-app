@@ -1,33 +1,35 @@
+// app/api/weather/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { withAxiom, logger } from "@/lib/axiom/server";
 import { getWeather } from "@/lib/weather/service";
-import { LocationKey } from "@/lib/weather/types";
-import { ApiResponse, WeatherData } from "@/lib/weather/types";
+import {
+  ApiResponse,
+  WeatherData,
+  LocationKey,
+  getLocationByName,
+} from "@/lib/weather/types";
 
 export const GET = withAxiom(async (req: NextRequest) => {
-  const startTime = performance.now();
-
   try {
-    const searchParams = req.nextUrl.searchParams;
-    const location = searchParams.get("location") as LocationKey;
-    const forceRefresh = searchParams.get("refresh") === "true";
+    const { searchParams } = new URL(req.url);
+    const locationParam = (searchParams.get("location") ||
+      "kop") as LocationKey;
+    const forceRefresh = searchParams.get("force") === "true";
 
+    const location = getLocationByName(locationParam);
     if (!location) {
-      logger.warn("Weather request missing location parameter", {
-        endpoint: "/api/weather",
-      });
-
-      return NextResponse.json(
+      return NextResponse.json<ApiResponse<WeatherData>>(
         {
           success: false,
-          error: "Missing location parameter",
+          error: `Unknown location: ${locationParam}`,
           timestamp: new Date().toISOString(),
-        } as ApiResponse<null>,
+        },
         { status: 400 },
       );
     }
 
-    const weatherData = await getWeather(location, forceRefresh);
+    // New signature: pass req and the location key
+    const weatherData = await getWeather(req, locationParam);
 
     const response: ApiResponse<WeatherData> = {
       success: true,
@@ -36,30 +38,21 @@ export const GET = withAxiom(async (req: NextRequest) => {
       timestamp: new Date().toISOString(),
     };
 
-    logger.info("Weather API response", {
-      location,
-      cached: weatherData.isCached,
-      forceRefresh,
-      temperature: weatherData.current.temperature,
-      duration: Math.round(performance.now() - startTime),
-    });
-
     return NextResponse.json(response);
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
     logger.error("Weather API error", {
-      error: errorMessage,
-      duration: Math.round(performance.now() - startTime),
+      error: error instanceof Error ? error.message : String(error),
     });
 
-    return NextResponse.json(
+    return NextResponse.json<ApiResponse<WeatherData>>(
       {
         success: false,
-        error: errorMessage,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error fetching weather",
         timestamp: new Date().toISOString(),
-      } as ApiResponse<null>,
+      },
       { status: 500 },
     );
   }

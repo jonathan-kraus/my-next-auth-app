@@ -4,7 +4,16 @@
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { WeatherData } from "@/lib/weather/types";
-
+const getMoonPhaseEmoji = (phase: number): string => {
+  if (phase === 0 || phase === 1) return "🌑 New Moon";
+  if (phase < 0.25) return "🌒 Waxing Crescent";
+  if (phase === 0.25) return "🌓 First Quarter";
+  if (phase < 0.5) return "🌔 Waxing Gibbous";
+  if (phase === 0.5) return "🌕 Full Moon";
+  if (phase < 0.75) return "🌖 Waning Gibbous";
+  if (phase === 0.75) return "🌗 Last Quarter";
+  return "🌘 Waning Crescent";
+};
 interface WeatherCardProps {
   data: WeatherData;
   isLoading?: boolean;
@@ -236,6 +245,49 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
           <div className="text-sm opacity-75">UV Index</div>
           <div className="text-2xl font-semibold">{data.current.uvIndex}</div>
+        </div>
+      </motion.div>
+
+      {/* Astronomy Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-6 pt-6 border-t border-white/20"
+      >
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <div className="text-xs opacity-75 mb-1">🌅 Sunrise</div>
+            <div className="text-lg font-semibold">
+              {data.astronomy.sunrise}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs opacity-75 mb-1">🌇 Sunset</div>
+            <div className="text-lg font-semibold">{data.astronomy.sunset}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <div className="text-xs opacity-75 mb-1">🌔 Moonrise</div>
+            <div className="text-lg font-semibold">
+              {data.astronomy.moonrise || "No rise today"}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs opacity-75 mb-1">🌘 Moonset</div>
+            <div className="text-lg font-semibold">
+              {data.astronomy.moonset || "No set today"}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/10 rounded-lg p-3 text-center">
+          <div className="text-sm opacity-75 mb-1">Moon Phase</div>
+          <div className="text-2xl font-bold">
+            {getMoonPhaseEmoji(data.astronomy.moonPhase)}
+          </div>
         </div>
       </motion.div>
 

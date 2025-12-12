@@ -114,8 +114,7 @@ export default function WeatherPage() {
         {/* Location Selector */}
         <LocationSelector
           selectedLocation={selectedLocation}
-          onLocationChange={setSelectedLocation}
-          isLoading={loading}
+          onChange={setSelectedLocation}
         />
 
         {/* Refresh Button */}

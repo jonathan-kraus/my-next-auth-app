@@ -1,84 +1,52 @@
 // lib/weather/types.ts
-export type LocationKey = "kop-pa" | "brookline-ma" | "williamstown-ma";
 
-export interface LocationInfo {
-  key: LocationKey;
+export interface Location {
   name: string;
   displayName: string;
-  latitude: number;
-  longitude: number;
-  timezone: string;
-  flag: string;
+  lat: number;
+  lon: number;
+  flag?: string;
 }
 
-export const LOCATIONS: Record<LocationKey, LocationInfo> = {
-  "kop-pa": {
-    key: "kop-pa",
-    name: "King of Prussia, PA",
-    displayName: "King of Prussia, PA",
-    latitude: 40.0913,
-    longitude: -75.3802,
-    timezone: "America/New_York",
-    flag: "🇺🇸",
-  },
-  "brookline-ma": {
-    key: "brookline-ma",
-    name: "Brookline, MA",
-    displayName: "Brookline, MA",
-    latitude: 42.3316,
-    longitude: -71.1234,
-    timezone: "America/New_York",
-    flag: "🇺🇸",
-  },
-  "williamstown-ma": {
-    key: "williamstown-ma",
-    name: "Williamstown, MA",
-    displayName: "Williamstown, MA",
-    latitude: 42.7141,
-    longitude: -73.1955,
-    timezone: "America/New_York",
-    flag: "🇺🇸",
-  },
-};
-
 export interface WeatherData {
-  location: LocationInfo;
+  location: Location;
   current: {
     temperature: number;
     feelsLike: number;
-    condition: string;
     humidity: number;
     windSpeed: number;
     windGust: number;
+    windDirection: number;
     pressure: number;
     uvIndex: number;
-  };
-  sun: {
-    rise: string;
-    set: string;
-  };
-  moon: {
-    rise: string;
-    set: string;
-    phase: string;
-  };
-  hourly: Array<{
-    time: string;
-    temperature: number;
+    visibility: number;
+    cloudCover: number;
     condition: string;
-    precipitation: number;
-    windSpeed: number;
-  }>;
-  daily: Array<{
-    date: string;
-    high: number;
-    low: number;
-    condition: string;
-    precipitation: number;
-    windSpeed: number;
-  }>;
-  lastUpdated: string;
+  };
+  astronomy: {
+    sunrise: string;
+    sunset: string;
+    moonrise: string | null;
+    moonset: string | null;
+    moonPhase: number; // 0 = new moon, 0.5 = full moon, 1 = new moon
+  };
+  forecast?: {
+    hourly: Array<{
+      time: string;
+      temperature: number;
+      condition: string;
+      precipitation: number;
+    }>;
+    daily: Array<{
+      date: string;
+      high: number;
+      low: number;
+      condition: string;
+      precipitation: number;
+    }>;
+  };
   isCached: boolean;
+  lastUpdated: string;
 }
 
 export interface ApiResponse<T> {
@@ -88,3 +56,48 @@ export interface ApiResponse<T> {
   cached?: boolean;
   timestamp: string;
 }
+
+// Predefined locations to monitor
+export const LOCATIONS: Location[] = [
+  {
+    name: "kop",
+    displayName: "King of Prussia, PA",
+    lat: 40.0893,
+    lon: -75.396,
+    flag: "🇺🇸", // King of Prussia, PA coordinates[web:85]
+  },
+  {
+    name: "brookline",
+    displayName: "Brookline, MA",
+    lat: 42.33176,
+    lon: -71.12116,
+    flag: "🇺🇸", // Brookline, MA coordinates[web:75]
+  },
+  {
+    name: "williamstown",
+    displayName: "Williamstown, MA",
+    lat: 42.712025,
+    lon: -73.203718,
+    flag: "🇺🇸", // Williamstown, MA coordinates[web:78]
+  },
+];
+
+// Helper to get location by name
+export function getLocationByName(name: string): Location | undefined {
+  return LOCATIONS.find((loc) => loc.name.toLowerCase() === name.toLowerCase());
+}
+
+// Helper to get all location names
+export function getAllLocationNames(): string[] {
+  return LOCATIONS.map((loc) => loc.name);
+}
+
+export type LocationKey = (typeof LOCATIONS)[number]["name"];
+
+export const LOCATIONS_BY_KEY: Record<LocationKey, Location> = LOCATIONS.reduce(
+  (acc, loc) => {
+    acc[loc.name as LocationKey] = loc;
+    return acc;
+  },
+  {} as Record<LocationKey, Location>,
+);

@@ -1,321 +1,179 @@
 // lib/weather/service.ts
-import db from "../db";
-import { Prisma } from "@/src/generated/client";
-import { LocationKey, LOCATIONS, WeatherData } from "./types";
-import { logger } from "@/lib/axiom/server";
+import { NextRequest } from "next/server";
+import {
+  LOCATIONS,
+  LOCATIONS_BY_KEY,
+  LocationKey,
+  WeatherData,
+} from "@/lib/weather/types";
 
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
-const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
-const TOMORROW_REALTIME_URL = "https://api.tomorrow.io/v4/weather/realtime";
-const TOMORROW_FORECAST_URL = "https://api.tomorrow.io/v4/weather/forecast";
+const TOMORROW_IO_API_KEY = process.env.TOMORROW_IO_API_KEY!;
+const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
-// Helper to safely cast JSON from Prisma to WeatherData
-function jsonToWeatherData(json: Prisma.JsonValue): WeatherData {
-  return json as unknown as WeatherData;
+if (!TOMORROW_IO_API_KEY) {
+  console.warn("TOMORROW_IO_API_KEY is not set");
 }
 
 async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
-  const location = LOCATIONS[locationKey];
-  const locationParam = `${location.latitude},${location.longitude}`;
+  const location = LOCATIONS_BY_KEY[locationKey];
 
-  // Fetch current/realtime data
-  const realtimeParams = new URLSearchParams({
-    location: locationParam,
-    apikey: TOMORROW_API_KEY!,
+  const body = {
+    location: [location.lat, location.lon],
+    fields: [
+      "temperature",
+      "temperatureApparent",
+      "humidity",
+      "windSpeed",
+      "windGust",
+      "windDirection",
+      "pressureSeaLevel",
+      "uvIndex",
+      "visibility",
+      "cloudCover",
+      "weatherCode",
+      // astronomy
+      "sunriseTime",
+      "sunsetTime",
+      "moonriseTime",
+      "moonsetTime",
+      "moonPhase",
+    ],
     units: "imperial",
+    timesteps: ["current", "1h", "1d"],
+    timezone: "America/New_York",
+  };
+
+  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_IO_API_KEY}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 
-  const realtimeFields = [
-    "temperature",
-    "temperatureApparent",
-    "weatherCode",
-    "humidity",
-    "windSpeed",
-    "windGust",
-    "pressureSurfaceLevel",
-    "uvIndex",
-  ];
-
-  realtimeFields.forEach((field) => realtimeParams.append("fields", field));
-
-  // Fetch forecast data (hourly and daily)
-  const forecastParams = new URLSearchParams({
-    location: locationParam,
-    apikey: TOMORROW_API_KEY!,
-    units: "imperial",
-    timesteps: "1h,1d",
-  });
-
-  const forecastFields = [
-    "temperature",
-    "temperatureApparent",
-    "temperatureMax",
-    "temperatureMin",
-    "weatherCode",
-    "precipitationProbability",
-    "windSpeed",
-    "sunriseTime",
-    "sunsetTime",
-    "moonPhase",
-  ];
-
-  forecastFields.forEach((field) => forecastParams.append("fields", field));
-
-  const realtimeUrl = `${TOMORROW_REALTIME_URL}?${realtimeParams}`;
-  const forecastUrl = `${TOMORROW_FORECAST_URL}?${forecastParams}`;
-
-  logger.debug("Fetching from Tomorrow.io", {
-    location: locationKey,
-    realtimeUrl: realtimeUrl.replace(TOMORROW_API_KEY!, "***"),
-    forecastUrl: forecastUrl.replace(TOMORROW_API_KEY!, "***"),
-  });
-
-  // Fetch both endpoints in parallel
-  const [realtimeResponse, forecastResponse] = await Promise.all([
-    fetch(realtimeUrl),
-    fetch(forecastUrl),
-  ]);
-
-  if (!realtimeResponse.ok) {
-    const errorText = await realtimeResponse.text();
-    logger.error("Tomorrow.io Realtime API error", {
-      status: realtimeResponse.status,
-      statusText: realtimeResponse.statusText,
-      body: errorText,
-      location: locationKey,
-    });
+  if (!res.ok) {
     throw new Error(
-      `Tomorrow.io API error: ${realtimeResponse.status} ${realtimeResponse.statusText}`,
+      `Tomorrow.io API error (${locationKey}): ${res.status} ${res.statusText}`,
     );
   }
 
-  if (!forecastResponse.ok) {
-    const errorText = await forecastResponse.text();
-    logger.error("Tomorrow.io Forecast API error", {
-      status: forecastResponse.status,
-      statusText: forecastResponse.statusText,
-      body: errorText,
-      location: locationKey,
-    });
-    throw new Error(
-      `Tomorrow.io API error: ${forecastResponse.status} ${forecastResponse.statusText}`,
-    );
-  }
-
-  const [realtimeData, forecastData] = await Promise.all([
-    realtimeResponse.json(),
-    forecastResponse.json(),
-  ]);
-
-  return { realtime: realtimeData, forecast: forecastData };
+  return res.json();
 }
 
-function parseTomorrowIOData(
+const weatherCodeMap: Record<number, string> = {
+  1000: "Clear",
+  1100: "Mostly Clear",
+  1101: "Partly Cloudy",
+  1102: "Mostly Cloudy",
+  1001: "Cloudy",
+  2000: "Foggy",
+  2100: "Light Fog",
+  4000: "Drizzle",
+  4001: "Rain",
+  4200: "Light Rain",
+  4201: "Heavy Rain",
+  5000: "Snow",
+  5001: "Flurries",
+  5100: "Light Snow",
+  5101: "Heavy Snow",
+  6000: "Freezing Drizzle",
+  6001: "Freezing Rain",
+  6200: "Light Freezing Rain",
+  6201: "Heavy Freezing Rain",
+  7000: "Ice Pellets",
+  7101: "Heavy Ice Pellets",
+  7102: "Light Ice Pellets",
+  8000: "Thunderstorm",
+};
+
+function formatTime(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  return new Date(iso).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function mapTomorrowIOToWeatherData(
   rawData: any,
   locationKey: LocationKey,
 ): WeatherData {
-  const location = LOCATIONS[locationKey];
-  const current = rawData.realtime.data.values;
-  const hourly = rawData.forecast.timelines.hourly.slice(0, 24);
-  const daily = rawData.forecast.timelines.daily.slice(0, 7);
+  const location = LOCATIONS_BY_KEY[locationKey];
 
-  const weatherCodeMap: Record<number, string> = {
-    1000: "Clear",
-    1001: "Cloudy",
-    1100: "Mostly Clear",
-    1101: "Partly Cloudy",
-    1102: "Mostly Cloudy",
-    2000: "Fog",
-    2100: "Light Fog",
-    4000: "Drizzle",
-    4001: "Rain",
-    4200: "Light Rain",
-    4201: "Heavy Rain",
-    5000: "Snow",
-    5001: "Flurries",
-    5100: "Light Snow",
-    5101: "Heavy Snow",
-    6000: "Freezing Drizzle",
-    6001: "Freezing Rain",
-    6200: "Light Freezing Rain",
-    6201: "Heavy Freezing Rain",
-    7000: "Ice Pellets",
-    7101: "Heavy Ice Pellets",
-    7102: "Light Ice Pellets",
-    8000: "Thunderstorm",
-  };
+  const timelines = rawData.data?.timelines ?? [];
+  const currentTimeline = timelines.find((t: any) => t.timestep === "current");
+  const hourlyTimeline = timelines.find((t: any) => t.timestep === "1h");
+  const dailyTimeline = timelines.find((t: any) => t.timestep === "1d");
 
-  // Get sun/moon data from first daily forecast entry
-  const todayForecast = daily[0]?.values || {};
+  if (!currentTimeline?.intervals?.[0]) {
+    throw new Error(`No current weather data for ${locationKey}`);
+  }
+
+  const currentValues = currentTimeline.intervals[0].values;
+  const dailyValues = dailyTimeline?.intervals?.[0]?.values ?? {};
+
+  const hourly = (hourlyTimeline?.intervals ?? [])
+    .slice(0, 24)
+    .map((i: any) => ({
+      time: i.startTime,
+      temperature: Math.round(i.values.temperature),
+      condition: weatherCodeMap[i.values.weatherCode] ?? "Unknown",
+      precipitation: Math.round(i.values.precipitationIntensity ?? 0),
+    }));
+
+  const daily = (dailyTimeline?.intervals ?? []).slice(0, 7).map((i: any) => ({
+    date: i.startTime,
+    high: Math.round(i.values.temperatureMax ?? i.values.temperature),
+    low: Math.round(i.values.temperatureMin ?? i.values.temperature),
+    condition: weatherCodeMap[i.values.weatherCode] ?? "Unknown",
+    precipitation: Math.round(i.values.precipitationIntensity ?? 0),
+  }));
 
   return {
     location,
     current: {
-      temperature: Math.round(current.temperature),
-      feelsLike: Math.round(current.temperatureApparent),
-      condition: weatherCodeMap[current.weatherCode] || "Unknown",
-      humidity: current.humidity,
-      windSpeed: Math.round(current.windSpeed),
-      windGust: Math.round(current.windGust || 0),
-      pressure: current.pressureSurfaceLevel,
-      uvIndex: current.uvIndex,
+      temperature: Math.round(currentValues.temperature),
+      feelsLike: Math.round(currentValues.temperatureApparent),
+      humidity: Math.round(currentValues.humidity),
+      windSpeed: Math.round(currentValues.windSpeed),
+      windGust: Math.round(currentValues.windGust ?? 0),
+      windDirection: Math.round(currentValues.windDirection),
+      pressure: Math.round(currentValues.pressureSeaLevel),
+      uvIndex: Math.round(currentValues.uvIndex ?? 0),
+      visibility: Math.round(currentValues.visibility ?? 0),
+      cloudCover: Math.round(currentValues.cloudCover ?? 0),
+      condition: weatherCodeMap[currentValues.weatherCode] ?? "Unknown",
     },
-    sun: {
-      rise: todayForecast.sunriseTime
-        ? new Date(todayForecast.sunriseTime).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "N/A",
-      set: todayForecast.sunsetTime
-        ? new Date(todayForecast.sunsetTime).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "N/A",
+    astronomy: {
+      sunrise: formatTime(dailyValues.sunriseTime) ?? "N/A",
+      sunset: formatTime(dailyValues.sunsetTime) ?? "N/A",
+      moonrise: formatTime(dailyValues.moonriseTime),
+      moonset: formatTime(dailyValues.moonsetTime),
+      moonPhase: dailyValues.moonPhase ?? 0,
     },
-    moon: {
-      rise: "N/A",
-      set: "N/A",
-      phase: todayForecast.moonPhase
-        ? getMoonPhase(todayForecast.moonPhase)
-        : "Unknown",
+    forecast: {
+      hourly,
+      daily,
     },
-    hourly: hourly.map((h: any) => ({
-      time: new Date(h.time).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      temperature: Math.round(h.values.temperature),
-      condition: weatherCodeMap[h.values.weatherCode] || "Unknown",
-      precipitation: h.values.precipitationProbability || 0,
-      windSpeed: Math.round(h.values.windSpeed),
-    })),
-    daily: daily.map((d: any) => ({
-      date: new Date(d.time).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      }),
-      high: Math.round(d.values.temperatureMax),
-      low: Math.round(d.values.temperatureMin),
-      condition: weatherCodeMap[d.values.weatherCode] || "Unknown",
-      precipitation: d.values.precipitationProbability || 0,
-      windSpeed: Math.round(d.values.windSpeed),
-    })),
-    lastUpdated: new Date().toISOString(),
     isCached: false,
+    lastUpdated: new Date().toISOString(),
   };
 }
 
-function getMoonPhase(phase: number): string {
-  const phases = [
-    "New Moon",
-    "Waxing Crescent",
-    "First Quarter",
-    "Waxing Gibbous",
-    "Full Moon",
-    "Waning Gibbous",
-    "Last Quarter",
-    "Waning Crescent",
-  ];
-  const index = Math.round((phase / 4) * (phases.length - 1));
-  return phases[Math.min(index, phases.length - 1)];
-}
-
 export async function getWeather(
+  req: NextRequest,
   locationKey: LocationKey,
-  forceRefresh = false,
 ): Promise<WeatherData> {
-  const startTime = performance.now();
-
-  try {
-    // Check cache first
-    if (!forceRefresh) {
-      const cached = await db.weatherCache.findUnique({
-        where: { location: locationKey },
-      });
-
-      if (cached) {
-        const age = Date.now() - new Date(cached.updatedAt).getTime();
-
-        if (age < CACHE_DURATION) {
-          const weatherData = {
-            ...jsonToWeatherData(cached.data),
-            isCached: true,
-          };
-
-          logger.info("Weather fetched from cache", {
-            location: locationKey,
-            age: Math.round(age / 1000),
-            duration: Math.round(performance.now() - startTime),
-          });
-
-          return weatherData;
-        }
-      }
-    }
-
-    // Fetch fresh data from Tomorrow.io
-    const rawData = await fetchFromTomorrowIO(locationKey);
-    const weatherData = parseTomorrowIOData(rawData, locationKey);
-
-    // Update cache
-    await db.weatherCache.upsert({
-      where: { location: locationKey },
-      create: {
-        location: locationKey,
-        data: weatherData as unknown as Prisma.InputJsonValue,
-      },
-      update: {
-        data: weatherData as unknown as Prisma.InputJsonValue,
-        updatedAt: new Date(),
-      },
-    });
-
-    logger.info("Weather fetched from Tomorrow.io", {
-      location: locationKey,
-      temperature: weatherData.current.temperature,
-      condition: weatherData.current.condition,
-      duration: Math.round(performance.now() - startTime),
-    });
-
-    return weatherData;
-  } catch (error) {
-    logger.error("Weather fetch failed", {
-      location: locationKey,
-      error: error instanceof Error ? error.message : String(error),
-      duration: Math.round(performance.now() - startTime),
-    });
-
-    // Fallback to cached data even if stale
-    const cached = await db.weatherCache.findUnique({
-      where: { location: locationKey },
-    });
-
-    if (cached) {
-      const weatherData = { ...jsonToWeatherData(cached.data), isCached: true };
-      logger.warn("Using stale cached weather data", {
-        location: locationKey,
-        age: Math.round(
-          (Date.now() - new Date(cached.updatedAt).getTime()) / 1000,
-        ),
-      });
-      return weatherData;
-    }
-
-    throw error;
-  }
+  const raw = await fetchFromTomorrowIO(locationKey);
+  return mapTomorrowIOToWeatherData(raw, locationKey);
 }
 
-export async function getAllWeather(
-  forceRefresh = false,
-): Promise<WeatherData[]> {
+export async function getAllWeather(): Promise<WeatherData[]> {
+  const keys = LOCATIONS.map((l) => l.name) as LocationKey[];
   const results = await Promise.all(
-    Object.keys(LOCATIONS).map((key) =>
-      getWeather(key as LocationKey, forceRefresh),
-    ),
+    keys.map(async (key) => {
+      const raw = await fetchFromTomorrowIO(key);
+      return mapTomorrowIOToWeatherData(raw, key);
+    }),
   );
-
   return results;
 }
