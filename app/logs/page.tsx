@@ -240,7 +240,7 @@ export default function LogsPage() {
                       {log.user?.name ?? "-"}
                     </td>
                     <td className="p-2 border border-gray-700">
-                      {log.requestId ?? "-"}
+                      {log.id ?? "-"}
                     </td>
                   </tr>
                   {log.expanded && (
