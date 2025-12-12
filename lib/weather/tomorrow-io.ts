@@ -1,7 +1,7 @@
 // lib/weather/tomorrow-io.ts
 import { WeatherData } from "./types";
 
-const API_KEY = process.env.TOMORROW_IO_API_KEY!;
+const API_KEY = process.env.TOMORROW_API_KEY!;
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
 function getMoonPhaseDescription(phase: number): string {

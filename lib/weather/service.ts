@@ -6,11 +6,11 @@ import {
   WeatherData,
 } from "@/lib/weather/types";
 
-const TOMORROW_IO_API_KEY = process.env.TOMORROW_IO_API_KEY!;
+const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY!;
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
-if (!TOMORROW_IO_API_KEY) {
-  console.warn("TOMORROW_IO_API_KEY is not set");
+if (!TOMORROW_API_KEY) {
+  console.warn("TOMORROW_API_KEY is not set");
 }
 
 async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
@@ -48,7 +48,7 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     lon: location.lon,
   });
 
-  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_IO_API_KEY}`, {
+  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
