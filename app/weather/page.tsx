@@ -1,8 +1,10 @@
 "use client";
-
+// app/weather/page.tsx
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
+import { useLogger } from "@/lib/axiom/client";
+import { appLog } from "@/utils/app-log"
 import { LocationSelector } from "@/components/LocationSelector";
 import {
   LocationKey,
@@ -10,7 +12,6 @@ import {
   ApiResponse,
   BodyIndicator,
 } from "@/lib/weather/types";
-import { useLogger } from "@/lib/axiom/client";
 
 // --- Countdown Timer Component ---
 function CountdownTimer({
@@ -99,10 +100,22 @@ export default function WeatherPage() {
             cached: data.cached,
             duration: Math.round(performance.now() - startTime),
           });
-
+          console.log("Astronomy indicators", {
+            sun: data.data.astronomy.sunIndicator ?? "N/A",
+            moon: data.data.astronomy.moonIndicator ?? "N/A",
+          });
+          appLog({
+            source: "app/weather/page.tsx",
+            message: "Astronomy indicators",
+            metadata: {
+              location,
+              sun: data.data.astronomy.sunIndicator ?? "N/A",
+              moon: data.data.astronomy.moonIndicator ?? "N/A",
+            },
+          });
           logger.info("[debug] Astronomy indicators", {
-            sun: data.data.astronomy.sunIndicator,
-            moon: data.data.astronomy.moonIndicator,
+            sun: data.data.astronomy.sunIndicator ?? "N/A",
+            moon: data.data.astronomy.moonIndicator ?? "N/A",
           });
         } else if (data.cached) {
           logger.info("Weather data loaded from cache", {
