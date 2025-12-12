@@ -79,7 +79,7 @@ export default function WeatherPage() {
         logger.info("Fetching weather", { location, forceRefresh });
 
         const response = await fetch(
-          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`
+          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
         );
 
         if (!response.ok) {
@@ -127,7 +127,7 @@ export default function WeatherPage() {
         setLoading(false);
       }
     },
-    [logger]
+    [logger],
   );
 
   // Initial fetch

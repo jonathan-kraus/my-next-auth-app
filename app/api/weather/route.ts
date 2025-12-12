@@ -12,7 +12,8 @@ import { getIndicator, getMoonPhaseDescription } from "@/lib/weather/utils";
 export const GET = withAxiom(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
-    const locationParam = (searchParams.get("location") || "kop") as LocationKey;
+    const locationParam = (searchParams.get("location") ||
+      "kop") as LocationKey;
     const forceRefresh = searchParams.get("force") === "true";
     const refresh = searchParams.get("refresh") === "true";
 
