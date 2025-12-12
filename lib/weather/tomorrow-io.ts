@@ -15,6 +15,52 @@ function getMoonPhaseDescription(phase: number): string {
   return "🌘 Waning Crescent";
 }
 
+// Utility: format time in Eastern
+const formatTime = (timeString?: string): string => {
+  if (!timeString) return "N/A";
+  return new Date(timeString).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/New_York",
+  });
+};
+
+// Utility: determine if sun/moon is up and countdown if close to change
+function getIndicator(
+  riseTime?: string,
+  setTime?: string,
+  now: Date = new Date(),
+): { status: "Up" | "Down"; countdown?: string } {
+  if (!riseTime || !setTime) return { status: "Down" };
+
+  const rise = new Date(riseTime);
+  const set = new Date(setTime);
+
+  // Convert "now" into Eastern for comparison
+  const nowEastern = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
+
+  if (nowEastern >= rise && nowEastern < set) {
+    // It's up
+    const diffMs = set.getTime() - nowEastern.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin <= 15) {
+      return { status: "Up", countdown: `Sets in ${diffMin} minutes` };
+    }
+    return { status: "Up" };
+  } else {
+    // It's down
+    const diffMs = rise.getTime() - nowEastern.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin > 0 && diffMin <= 15) {
+      return { status: "Down", countdown: `Rises in ${diffMin} minutes` };
+    }
+    return { status: "Down" };
+  }
+}
+
 export async function fetchTomorrowIO(location: {
   name: string;
   displayName: string;
@@ -97,18 +143,6 @@ export async function fetchTomorrowIO(location: {
     8000: "Thunderstorm",
   };
 
-  const formatTime = (timeString?: string): string => {
-    if (!timeString) return "N/A";
-    // Use local time zone for display
-    return new Date(timeString).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "America/New_York",
-      timeZoneName: "short",
-    });
-  };
-
   return {
     location,
     current: {
@@ -130,6 +164,9 @@ export async function fetchTomorrowIO(location: {
       moonrise: formatTime(daily.moonriseTime),
       moonset: formatTime(daily.moonsetTime),
       moonPhase: daily.moonPhase || 0,
+      sunIndicator: getIndicator(daily.sunriseTime, daily.sunsetTime),
+      moonIndicator: getIndicator(daily.moonriseTime, daily.moonsetTime),
+      moonPhaseDescription: getMoonPhaseDescription(daily.moonPhase || 0),
     },
     isCached: false,
     lastUpdated: new Date().toISOString(),
