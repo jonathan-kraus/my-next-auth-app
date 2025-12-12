@@ -1,5 +1,5 @@
 // lib/weather/service.ts
-
+import db from "../db";
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
@@ -7,12 +7,33 @@ import {
   WeatherData,
 } from "@/lib/weather/types";
 
-const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY!;
+const TOMORROW_IO_API_KEY = process.env.TOMORROW_API_KEY ?? process.env.TOMORROW_IO_API_KEY ?? "";
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
+const MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
-if (!TOMORROW_API_KEY) {
-  console.warn("TOMORROW_API_KEY is not set");
+if (!TOMORROW_IO_API_KEY) {
+  console.warn("TOMORROW API key env var is not set");
 }
+
+// ---- DB helpers ------------------------------------------------------------
+
+async function getCachedRaw(locationKey: LocationKey) {
+  return db.weatherCache.findFirst({
+    where: { location: locationKey },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+async function saveCachedRaw(locationKey: LocationKey, raw: any) {
+  await db.weatherCache.create({
+    data: {
+      location: locationKey,
+      data: raw,
+    },
+  });
+}
+
+// ---- External API ----------------------------------------------------------
 
 async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
   const location = LOCATIONS_BY_KEY[locationKey];
@@ -31,7 +52,6 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
       "visibility",
       "cloudCover",
       "weatherCode",
-      // astronomy
       "sunriseTime",
       "sunsetTime",
       "moonriseTime",
@@ -49,7 +69,7 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     lon: location.lon,
   });
 
-  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
+  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_IO_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -70,6 +90,8 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
 
   return res.json();
 }
+
+// ---- Mapping ---------------------------------------------------------------
 
 const weatherCodeMap: Record<number, string> = {
   1000: "Clear",
@@ -99,7 +121,6 @@ const weatherCodeMap: Record<number, string> = {
 
 const formatTime = (timeString?: string): string => {
   if (!timeString) return "N/A";
-  // Use local time zone for display
   return new Date(timeString).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -111,6 +132,7 @@ const formatTime = (timeString?: string): string => {
 function mapTomorrowIOToWeatherData(
   rawData: any,
   locationKey: LocationKey,
+  isCached: boolean,
 ): WeatherData {
   const location = LOCATIONS_BY_KEY[locationKey];
 
@@ -159,8 +181,8 @@ function mapTomorrowIOToWeatherData(
       condition: weatherCodeMap[currentValues.weatherCode] ?? "Unknown",
     },
     astronomy: {
-      sunrise: formatTime(dailyValues.sunriseTime) ?? "N/A",
-      sunset: formatTime(dailyValues.sunsetTime) ?? "N/A",
+      sunrise: formatTime(dailyValues.sunriseTime),
+      sunset: formatTime(dailyValues.sunsetTime),
       moonrise: formatTime(dailyValues.moonriseTime),
       moonset: formatTime(dailyValues.moonsetTime),
       moonPhase: dailyValues.moonPhase ?? 0,
@@ -169,26 +191,61 @@ function mapTomorrowIOToWeatherData(
       hourly,
       daily,
     },
-    isCached: false,
+    isCached,
     lastUpdated: new Date().toISOString(),
   };
 }
 
+// ---- Public API ------------------------------------------------------------
+
 export async function getWeather(
   locationKey: LocationKey,
 ): Promise<WeatherData> {
-  console.log("[weather] getWeather", { locationKey });
-  const raw = await fetchFromTomorrowIO(locationKey);
-  return mapTomorrowIOToWeatherData(raw, locationKey);
+  const cached = await getCachedRaw(locationKey);
+
+  // If we have fresh DB data, use it immediately
+  if (cached) {
+    const ageMs = Date.now() - cached.createdAt.getTime();
+    if (ageMs < MAX_AGE_MS) {
+      console.log("[weather] serving from WeatherCache", {
+        locationKey,
+        ageMs,
+      });
+      return mapTomorrowIOToWeatherData(cached.data, locationKey, true);
+    }
+  }
+
+  // Otherwise, try live API and store the result
+  try {
+    const raw = await fetchFromTomorrowIO(locationKey);
+    await saveCachedRaw(locationKey, raw);
+
+    console.log("[weather] served live and cached", { locationKey });
+
+    return mapTomorrowIOToWeatherData(raw, locationKey, false);
+  } catch (error) {
+    console.error("[weather] live fetch failed, falling back to cache", {
+      locationKey,
+      message: error instanceof Error ? error.message : String(error),
+    });
+
+    if (cached) {
+      return mapTomorrowIOToWeatherData(cached.data, locationKey, true);
+    }
+
+    throw error;
+  }
 }
 
 export async function getAllWeather(): Promise<WeatherData[]> {
   const keys = LOCATIONS.map((l) => l.name) as LocationKey[];
-  const results = await Promise.all(
-    keys.map(async (key) => {
-      const raw = await fetchFromTomorrowIO(key);
-      return mapTomorrowIOToWeatherData(raw, key);
-    }),
-  );
+  const results: WeatherData[] = [];
+
+  for (const key of keys) {
+    // sequential is fine here; you can parallelize with Promise.all if needed
+    const data = await getWeather(key);
+    results.push(data);
+  }
+
   return results;
 }
