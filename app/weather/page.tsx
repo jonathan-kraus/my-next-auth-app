@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { LocationSelector } from "@/components/LocationSelector";
 import {
@@ -14,17 +14,10 @@ import {
 import { useLogger } from "@/lib/axiom/client";
 
 // --- Countdown Timer Component ---
-function CountdownTimer({
-  label,
-  indicator,
-}: {
-  label: string;
-  indicator?: BodyIndicator;
-}) {
+function CountdownTimer({ label, indicator }: { label: string; indicator?: BodyIndicator }) {
   const [countdown, setCountdown] = useState(indicator?.countdown);
 
   useEffect(() => {
-    // update every minute
     const interval = setInterval(() => {
       setCountdown(indicator?.countdown);
     }, 60_000);
@@ -34,18 +27,32 @@ function CountdownTimer({
 
   if (!indicator) return null;
 
+  const isUp = indicator.status === "Up";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="text-center text-lg font-medium text-gray-700 mb-4"
+      className={`text-center text-lg font-medium mb-4 ${
+        isUp ? "text-yellow-700" : "text-indigo-700"
+      }`}
     >
-      {label}: {indicator.status}
-      {indicator.countdown && (
-        <span className="ml-2 text-sm text-indigo-600">
-          {indicator.countdown}
-        </span>
-      )}
+      {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
+
+      <AnimatePresence>
+        {countdown && (
+          <motion.span
+            key="countdown"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="ml-2 text-sm text-gray-600"
+          >
+            ({countdown})
+          </motion.span>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
