@@ -12,11 +12,19 @@ import {
 export const GET = withAxiom(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
-    const locationParam = (searchParams.get("location") ||
-      "kop") as LocationKey;
+    const locationParam = (searchParams.get("location") || "kop") as LocationKey;
     const forceRefresh = searchParams.get("force") === "true";
+    const refresh = searchParams.get("refresh") === "true";
 
     const location = getLocationByName(locationParam);
+
+    console.log("[weather] incoming", {
+      locationParam,
+      location,
+      refresh,
+      forceRefresh,
+    });
+
     if (!location) {
       return NextResponse.json<ApiResponse<WeatherData>>(
         {
@@ -28,8 +36,13 @@ export const GET = withAxiom(async (req: NextRequest) => {
       );
     }
 
-    // New signature: pass req and the location key
-    const weatherData = await getWeather(req, locationParam);
+    const weatherData = await getWeather(locationParam);
+
+    console.log("[weather] success", {
+      locationParam,
+      refresh,
+      forceRefresh,
+    });
 
     const response: ApiResponse<WeatherData> = {
       success: true,
@@ -39,7 +52,12 @@ export const GET = withAxiom(async (req: NextRequest) => {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("[weather] error", {
+      message: error?.message,
+      stack: error?.stack,
+    });
+
     logger.error("Weather API error", {
       error: error instanceof Error ? error.message : String(error),
     });

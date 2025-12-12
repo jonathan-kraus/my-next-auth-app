@@ -1,5 +1,4 @@
 // lib/weather/service.ts
-import { NextRequest } from "next/server";
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
@@ -43,6 +42,12 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     timezone: "America/New_York",
   };
 
+  console.log("[weather] calling Tomorrow.io", {
+    locationKey,
+    lat: location.lat,
+    lon: location.lon,
+  });
+
   const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_IO_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -50,6 +55,13 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
   });
 
   if (!res.ok) {
+    const text = await res.text();
+    console.error("[weather] Tomorrow.io error", {
+      locationKey,
+      status: res.status,
+      statusText: res.statusText,
+      body: text,
+    });
     throw new Error(
       `Tomorrow.io API error (${locationKey}): ${res.status} ${res.statusText}`,
     );
@@ -160,9 +172,9 @@ function mapTomorrowIOToWeatherData(
 }
 
 export async function getWeather(
-  req: NextRequest,
   locationKey: LocationKey,
 ): Promise<WeatherData> {
+  console.log("[weather] getWeather", { locationKey });
   const raw = await fetchFromTomorrowIO(locationKey);
   return mapTomorrowIOToWeatherData(raw, locationKey);
 }
