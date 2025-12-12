@@ -94,6 +94,28 @@ export default function WeatherPage() {
             condition: data.data.current.condition,
             cached: data.cached,
             duration: Math.round(performance.now() - startTime),
+             // 🔍 Debug logging
+          });
+
+  logger.info("[debug] Astronomy indicators", {
+    sun: data.data.astronomy.sunIndicator,
+    moon: data.data.astronomy.moonIndicator,
+  });
+
+  logger.info("[debug] Astronomy & Weather data loaded successfully", {
+    location,
+    sun: data.data.astronomy.sunIndicator,
+    moon: data.data.astronomy.moonIndicator,
+    temperature: data.data.current.temperature,
+    condition: data.data.current.condition,
+    cached: data.cached,
+    duration: Math.round(performance.now() - startTime),
+  });
+} else if (data.cached) {
+          logger.info("Weather data loaded from cache", {
+            location,
+            cached: data.cached,
+            duration: Math.round(performance.now() - startTime),
           });
         } else {
           throw new Error(data.error || "Unknown error");
