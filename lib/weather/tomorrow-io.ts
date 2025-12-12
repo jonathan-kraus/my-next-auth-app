@@ -103,8 +103,8 @@ export async function fetchTomorrowIO(location: {
   });
 
   await appLog({
-    source: "app/api/test-log/route.ts",
-    message: "---test-log invoked---",
+    source: "lib/weather/tomorrow-io.ts",
+    message: "---tomorrow invoked---",
     metadata: { response: response, requestId: requestId },
   });
   if (!response.ok) {
