@@ -211,7 +211,7 @@ export default function LogsPage() {
                 <th className="p-2 border border-gray-700">Source</th>
                 <th className="p-2 border border-gray-700">Message</th>
                 <th className="p-2 border border-gray-700">User</th>
-                <th className="p-2 border border-gray-700">Request ID</th>
+                <th className="p-2 border border-gray-700">metadata</th>
               </tr>
             </thead>
             <tbody>
