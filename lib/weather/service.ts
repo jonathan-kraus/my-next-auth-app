@@ -26,8 +26,13 @@ async function getCachedRaw(locationKey: LocationKey) {
 }
 
 async function saveCachedRaw(locationKey: LocationKey, raw: any) {
-  await db.weatherCache.create({
-    data: {
+  await db.weatherCache.upsert({
+    where: { location: locationKey },
+    update: {
+      data: raw,
+      // updatedAt auto-updates via @updatedAt
+    },
+    create: {
       location: locationKey,
       data: raw,
     },
