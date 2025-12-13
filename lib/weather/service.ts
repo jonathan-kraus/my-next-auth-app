@@ -1,7 +1,5 @@
 // lib/weather/service.ts
 import db from "../db";
-import { getIndicator } from "@/lib/weather/utils";
-
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
@@ -10,12 +8,47 @@ import {
 } from "@/lib/weather/types";
 
 const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
-
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 const MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
 if (!TOMORROW_API_KEY) {
   console.warn("TOMORROW API key env var is not set");
+}
+
+// ---- Indicator helper ------------------------------------------------------
+
+function computeIndicator(
+  now: Date,
+  rise?: Date | null,
+  set?: Date | null,
+): { status: "Up" | "Down"; countdown?: string } {
+  if (!rise || !set) {
+    return { status: "Down", countdown: undefined };
+  }
+
+  if (now >= rise && now < set) {
+    // Body is above the horizon → time until it sets
+    const diffMs = set.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / 1000 / 60);
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    return {
+      status: "Up",
+      countdown: hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
+    };
+  } else {
+    // Body is below the horizon → time until next rise
+    const nextRise =
+      now < rise ? rise : new Date(rise.getTime() + 24 * 60 * 60 * 1000);
+    const diffMs = nextRise.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / 1000 / 60);
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    return {
+      status: "Down",
+      countdown: hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
+    };
+  }
 }
 
 // ---- DB helpers ------------------------------------------------------------
@@ -29,35 +62,42 @@ async function getCachedRaw(locationKey: LocationKey) {
 
 export async function saveCachedRaw(locationKey: LocationKey, raw: any) {
   const daily = raw?.timelines?.daily?.[0]?.values;
+  const now = new Date();
 
-  const sunIndicator = getIndicator(daily?.sunriseTime, daily?.sunsetTime);
-  const moonIndicator = getIndicator(daily?.moonriseTime, daily?.moonsetTime);
+  const sunrise = daily?.sunriseTime ? new Date(daily.sunriseTime) : null;
+  const sunset = daily?.sunsetTime ? new Date(daily.sunsetTime) : null;
+  const moonrise = daily?.moonriseTime ? new Date(daily.moonriseTime) : null;
+  const moonset = daily?.moonsetTime ? new Date(daily.moonsetTime) : null;
+
+  const sunIndicator = computeIndicator(now, sunrise, sunset);
+  const moonIndicator = computeIndicator(now, moonrise, moonset);
+
   await db.weatherCache.upsert({
     where: { location: locationKey },
     update: {
       data: raw,
-      sunrise: daily?.sunriseTime ? new Date(daily.sunriseTime) : null,
-      sunset: daily?.sunsetTime ? new Date(daily.sunsetTime) : null,
-      moonrise: daily?.moonriseTime ? new Date(daily.moonriseTime) : null,
-      moonset: daily?.moonsetTime ? new Date(daily.moonsetTime) : null,
+      sunrise,
+      sunset,
+      moonrise,
+      moonset,
       moonPhase: daily?.moonPhase ?? null,
-      sunStatus: sunIndicator?.status,
-      sunCountdown: sunIndicator?.countdown,
-      moonStatus: moonIndicator?.status,
-      moonCountdown: moonIndicator?.countdown,
+      sunStatus: sunIndicator.status,
+      sunCountdown: sunIndicator.countdown,
+      moonStatus: moonIndicator.status,
+      moonCountdown: moonIndicator.countdown,
     },
     create: {
       location: locationKey,
       data: raw,
-      sunrise: daily?.sunriseTime ? new Date(daily.sunriseTime) : null,
-      sunset: daily?.sunsetTime ? new Date(daily.sunsetTime) : null,
-      moonrise: daily?.moonriseTime ? new Date(daily.moonriseTime) : null,
-      moonset: daily?.moonsetTime ? new Date(daily.moonsetTime) : null,
+      sunrise,
+      sunset,
+      moonrise,
+      moonset,
       moonPhase: daily?.moonPhase ?? null,
-      sunStatus: sunIndicator?.status,
-      sunCountdown: sunIndicator?.countdown,
-      moonStatus: moonIndicator?.status,
-      moonCountdown: moonIndicator?.countdown,
+      sunStatus: sunIndicator.status,
+      sunCountdown: sunIndicator.countdown,
+      moonStatus: moonIndicator.status,
+      moonCountdown: moonIndicator.countdown,
     },
   });
 }
@@ -251,14 +291,17 @@ export async function getWeather(locationKey: LocationKey) {
       mapped.astronomy.rawMoonset = cached.moonset?.toISOString();
       mapped.astronomy.moonPhase = cached.moonPhase ?? 0;
 
-      mapped.astronomy.sunIndicator = {
-        status: (cached.sunStatus as "Up" | "Down") ?? "Down",
-        countdown: cached.sunCountdown ?? undefined,
-      };
-      mapped.astronomy.moonIndicator = {
-        status: (cached.moonStatus as "Up" | "Down") ?? "Down",
-        countdown: cached.moonCountdown ?? undefined,
-      };
+      const now = new Date();
+      mapped.astronomy.sunIndicator = computeIndicator(
+        now,
+        cached.sunrise,
+        cached.sunset,
+      );
+      mapped.astronomy.moonIndicator = computeIndicator(
+        now,
+        cached.moonrise,
+        cached.moonset,
+      );
     }
 
     return mapped;
