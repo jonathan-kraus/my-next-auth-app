@@ -1,5 +1,5 @@
 "use client";
-// app/weather/page.tsx
+
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
@@ -118,6 +118,7 @@ export default function WeatherPage() {
             cached: data.cached,
             duration: Math.round(performance.now() - startTime),
           });
+
           appLog({
             source: "app/weather/page.tsx",
             message: "[full] Astronomy indicators",
@@ -153,6 +154,7 @@ export default function WeatherPage() {
               moon: data.data.astronomy.moonIndicator ?? "N/A",
             },
           });
+
           logger.info("[debug] Astronomy indicators", {
             sun: data.data.astronomy.sunIndicator ?? "N/A",
             moon: data.data.astronomy.moonIndicator ?? "N/A",
