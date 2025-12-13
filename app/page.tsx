@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,14 +8,28 @@ import { locationLabels } from "@/lib/weather/locationLabels";
 import { WeatherData, ApiResponse } from "@/lib/weather/types";
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Only fetch if user is authenticated
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
+    }
+
     async function fetchAllWeather() {
       try {
-        const response = await fetch("/api/weather/all");
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+        const response = await fetch("/api/weather/all", {
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeout);
+
         if (!response.ok) throw new Error("Failed to fetch weather");
 
         const data: ApiResponse<WeatherData[]> = await response.json();
@@ -25,13 +38,29 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Failed to load weather:", error);
+        // Don't crash on error, just show empty state
+        setWeatherData([]);
       } finally {
         setLoading(false);
       }
     }
 
     fetchAllWeather();
-  }, []);
+  }, [status]); // Depend on status, not session
+
+  if (status === "loading") {
+    return (
+      <main className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+          className="text-7xl"
+        >
+          ⏳
+        </motion.div>
+      </main>
+    );
+  }
 
   if (!session) {
     return (
