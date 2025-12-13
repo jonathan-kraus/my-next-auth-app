@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { useLogger } from "@/lib/axiom/client";
 import { appLog } from "@/utils/app-log";
+import { triggerEmail } from "@/utils/triggerEmail";
 import { LocationSelector } from "@/components/LocationSelector";
 import {
   LocationKey,
@@ -205,43 +206,34 @@ export default function WeatherPage() {
     setEmailError(null);
     setEmailSuccess(false);
 
-    try {
-      logger.info("Sending weather email", { location: selectedLocation });
+    logger.info("Sending weather email", { location: selectedLocation });
 
-      const response = await fetch("/api/weather/email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          weatherData,
-          location: selectedLocation,
-          timestamp: new Date().toISOString(),
-        }),
-      });
+    await triggerEmail(
+      "in weather page",
+      "requestId",
+      `Subject weather`,
+      `Created by \n\nweather content here.`,
+    );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to send email");
-      }
-
-      setEmailSuccess(true);
-      logger.info("Weather email sent successfully", {
-        location: selectedLocation,
-      });
-
-      // Clear success message after 5 seconds
-      setTimeout(() => setEmailSuccess(false), 5000);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setEmailError(errorMessage);
-
-      logger.error("Email send failed", {
-        location: selectedLocation,
-        error: errorMessage,
-      });
-    } finally {
-      setEmailLoading(false);
-    }
+    console.log("[astronomy] email");
   };
+  setEmailSuccess(true);
+  logger.info("Weather email sent successfully", {
+    location: selectedLocation,
+  });
+
+  // Clear success message after 5 seconds
+  setTimeout(() => setEmailSuccess(false), 5000);
+
+  const errorMessage = "Unknown error";
+  setEmailError(errorMessage);
+
+  logger.error("Email send failed", {
+    location: selectedLocation,
+    error: errorMessage,
+  });
+
+  setEmailLoading(false);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
