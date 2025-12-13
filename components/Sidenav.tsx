@@ -14,26 +14,53 @@ import {
 } from "@heroicons/react/24/outline";
 import versionInfo from "../version.json";
 
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  protected?: boolean;
+}
+
 export const Sidenav = () => {
   const { data: session } = useSession();
 
-  const navItems = [
-    { name: "Home", href: "/", icon: HomeIcon },
-    { name: "Dashboard", href: "/dashboard", icon: ChartBarIcon },
-    { name: "Weather", href: "/weather", icon: CloudIcon },
-    { name: "Notes", href: "/notes", icon: PencilSquareIcon, protected: true }, // Mark as protected
-    { name: "Jtemp", href: "/jtemp-data", icon: DocumentTextIcon },
-    { name: "Test-log", href: "/api/test-log", icon: BugAntIcon },
-    { name: "Test user", href: "/test", icon: UserIcon },
-    { name: "Log Explorer", href: "/logs", icon: MagnifyingGlassIcon },
-    { name: "Log", href: "/log", icon: MagnifyingGlassIcon },
+  const navItems: NavItem[] = [
+    { name: "Home", href: "/", icon: HomeIcon, protected: false },
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: ChartBarIcon,
+      protected: false,
+    },
+    { name: "Weather", href: "/weather", icon: CloudIcon, protected: false },
+    { name: "Notes", href: "/notes", icon: PencilSquareIcon, protected: true },
+    {
+      name: "Jtemp",
+      href: "/jtemp-data",
+      icon: DocumentTextIcon,
+      protected: false,
+    },
+    {
+      name: "Test-log",
+      href: "/api/test-log",
+      icon: BugAntIcon,
+      protected: false,
+    },
+    { name: "Test user", href: "/test", icon: UserIcon, protected: false },
+    {
+      name: "Log Explorer",
+      href: "/logs",
+      icon: MagnifyingGlassIcon,
+      protected: false,
+    },
+    { name: "Log", href: "/log", icon: MagnifyingGlassIcon, protected: false },
   ];
 
   const displayName = session?.user?.name ?? "Unknown User";
   const email = session?.user?.email ?? "";
 
-  // Filter items based on authentication
-  const visibleItems = navItems.filter((item) => !item.protected || session);
+  // Filter items based on authentication - safely check protected property
+  const visibleItems = navItems.filter((item) => !item.protected || !!session);
 
   return (
     <div className="w-64 bg-gray-800 text-white p-6 shadow-2xl">
