@@ -14,53 +14,53 @@ export async function GET(request: Request) {
   // const userId = session?.user?.id ?? null;
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
   const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
-const BASE_URL = "https://api.tomorrow.io/v4/timelines";
+  const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
-async function fetchAstronomy(locationKey: string) {
-  const location = "LOCATIONS_BY_KEY[locationKey]";
+  async function fetchAstronomy(locationKey: string) {
+    const location = "LOCATIONS_BY_KEY[locationKey]";
 
-  const body = {
-    location: [40.0913, -75.3802],
-    fields: [
-      "sunriseTime",
-      "sunsetTime",
-      "moonriseTime",
-      "moonsetTime",
-      "moonPhase"
-    ],
-    timesteps: ["1d"], // daily values
-    units: "imperial",
-    timezone: "America/New_York",
-  };
-fetchAstronomy("kop")
-  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+    const body = {
+      location: [40.0913, -75.3802],
+      fields: [
+        "sunriseTime",
+        "sunsetTime",
+        "moonriseTime",
+        "moonsetTime",
+        "moonPhase",
+      ],
+      timesteps: ["1d"], // daily values
+      units: "imperial",
+      timezone: "America/New_York",
+    };
 
-  if (!res.ok) {
-    throw new Error(`Tomorrow.io API error: ${res.status} ${res.statusText}`);
+    const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Tomorrow.io API error: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values;
+    console.log("Astronomy data fetched:", daily);
+    console.log("Full response data:", data);
+    console.log("sunrise:", daily.sunriseTime);
+    console.log("sunset:", daily.sunsetTime);
+    console.log("moonrise:", daily.moonriseTime);
+    console.log("moonset:", daily.moonsetTime);
+    console.log("moonPhase:", daily.moonPhase);
+    return {
+      sunrise: daily?.sunriseTime,
+      sunset: daily?.sunsetTime,
+      moonrise: daily?.moonriseTime,
+      moonset: daily?.moonsetTime,
+      moonPhase: daily?.moonPhase,
+    };
   }
-
-  const data = await res.json();
-  const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values;
-console.log("Astronomy data fetched:", daily);
-console.log("Full response data:", data);
-console.log("sunrise:", daily.sunriseTime);
-console.log("sunset:", daily.sunsetTime);
-console.log("moonrise:", daily.moonriseTime);
-console.log("moonset:", daily.moonsetTime);
-console.log("moonPhase:", daily.moonPhase);
-  return {
-    sunrise: daily?.sunriseTime,
-    sunset: daily?.sunsetTime,
-    moonrise: daily?.moonriseTime,
-    moonset: daily?.moonsetTime,
-    moonPhase: daily?.moonPhase,
-  };
-}
-
+  fetchAstronomy("kop");
   async function GET(request: NextRequest) {
     try {
       await triggerEmail(
