@@ -2,45 +2,54 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { appLog } from "@/utils/app-log";
-export async function middleware(request: NextRequest) {
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+import { withAuth } from "next-auth/middleware";
 
-  console.log("proxy /notes token", {
-    pathname: request.nextUrl.pathname,
-    hasToken: !!token,
-  });
-  await appLog({
-    source: "proxy.ts",
-    message: "---proxy /notes token---",
-    metadata: { action: "check" },
-  });
-}
-export async function proxy(request: NextRequest) {
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+export default withAuth({
+  pages: {
+    signIn: "/api/auth/signin", // or custom login page
+  },
+});
 
-  const { pathname } = request.nextUrl;
 
-  // Routes that require authentication
-  const protectedRoutes = ["/notes"];
+// export async function middleware(request: NextRequest) {
+//   const token = await getToken({
+//     req: request,
+//     secret: process.env.NEXTAUTH_SECRET,
+//   });
 
-  // Check if current route is protected
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
+//   console.log("proxy /notes token", {
+//     pathname: request.nextUrl.pathname,
+//     hasToken: !!token,
+//   });
+//   await appLog({
+//     source: "proxy.ts",
+//     message: "---proxy /notes token---",
+//     metadata: { action: "check" },
+//   });
+// }
+// export async function proxy(request: NextRequest) {
+//   const token = await getToken({
+//     req: request,
+//     secret: process.env.NEXTAUTH_SECRET,
+//   });
 
-  // If accessing protected route without token, redirect to signin
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/api/auth/signin", request.url));
-  }
+//   const { pathname } = request.nextUrl;
 
-  return NextResponse.next();
-}
+//   // Routes that require authentication
+//   const protectedRoutes = ["/notes"];
+
+//   // Check if current route is protected
+//   const isProtectedRoute = protectedRoutes.some((route) =>
+//     pathname.startsWith(route),
+//   );
+
+//   // If accessing protected route without token, redirect to signin
+//   if (isProtectedRoute && !token) {
+//     return NextResponse.redirect(new URL("/api/auth/signin", request.url));
+//   }
+
+//   return NextResponse.next();
+// }
 
 export const config = {
   matcher: [
