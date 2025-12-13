@@ -4,7 +4,6 @@ import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp } from "@/stack/server";
 import { createRequestId } from "@/lib/uuidj";
 import { appLog } from "@/utils/app-log";
-import { locationLabels } from "@/lib/weather/locationLabels";
 import { triggerEmail } from "@/utils/triggerEmail";
 const requestId = createRequestId();
 export async function GET(request: Request) {
@@ -33,7 +32,7 @@ async function fetchAstronomy(locationKey: string) {
     units: "imperial",
     timezone: "America/New_York",
   };
-
+fetchAstronomy("kop")
   const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
