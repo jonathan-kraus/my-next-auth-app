@@ -33,20 +33,22 @@ export default function Home() {
         if (!response.ok) throw new Error("Failed to fetch weather");
 
         const data: ApiResponse<WeatherData[]> = await response.json();
-        
+
         // Debug: log what we're getting back
         console.log("Weather API response:", data);
-        
+
         if (data.success && data.data) {
           // Filter out any locations that don't have labels
           const validWeatherData = data.data.filter((weather) => {
             const hasLabel = weather.location in locationLabels;
             if (!hasLabel) {
-              console.warn(`Location "${weather.location}" has no label defined`);
+              console.warn(
+                `Location "${weather.location}" has no label defined`,
+              );
             }
             return hasLabel;
           });
-          
+
           setWeatherData(validWeatherData);
         }
       } catch (error) {
@@ -227,8 +229,9 @@ export default function Home() {
         {!loading && weatherData.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {weatherData.map((weather, index) => {
-              const locationLabel = locationLabels[weather.location as keyof typeof locationLabels];
-              
+              const locationLabel =
+                locationLabels[weather.location as keyof typeof locationLabels];
+
               // Safety check
               if (!locationLabel) return null;
 
@@ -252,7 +255,9 @@ export default function Home() {
                           className="text-6xl"
                           animate={{
                             rotate:
-                              weather.current.windSpeed > 10 ? [0, -5, 5, 0] : 0,
+                              weather.current.windSpeed > 10
+                                ? [0, -5, 5, 0]
+                                : 0,
                           }}
                           transition={{ duration: 2, repeat: Infinity }}
                         >

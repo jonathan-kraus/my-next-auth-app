@@ -5,7 +5,7 @@ export const locationLabels: Record<
   { name: string; flag: string }
 > = {
   kop: { name: "King of Prussia, PA", flag: "🇺🇸" },
-  "brookline-ma": { name: "Brookline, MA", flag: "🇺🇸" },
-  "williamstown-ma": { name: "Williamstown, MA", flag: "🇺🇸" },
+  brookline: { name: "Brookline, MA", flag: "🇺🇸" },
+  williamstown: { name: "Williamstown, MA", flag: "🇺🇸" },
   // add more keys here as needed
 };
