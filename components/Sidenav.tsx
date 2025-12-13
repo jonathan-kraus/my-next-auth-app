@@ -21,7 +21,7 @@ export const Sidenav = () => {
     { name: "Home", href: "/", icon: HomeIcon },
     { name: "Dashboard", href: "/dashboard", icon: ChartBarIcon },
     { name: "Weather", href: "/weather", icon: CloudIcon },
-    { name: "Notes", href: "/notes", icon: PencilSquareIcon },
+    { name: "Notes", href: "/notes", icon: PencilSquareIcon, protected: true }, // Mark as protected
     { name: "Jtemp", href: "/jtemp-data", icon: DocumentTextIcon },
     { name: "Test-log", href: "/api/test-log", icon: BugAntIcon },
     { name: "Test user", href: "/test", icon: UserIcon },
@@ -31,6 +31,9 @@ export const Sidenav = () => {
 
   const displayName = session?.user?.name ?? "Unknown User";
   const email = session?.user?.email ?? "";
+
+  // Filter items based on authentication
+  const visibleItems = navItems.filter((item) => !item.protected || session);
 
   return (
     <div className="w-64 bg-gray-800 text-white p-6 shadow-2xl">
@@ -80,7 +83,7 @@ export const Sidenav = () => {
 
       {/* Navigation */}
       <nav className="space-y-3">
-        {navItems.map((item) => (
+        {visibleItems.map((item) => (
           <Link
             key={item.name}
             href={item.href}

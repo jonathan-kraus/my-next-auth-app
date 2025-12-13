@@ -1,5 +1,5 @@
 // app/api/test-log/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp } from "@/stack/server";
 import { createRequestId } from "@/lib/uuidj";
@@ -13,16 +13,22 @@ export async function GET(request: Request) {
   //   const session = await auth(); // or getServerSession(...)
   // const userId = session?.user?.id ?? null;
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-  try {
-    await triggerEmail(
-      "in test-log route",
-      requestId,
-      `Subject here: ${TEST_NAME}`,
-      `Created by ${USER_ID}\n\nTest content here.`,
+  async function GET(request: NextRequest) {
+    try {
+      await triggerEmail(
+        "in test-log route",
+        requestId,
+        `Subject here: ${TEST_NAME}`,
+        `Created by ${USER_ID}\n\nTest content here.`,
+      );
+    } catch (emailErr) {
+      console.error("Failed to send post creation email:", emailErr);
+      // non-fatal
+    }
+    return NextResponse.json(
+      { success: true, TEST_NAME, note: "Email sent! Check your inbox." },
+      { status: 200 },
     );
-  } catch (emailErr) {
-    console.error("Failed to send post creation email:", emailErr);
-    // non-fatal
   }
   const user1 = await stackServerApp.getUser();
   console.log("Current user:", user1);
