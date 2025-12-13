@@ -7,25 +7,14 @@ import {
   LocationKey,
   getLocationByName,
 } from "@/lib/weather/types";
-import { getIndicator, getMoonPhaseDescription } from "@/lib/weather/utils";
 
 export const GET = withAxiom(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
     const locationParam = (searchParams.get("location") ||
       "kop") as LocationKey;
-    const forceRefresh = searchParams.get("force") === "true";
-    const refresh = searchParams.get("refresh") === "true";
 
     const location = getLocationByName(locationParam);
-
-    console.log("[weather] incoming", {
-      locationParam,
-      location,
-      refresh,
-      forceRefresh,
-    });
-
     if (!location) {
       return NextResponse.json<ApiResponse<WeatherData>>(
         {
@@ -37,34 +26,28 @@ export const GET = withAxiom(async (req: NextRequest) => {
       );
     }
 
-    // ✅ getWeather already reads from cache or live
+    // Get mapped weather data (from cache or live)
     const weatherData = await getWeather(locationParam);
-
-    // ✅ Cast into WeatherData so TS knows the shape
     const data = weatherData as WeatherData;
 
-    // ✅ Enrich astronomy with indicators and description
+    // ✅ Enrich astronomy with Prisma fields if present
     if (data.astronomy) {
-      data.astronomy.moonPhaseDescription = getMoonPhaseDescription(
-        data.astronomy.moonPhase ?? 0,
-      );
+      // These fields should now exist in your WeatherCache model
+      data.astronomy.rawSunrise = weatherData.sunrise?.toISOString();
+      data.astronomy.rawSunset = weatherData.sunset?.toISOString();
+      data.astronomy.rawMoonrise = weatherData.moonrise?.toISOString();
+      data.astronomy.rawMoonset = weatherData.moonset?.toISOString();
+      data.astronomy.moonPhase = weatherData.moonPhase ?? 0;
 
-      data.astronomy.sunIndicator =
-        data.astronomy.rawSunrise && data.astronomy.rawSunset
-          ? getIndicator(data.astronomy.rawSunrise, data.astronomy.rawSunset)
-          : undefined;
-
-      data.astronomy.moonIndicator =
-        data.astronomy.rawMoonrise && data.astronomy.rawMoonset
-          ? getIndicator(data.astronomy.rawMoonrise, data.astronomy.rawMoonset)
-          : undefined;
+      data.astronomy.sunIndicator = {
+        status: weatherData.sunStatus ?? "Down",
+        countdown: weatherData.sunCountdown ?? undefined,
+      };
+      data.astronomy.moonIndicator = {
+        status: weatherData.moonStatus ?? "Down",
+        countdown: weatherData.moonCountdown ?? undefined,
+      };
     }
-
-    console.log("[weather] success", {
-      locationParam,
-      refresh,
-      forceRefresh,
-    });
 
     const response: ApiResponse<WeatherData> = {
       success: true,
@@ -75,11 +58,6 @@ export const GET = withAxiom(async (req: NextRequest) => {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("[weather] error", {
-      message: error?.message,
-      stack: error?.stack,
-    });
-
     logger.error("Weather API error", {
       error: error instanceof Error ? error.message : String(error),
     });

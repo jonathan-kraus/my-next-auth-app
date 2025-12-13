@@ -1,5 +1,6 @@
 // lib/weather/service.ts
 import db from "../db";
+import { getIndicator } from "@/lib/weather/utils";
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
@@ -7,12 +8,12 @@ import {
   WeatherData,
 } from "@/lib/weather/types";
 
-const TOMORROW_IO_API_KEY =
-  process.env.TOMORROW_API_KEY ?? process.env.TOMORROW_IO_API_KEY ?? "";
+const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
+
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 const MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
-if (!TOMORROW_IO_API_KEY) {
+if (!TOMORROW_API_KEY) {
   console.warn("TOMORROW API key env var is not set");
 }
 
@@ -25,16 +26,37 @@ async function getCachedRaw(locationKey: LocationKey) {
   });
 }
 
-async function saveCachedRaw(locationKey: LocationKey, raw: any) {
+export async function saveCachedRaw(locationKey: LocationKey, raw: any) {
+  const daily = raw?.timelines?.daily?.[0]?.values;
+
+  const sunIndicator = getIndicator(daily?.sunriseTime, daily?.sunsetTime);
+  const moonIndicator = getIndicator(daily?.moonriseTime, daily?.moonsetTime);
   await db.weatherCache.upsert({
     where: { location: locationKey },
     update: {
       data: raw,
-      // updatedAt auto-updates via @updatedAt
+      sunrise: daily?.sunriseTime ? new Date(daily.sunriseTime) : null,
+      sunset: daily?.sunsetTime ? new Date(daily.sunsetTime) : null,
+      moonrise: daily?.moonriseTime ? new Date(daily.moonriseTime) : null,
+      moonset: daily?.moonsetTime ? new Date(daily.moonsetTime) : null,
+      moonPhase: daily?.moonPhase ?? null,
+      sunStatus: sunIndicator?.status,
+      sunCountdown: sunIndicator?.countdown,
+      moonStatus: moonIndicator?.status,
+      moonCountdown: moonIndicator?.countdown,
     },
     create: {
       location: locationKey,
       data: raw,
+      sunrise: daily?.sunriseTime ? new Date(daily.sunriseTime) : null,
+      sunset: daily?.sunsetTime ? new Date(daily.sunsetTime) : null,
+      moonrise: daily?.moonriseTime ? new Date(daily.moonriseTime) : null,
+      moonset: daily?.moonsetTime ? new Date(daily.moonsetTime) : null,
+      moonPhase: daily?.moonPhase ?? null,
+      sunStatus: sunIndicator?.status,
+      sunCountdown: sunIndicator?.countdown,
+      moonStatus: moonIndicator?.status,
+      moonCountdown: moonIndicator?.countdown,
     },
   });
 }
@@ -79,7 +101,7 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     lon: location.lon,
   });
 
-  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_IO_API_KEY}`, {
+  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

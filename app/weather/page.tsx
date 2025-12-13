@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { useLogger } from "@/lib/axiom/client";
-import { appLog } from "@/utils/app-log"
+import { appLog } from "@/utils/app-log";
 import { LocationSelector } from "@/components/LocationSelector";
 import {
   LocationKey,

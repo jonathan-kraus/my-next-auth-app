@@ -116,7 +116,20 @@ model VerificationToken {
 model WeatherCache {
   id        String   @id @default(cuid())
   location  String   // "kop" | "brookline-ma" | "williamstown-ma"
-  data      Json     // Full Tomorrow.io response
+  data      Json?    // Full Tomorrow.io response (optional if you want to keep the blob)
+
+  // Explicit astronomy fields
+  sunrise   DateTime?
+  sunset    DateTime?
+  moonrise  DateTime?
+  moonset   DateTime?
+  moonPhase Int?
+
+  sunStatus     String?   // "Up" | "Down"
+  sunCountdown  String?
+  moonStatus    String?
+  moonCountdown String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
