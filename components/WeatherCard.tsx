@@ -2,6 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { locationLabels } from "@/lib/weather/locationLabels";
 import { useMemo } from "react";
 import { WeatherData } from "@/lib/weather/types";
 const getMoonPhaseEmoji = (phase: number): string => {
@@ -113,7 +114,7 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
         transition={{ delay: 0.1 }}
         className="text-sm opacity-90 mb-4 relative z-10"
       >
-        {data.location.displayName}
+        {locationLabels[data.location].name}
         {isWindy && (
           <motion.span
             animate={{ x: [0, 5, 0] }}

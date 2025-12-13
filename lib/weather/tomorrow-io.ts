@@ -173,9 +173,10 @@ export async function fetchTomorrowIO(location: {
   };
 
   return {
-    location,
+    location: location.name,
     current: {
       temperature: Math.round(current.temperature),
+      timestamp: new Date(currentData.intervals[0].startTime).toISOString(),
       feelsLike: Math.round(current.temperatureApparent),
       humidity: Math.round(current.humidity),
       windSpeed: Math.round(current.windSpeed),

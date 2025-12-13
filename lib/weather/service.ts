@@ -1,6 +1,7 @@
 // lib/weather/service.ts
 import db from "../db";
 import { getIndicator } from "@/lib/weather/utils";
+
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
@@ -85,10 +86,6 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
       "moonriseTime",
       "moonsetTime",
       "moonPhase",
-      "rawSunrise",
-      "rawSunset",
-      "rawMoonrise",
-      "rawMoonset",
     ],
     units: "imperial",
     timesteps: ["current", "1h", "1d"],
@@ -199,9 +196,10 @@ function mapTomorrowIOToWeatherData(
   }));
 
   return {
-    location,
+    location: locationKey,
     current: {
       temperature: Math.round(currentValues.temperature),
+      timestamp: lastUpdatedIso,
       feelsLike: Math.round(currentValues.temperatureApparent),
       humidity: Math.round(currentValues.humidity),
       windSpeed: Math.round(currentValues.windSpeed),
@@ -231,29 +229,42 @@ function mapTomorrowIOToWeatherData(
 
 // ---- Public API ------------------------------------------------------------
 
-export async function getWeather(
-  locationKey: LocationKey,
-): Promise<WeatherData> {
-  const cached = await getCachedRaw(locationKey);
+export async function getWeather(locationKey: LocationKey) {
+  const cached = await db.weatherCache.findUnique({
+    where: { location: locationKey },
+  });
 
-  // If we have fresh DB data, use it immediately
   if (cached) {
-    const ageMs = Date.now() - cached.createdAt.getTime();
-    if (ageMs < MAX_AGE_MS) {
-      console.log("[weather] serving from WeatherCache", {
-        locationKey,
-        ageMs,
-      });
-      return mapTomorrowIOToWeatherData(
-        cached.data,
-        locationKey,
-        true,
-        cached.createdAt.toISOString(),
-      );
+    // Map the raw Tomorrow.io blob
+    const mapped = mapTomorrowIOToWeatherData(
+      cached.data,
+      locationKey,
+      true,
+      cached.createdAt.toISOString()
+    );
+
+    // ✅ Enrich astronomy with Prisma fields
+    if (mapped.astronomy) {
+      mapped.astronomy.rawSunrise = cached.sunrise?.toISOString();
+      mapped.astronomy.rawSunset = cached.sunset?.toISOString();
+      mapped.astronomy.rawMoonrise = cached.moonrise?.toISOString();
+      mapped.astronomy.rawMoonset = cached.moonset?.toISOString();
+      mapped.astronomy.moonPhase = cached.moonPhase ?? 0;
+
+      mapped.astronomy.sunIndicator = {
+        status: cached.sunStatus as "Up" | "Down" ?? "Down",
+        countdown: cached.sunCountdown ?? undefined,
+      };
+      mapped.astronomy.moonIndicator = {
+        status: cached.moonStatus as "Up" | "Down" ?? "Down",
+        countdown: cached.moonCountdown ?? undefined,
+      };
     }
+
+    return mapped;
   }
 
-  // Otherwise, try live API and store the result
+  // If no cache, fetch live from Tomorrow.io and save
   try {
     const raw = await fetchFromTomorrowIO(locationKey);
     await saveCachedRaw(locationKey, raw);
@@ -263,21 +274,10 @@ export async function getWeather(
 
     return mapTomorrowIOToWeatherData(raw, locationKey, false, nowIso);
   } catch (error) {
-    console.error("[weather] live fetch failed, falling back to cache", {
+    console.error("[weather] live fetch failed, no cache available", {
       locationKey,
       message: error instanceof Error ? error.message : String(error),
     });
-
-    if (cached) {
-      // Fallback: serve stale cache rather than 500
-      return mapTomorrowIOToWeatherData(
-        cached.data,
-        locationKey,
-        true,
-        cached.createdAt.toISOString(),
-      );
-    }
-
     throw error;
   }
 }

@@ -1,3 +1,4 @@
+// app/api/weather/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { withAxiom, logger } from "@/lib/axiom/server";
 import { getWeather } from "@/lib/weather/service";
@@ -11,8 +12,7 @@ import {
 export const GET = withAxiom(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
-    const locationParam = (searchParams.get("location") ||
-      "kop") as LocationKey;
+    const locationParam = (searchParams.get("location") || "kop") as LocationKey;
 
     const location = getLocationByName(locationParam);
     if (!location) {
@@ -30,24 +30,8 @@ export const GET = withAxiom(async (req: NextRequest) => {
     const weatherData = await getWeather(locationParam);
     const data = weatherData as WeatherData;
 
-    // ✅ Enrich astronomy with Prisma fields if present
-    if (data.astronomy) {
-      // These fields should now exist in your WeatherCache model
-      data.astronomy.rawSunrise = weatherData.sunrise?.toISOString();
-      data.astronomy.rawSunset = weatherData.sunset?.toISOString();
-      data.astronomy.rawMoonrise = weatherData.moonrise?.toISOString();
-      data.astronomy.rawMoonset = weatherData.moonset?.toISOString();
-      data.astronomy.moonPhase = weatherData.moonPhase ?? 0;
-
-      data.astronomy.sunIndicator = {
-        status: weatherData.sunStatus ?? "Down",
-        countdown: weatherData.sunCountdown ?? undefined,
-      };
-      data.astronomy.moonIndicator = {
-        status: weatherData.moonStatus ?? "Down",
-        countdown: weatherData.moonCountdown ?? undefined,
-      };
-    }
+    // ✅ Enrich astronomy using Prisma cache fields
+ 
 
     const response: ApiResponse<WeatherData> = {
       success: true,

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { locationLabels } from "@/lib/weather/locationLabels";
 import { WeatherData, ApiResponse } from "@/lib/weather/types";
 
 export default function Home() {
@@ -186,21 +187,20 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {weatherData.map((weather, index) => (
               <motion.div
-                key={weather.location.name}
+                key={weather.location}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.03, y: -10 }}
               >
-                <Link href="/weather">
+                 <h3>{locationLabels[weather.location].name}</h3>
+                 <Link href="/weather">
                   <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl p-8 hover:shadow-purple-500/20 transition-all cursor-pointer border border-purple-500/20 backdrop-blur-sm">
                     <div className="flex justify-between items-start mb-6">
                       <div>
-                        <h3 className="text-2xl font-bold text-white mb-1">
-                          {weather.location.name}
-                        </h3>
+
                         <p className="text-sm text-gray-400 flex items-center gap-2">
-                          {weather.location.flag}
+                          {locationLabels[weather.location].flag}
                         </p>
                       </div>
                       <motion.div

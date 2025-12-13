@@ -15,9 +15,10 @@ export interface BodyIndicator {
 }
 
 export interface WeatherData {
-  location: Location;
+  location: LocationKey;
   current: {
     temperature: number;
+    timestamp: string;
     feelsLike: number;
     humidity: number;
     windSpeed: number;
