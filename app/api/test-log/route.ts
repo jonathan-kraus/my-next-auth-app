@@ -4,6 +4,7 @@ import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp } from "@/stack/server";
 import { createRequestId } from "@/lib/uuidj";
 import { appLog } from "@/utils/app-log";
+import { locationLabels } from "@/lib/weather/locationLabels";
 import { triggerEmail } from "@/utils/triggerEmail";
 const requestId = createRequestId();
 export async function GET(request: Request) {
@@ -17,10 +18,10 @@ export async function GET(request: Request) {
 const BASE_URL = "https://api.tomorrow.io/v4/timelines";
 
 async function fetchAstronomy(locationKey: string) {
-  const location = LOCATIONS_BY_KEY[locationKey];
+  const location = "LOCATIONS_BY_KEY[locationKey]";
 
   const body = {
-    location: [location.lat, location.lon],
+    location: [40.0913, -75.3802],
     fields: [
       "sunriseTime",
       "sunsetTime",
