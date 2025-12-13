@@ -4,6 +4,7 @@ import { dbFetch } from "@/lib/dbFetch";
 import { stackServerApp } from "@/stack/server";
 import { createRequestId } from "@/lib/uuidj";
 import { appLog } from "@/utils/app-log";
+import { triggerEmail } from "@/utils/triggerEmail";
 const requestId = createRequestId();
 export async function GET(request: Request) {
   const TEST_NAME = `TestUser-${Date.now()}`;
@@ -12,6 +13,17 @@ export async function GET(request: Request) {
   //   const session = await auth(); // or getServerSession(...)
   // const userId = session?.user?.id ?? null;
   console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
+  try {
+    await triggerEmail(
+      "in test-log route",
+      requestId,
+      `Subject here: ${TEST_NAME}`,
+      `Created by ${USER_ID}\n\nTest content here.`,
+    );
+  } catch (emailErr) {
+    console.error("Failed to send post creation email:", emailErr);
+    // non-fatal
+  }
   const user1 = await stackServerApp.getUser();
   console.log("Current user:", user1);
   await appLog({

@@ -84,6 +84,9 @@ export default function WeatherPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const fetchWeather = useCallback(
     async (location: LocationKey, forceRefresh = false) => {
@@ -190,6 +193,54 @@ export default function WeatherPage() {
     fetchWeather(selectedLocation, true);
   };
 
+  const handleEmailWeather = async () => {
+    if (!weatherData) {
+      setEmailError("No weather data available to send");
+      return;
+    }
+
+    setEmailLoading(true);
+    setEmailError(null);
+    setEmailSuccess(false);
+
+    try {
+      logger.info("Sending weather email", { location: selectedLocation });
+
+      const response = await fetch("/api/weather/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          weatherData,
+          location: selectedLocation,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to send email");
+      }
+
+      setEmailSuccess(true);
+      logger.info("Weather email sent successfully", {
+        location: selectedLocation,
+      });
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setEmailSuccess(false), 5000);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setEmailError(errorMessage);
+
+      logger.error("Email send failed", {
+        location: selectedLocation,
+        error: errorMessage,
+      });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
       <motion.div
@@ -220,12 +271,12 @@ export default function WeatherPage() {
           onChange={setSelectedLocation}
         />
 
-        {/* Refresh Button */}
+        {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="flex justify-center mb-8 gap-4"
+          className="flex justify-center mb-8 gap-4 flex-wrap"
         >
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -235,6 +286,16 @@ export default function WeatherPage() {
             className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? "⏳ Refreshing..." : "🔄 Refresh Data"}
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleEmailWeather}
+            disabled={emailLoading || !weatherData}
+            className="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {emailLoading ? "📧 Sending..." : "📧 Email Report"}
           </motion.button>
 
           {lastUpdate && (
@@ -256,6 +317,29 @@ export default function WeatherPage() {
             className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mb-8"
           >
             ⚠️ {error}
+          </motion.div>
+        )}
+
+        {/* Email Error Message */}
+        {emailError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mb-8"
+          >
+            ⚠️ Email Error: {emailError}
+          </motion.div>
+        )}
+
+        {/* Email Success Message */}
+        {emailSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg mb-8"
+          >
+            ✅ Weather report sent successfully!
           </motion.div>
         )}
 
