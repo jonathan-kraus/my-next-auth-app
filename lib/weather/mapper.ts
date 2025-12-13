@@ -4,7 +4,7 @@ export function mapTomorrowIOToWeatherData(
   raw: any,
   locationKey: LocationKey,
   isCached: boolean,
-  timestamp: string
+  timestamp: string,
 ): WeatherData {
   return {
     location: locationKey,

@@ -12,7 +12,8 @@ import {
 export const GET = withAxiom(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
-    const locationParam = (searchParams.get("location") || "kop") as LocationKey;
+    const locationParam = (searchParams.get("location") ||
+      "kop") as LocationKey;
 
     const location = getLocationByName(locationParam);
     if (!location) {
@@ -31,7 +32,6 @@ export const GET = withAxiom(async (req: NextRequest) => {
     const data = weatherData as WeatherData;
 
     // ✅ Enrich astronomy using Prisma cache fields
- 
 
     const response: ApiResponse<WeatherData> = {
       success: true,

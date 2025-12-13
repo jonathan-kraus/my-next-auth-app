@@ -193,12 +193,11 @@ export default function Home() {
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.03, y: -10 }}
               >
-                 <h3>{locationLabels[weather.location].name}</h3>
-                 <Link href="/weather">
+                <h3>{locationLabels[weather.location].name}</h3>
+                <Link href="/weather">
                   <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl p-8 hover:shadow-purple-500/20 transition-all cursor-pointer border border-purple-500/20 backdrop-blur-sm">
                     <div className="flex justify-between items-start mb-6">
                       <div>
-
                         <p className="text-sm text-gray-400 flex items-center gap-2">
                           {locationLabels[weather.location].flag}
                         </p>

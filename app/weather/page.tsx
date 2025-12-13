@@ -21,12 +21,27 @@ function CountdownTimer({
   label: string;
   indicator?: BodyIndicator;
 }) {
-  const [countdown, setCountdown] = useState(indicator?.countdown);
+  const [remaining, setRemaining] = useState<string | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(indicator?.countdown);
-    }, 60_000);
+    if (!indicator?.countdown) return;
+
+    const target = new Date(indicator.countdown);
+
+    const updateRemaining = () => {
+      const diffMs = target.getTime() - Date.now();
+      if (diffMs <= 0) {
+        setRemaining(null);
+        return;
+      }
+      const diffMinutes = Math.floor(diffMs / 1000 / 60);
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+      setRemaining(hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`);
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 60_000);
 
     return () => clearInterval(interval);
   }, [indicator]);
@@ -45,7 +60,7 @@ function CountdownTimer({
     >
       {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
       <AnimatePresence>
-        {countdown && (
+        {remaining && (
           <motion.span
             key="countdown"
             initial={{ opacity: 0 }}
@@ -54,7 +69,7 @@ function CountdownTimer({
             transition={{ duration: 0.5 }}
             className="ml-2 text-sm text-gray-600"
           >
-            ({countdown})
+            {isUp ? `(${remaining} left)` : `(↑ in ${remaining})`}
           </motion.span>
         )}
       </AnimatePresence>
@@ -143,7 +158,6 @@ export default function WeatherPage() {
     [logger],
   );
 
-  // Initial fetch
   useEffect(() => {
     logger.info("Weather page loaded", { location: selectedLocation });
     fetchWeather(selectedLocation);

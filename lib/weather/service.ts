@@ -240,7 +240,7 @@ export async function getWeather(locationKey: LocationKey) {
       cached.data,
       locationKey,
       true,
-      cached.createdAt.toISOString()
+      cached.createdAt.toISOString(),
     );
 
     // ✅ Enrich astronomy with Prisma fields
@@ -252,11 +252,11 @@ export async function getWeather(locationKey: LocationKey) {
       mapped.astronomy.moonPhase = cached.moonPhase ?? 0;
 
       mapped.astronomy.sunIndicator = {
-        status: cached.sunStatus as "Up" | "Down" ?? "Down",
+        status: (cached.sunStatus as "Up" | "Down") ?? "Down",
         countdown: cached.sunCountdown ?? undefined,
       };
       mapped.astronomy.moonIndicator = {
-        status: cached.moonStatus as "Up" | "Down" ?? "Down",
+        status: (cached.moonStatus as "Up" | "Down") ?? "Down",
         countdown: cached.moonCountdown ?? undefined,
       };
     }
