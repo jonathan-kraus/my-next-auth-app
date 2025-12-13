@@ -22,7 +22,7 @@ export default function Home() {
     async function fetchAllWeather() {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        const timeout = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch("/api/weather/all", {
           signal: controller.signal,
@@ -33,12 +33,24 @@ export default function Home() {
         if (!response.ok) throw new Error("Failed to fetch weather");
 
         const data: ApiResponse<WeatherData[]> = await response.json();
+        
+        // Debug: log what we're getting back
+        console.log("Weather API response:", data);
+        
         if (data.success && data.data) {
-          setWeatherData(data.data);
+          // Filter out any locations that don't have labels
+          const validWeatherData = data.data.filter((weather) => {
+            const hasLabel = weather.location in locationLabels;
+            if (!hasLabel) {
+              console.warn(`Location "${weather.location}" has no label defined`);
+            }
+            return hasLabel;
+          });
+          
+          setWeatherData(validWeatherData);
         }
       } catch (error) {
         console.error("Failed to load weather:", error);
-        // Don't crash on error, just show empty state
         setWeatherData([]);
       } finally {
         setLoading(false);
@@ -46,7 +58,7 @@ export default function Home() {
     }
 
     fetchAllWeather();
-  }, [status]); // Depend on status, not session
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -214,99 +226,105 @@ export default function Home() {
         {/* Weather Cards Grid */}
         {!loading && weatherData.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {weatherData.map((weather, index) => (
-              <motion.div
-                key={weather.location}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.03, y: -10 }}
-              >
-                <h3>{locationLabels[weather.location].name}</h3>
-                <Link href="/weather">
-                  <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl p-8 hover:shadow-purple-500/20 transition-all cursor-pointer border border-purple-500/20 backdrop-blur-sm">
-                    <div className="flex justify-between items-start mb-6">
-                      <div>
-                        <p className="text-sm text-gray-400 flex items-center gap-2">
-                          {locationLabels[weather.location].flag}
-                        </p>
-                      </div>
-                      <motion.div
-                        className="text-6xl"
-                        animate={{
-                          rotate:
-                            weather.current.windSpeed > 10 ? [0, -5, 5, 0] : 0,
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        {weather.current.condition.includes("Clear")
-                          ? "☀️"
-                          : weather.current.condition.includes("Cloud")
-                            ? "☁️"
-                            : weather.current.condition.includes("Rain")
-                              ? "🌧️"
-                              : weather.current.condition.includes("Snow")
-                                ? "❄️"
-                                : "🌤️"}
-                      </motion.div>
-                    </div>
+            {weatherData.map((weather, index) => {
+              const locationLabel = locationLabels[weather.location as keyof typeof locationLabels];
+              
+              // Safety check
+              if (!locationLabel) return null;
 
-                    <div className="mb-6">
-                      <div className="text-6xl font-bold text-white mb-2">
-                        {weather.current.temperature}°
+              return (
+                <motion.div
+                  key={weather.location}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.03, y: -10 }}
+                >
+                  <Link href="/weather">
+                    <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl p-8 hover:shadow-purple-500/20 transition-all cursor-pointer border border-purple-500/20 backdrop-blur-sm">
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <p className="text-sm text-gray-400 font-semibold">
+                            {locationLabel.flag} {locationLabel.name}
+                          </p>
+                        </div>
+                        <motion.div
+                          className="text-6xl"
+                          animate={{
+                            rotate:
+                              weather.current.windSpeed > 10 ? [0, -5, 5, 0] : 0,
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          {weather.current.condition.includes("Clear")
+                            ? "☀️"
+                            : weather.current.condition.includes("Cloud")
+                              ? "☁️"
+                              : weather.current.condition.includes("Rain")
+                                ? "🌧️"
+                                : weather.current.condition.includes("Snow")
+                                  ? "❄️"
+                                  : "🌤️"}
+                        </motion.div>
                       </div>
-                      <div className="text-lg text-purple-300 font-medium mb-1">
-                        {weather.current.condition}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        Feels like {weather.current.feelsLike}°
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
-                        <div className="text-xs text-gray-400 mb-1">
-                          💧 Humidity
+                      <div className="mb-6">
+                        <div className="text-6xl font-bold text-white mb-2">
+                          {weather.current.temperature}°
                         </div>
-                        <div className="text-xl font-bold text-blue-300">
-                          {weather.current.humidity}%
+                        <div className="text-lg text-purple-300 font-medium mb-1">
+                          {weather.current.condition}
                         </div>
-                      </div>
-                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
-                        <div className="text-xs text-gray-400 mb-1">
-                          💨 Wind
-                        </div>
-                        <div className="text-xl font-bold text-cyan-300">
-                          {weather.current.windSpeed} mph
+                        <div className="text-sm text-gray-400">
+                          Feels like {weather.current.feelsLike}°
                         </div>
                       </div>
-                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
-                        <div className="text-xs text-gray-400 mb-1">
-                          ☀️ UV Index
-                        </div>
-                        <div className="text-xl font-bold text-yellow-300">
-                          {weather.current.uvIndex}
-                        </div>
-                      </div>
-                      <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
-                        <div className="text-xs text-gray-400 mb-1">
-                          🌪️ Pressure
-                        </div>
-                        <div className="text-xl font-bold text-purple-300">
-                          {Math.round(weather.current.pressure)}
-                        </div>
-                      </div>
-                    </div>
 
-                    {weather.isCached && (
-                      <div className="mt-4 text-xs text-gray-500 italic flex items-center gap-1">
-                        📦 Cached
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                          <div className="text-xs text-gray-400 mb-1">
+                            💧 Humidity
+                          </div>
+                          <div className="text-xl font-bold text-blue-300">
+                            {weather.current.humidity}%
+                          </div>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                          <div className="text-xs text-gray-400 mb-1">
+                            💨 Wind
+                          </div>
+                          <div className="text-xl font-bold text-cyan-300">
+                            {weather.current.windSpeed} mph
+                          </div>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                          <div className="text-xs text-gray-400 mb-1">
+                            ☀️ UV Index
+                          </div>
+                          <div className="text-xl font-bold text-yellow-300">
+                            {weather.current.uvIndex}
+                          </div>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                          <div className="text-xs text-gray-400 mb-1">
+                            🌪️ Pressure
+                          </div>
+                          <div className="text-xl font-bold text-purple-300">
+                            {Math.round(weather.current.pressure)}
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+
+                      {weather.isCached && (
+                        <div className="mt-4 text-xs text-gray-500 italic flex items-center gap-1">
+                          📦 Cached
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         )}
 
