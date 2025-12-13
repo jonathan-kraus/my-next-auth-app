@@ -116,32 +116,31 @@ export default function WeatherPage() {
             duration: Math.round(performance.now() - startTime),
           });
           appLog({
-          source: "app/weather/page.tsx",
-          message: "Astronomy indicators",
-          metadata: {
-            location,
-            cached: data.cached ?? false,
-            timestamp: new Date().toISOString(),
-            sun: {
-              status: data.data.astronomy?.sunIndicator?.status,
-              countdown: data.data.astronomy?.sunIndicator?.countdown,
+            source: "app/weather/page.tsx",
+            message: "[full] Astronomy indicators",
+            metadata: {
+              location,
+              cached: data.cached ?? false,
+              timestamp: new Date().toISOString(),
+              sun: {
+                status: data.data.astronomy?.sunIndicator?.status,
+                countdown: data.data.astronomy?.sunIndicator?.countdown,
+              },
+              moon: {
+                status: data.data.astronomy?.moonIndicator?.status,
+                countdown: data.data.astronomy?.moonIndicator?.countdown,
+              },
+              current: {
+                temperature: data.data.current.temperature,
+                condition: data.data.current.condition,
+              },
+              meta: {
+                duration_ms: Math.round(performance.now() - startTime),
+                severity: "info",
+              },
             },
-            moon: {
-              status: data.data.astronomy?.moonIndicator?.status,
-              countdown: data.data.astronomy?.moonIndicator?.countdown,
-            },
-            current: {
-              temperature: data.data.current.temperature,
-              condition: data.data.current.condition,
-            },
-            meta: {
-              duration_ms: Math.round(performance.now() - startTime),
-              severity: "info",
-            },
-          },
-        });
+          });
 
-                
           appLog({
             source: "app/weather/page.tsx",
             message: "Astronomy indicators",
