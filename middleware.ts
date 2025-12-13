@@ -18,10 +18,10 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route),
   );
 
-  // If accessing protected route without token, redirect to home
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // If accessing protected route without token, redirect to signin
+ if (isProtectedRoute && !token) {
+  return NextResponse.redirect(new URL("/api/auth/signin", request.url));
+}
 
   return NextResponse.next();
 }
