@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
     requestId,
     metadata: { action: "mount", token: token, pathname: pathname },
   });
-  console.log("proxy just tried log", request.nextUrl.pathname);
+  console.log("proxy just tried log", token, request.nextUrl.pathname);
   const protectedRoutes = ["/notes"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
