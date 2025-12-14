@@ -97,7 +97,15 @@ export default function WeatherPage() {
 
       try {
         logger.info("Fetching weather", { location, forceRefresh });
-
+        appLog({
+          source: "app/weather/page.tsx",
+          message: location,
+          metadata: {
+            location,
+            sun: "early",
+            moon: "early",
+          },
+        });
         const response = await fetch(
           `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
         );
