@@ -209,13 +209,13 @@ export default function LogsPage() {
               <thead>
                 <tr className="bg-gray-900 text-indigo-200">
                   <th className="p-2 border border-gray-700 text-left">
-                    Schema
-                  </th>
-                  <th className="p-2 border border-gray-700 text-left">
                     Table
                   </th>
                   <th className="p-2 border border-gray-700 text-right">
                     Est. Rows
+                  </th>
+                  <th className="p-2 border border-gray-700 text-left">
+                    Schema
                   </th>
                 </tr>
               </thead>
