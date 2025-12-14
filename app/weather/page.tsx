@@ -106,6 +106,28 @@ export default function WeatherPage() {
             moon: "early",
           },
         });
+        async function loadAstronomy() {
+          const res = await fetch("/api/astronomy");
+          const json = await res.json();
+          console.log("In load astro", json);
+          if (!json.success || !json.data) return;
+
+          //const sunIndicator = makeIndicator(json.data.sunrise, json.data.sunset);
+          //const moonIndicator = makeIndicator(json.data.moonrise, json.data.moonset);
+
+          // set into your weatherData.astronomy or local state
+        }
+
+        loadAstronomy();
+        appLog({
+          source: "app/weather/page.tsx",
+          message: location,
+          metadata: {
+            location,
+            sun: "after",
+            moon: "after",
+          },
+        });
         const response = await fetch(
           `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
         );
@@ -209,20 +231,6 @@ export default function WeatherPage() {
       setEmailError("No weather data available to send");
       return;
     }
-
-    async function loadAstronomy() {
-      const res = await fetch("/api/astronomy");
-      const json = await res.json();
-      console.log("In load astro", json);
-      if (!json.success || !json.data) return;
-
-      //const sunIndicator = makeIndicator(json.data.sunrise, json.data.sunset);
-      //const moonIndicator = makeIndicator(json.data.moonrise, json.data.moonset);
-
-      // set into your weatherData.astronomy or local state
-    }
-
-    loadAstronomy();
 
     setEmailLoading(true);
     setEmailError(null);
