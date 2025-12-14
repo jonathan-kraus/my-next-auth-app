@@ -37,6 +37,16 @@ function makeIndicator(
   }
 
   const diffMinutes = Math.floor((end - now) / 60000);
+  appLog({
+    source: "app/weather/page.tsx",
+    message: "Astronomy indicators start end diff",
+    metadata: {
+      now: now,
+      start: start,
+      end: end,
+      diffMinutes: diffMinutes,
+    },
+  });
   return { status: "Up", countdown: `${diffMinutes}m` };
 }
 
