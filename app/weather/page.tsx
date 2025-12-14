@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence, resize } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { triggerEmail } from "@/utils/triggerEmail";
 import { useLogger } from "@/lib/axiom/client";
@@ -13,6 +13,32 @@ import {
   ApiResponse,
   BodyIndicator,
 } from "@/lib/weather/types";
+
+// --- Make Indicator Helper ---
+type Indicator = { status: "Up" | "Down"; countdown?: string };
+
+function makeIndicator(
+  startIso?: string,
+  endIso?: string,
+): Indicator | undefined {
+  if (!startIso || !endIso) return undefined;
+
+  const now = Date.now();
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+
+  if (now < start) {
+    const diffMinutes = Math.floor((start - now) / 60000);
+    return { status: "Down", countdown: `${diffMinutes}m` };
+  }
+
+  if (now > end) {
+    return { status: "Down", countdown: undefined };
+  }
+
+  const diffMinutes = Math.floor((end - now) / 60000);
+  return { status: "Up", countdown: `${diffMinutes}m` };
+}
 
 // --- Countdown Timer Component ---
 function CountdownTimer({
@@ -82,12 +108,47 @@ export default function WeatherPage() {
   const logger = useLogger();
   const [selectedLocation, setSelectedLocation] = useState<LocationKey>("kop");
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [sunIndicator, setSunIndicator] = useState<Indicator | undefined>();
+  const [moonIndicator, setMoonIndicator] = useState<Indicator | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+
+  // Load astronomy data from API
+  useEffect(() => {
+    async function loadAstronomy() {
+      try {
+        const res = await fetch("/api/astronomy/tomorrow");
+        const json = await res.json();
+        console.log("Astronomy data:", json);
+
+        if (!json.success || !json.data) return;
+
+        const { sunrise, sunset, moonrise, moonset } = json.data;
+
+        // Calculate indicators
+        setSunIndicator(makeIndicator(sunrise, sunset));
+        setMoonIndicator(makeIndicator(moonrise, moonset));
+
+        appLog({
+          source: "app/weather/page.tsx",
+          message: "Astronomy indicators loaded",
+          metadata: {
+            location: selectedLocation,
+            sunIndicator: makeIndicator(sunrise, sunset),
+            moonIndicator: makeIndicator(moonrise, moonset),
+          },
+        });
+      } catch (err) {
+        console.error("Failed to load astronomy data:", err);
+      }
+    }
+
+    loadAstronomy();
+  }, [selectedLocation]);
 
   const fetchWeather = useCallback(
     async (location: LocationKey, forceRefresh = false) => {
@@ -97,48 +158,7 @@ export default function WeatherPage() {
 
       try {
         logger.info("Fetching weather", { location, forceRefresh });
-        appLog({
-          source: "app/weather/page.tsx",
-          message: location,
-          metadata: {
-            location,
-            sun: "early",
-            moon: "early",
-          },
-        });
-        async function loadAstronomy() {
-          const res = await fetch("/api/astronomy/tomorrow");
-          const json = await res.json();
-          console.log("In load astro", json, res);
-          if (!json.success || !json.data) return;
 
-          //const sunIndicator = makeIndicator(json.data.sunrise, json.data.sunset);
-          //const moonIndicator = makeIndicator(json.data.moonrise, json.data.moonset);
-
-          // set into your weatherData.astronomy or local state
-          appLog({
-            source: "app/weather/page.tsx",
-            message: location,
-            metadata: {
-              location,
-              res: res,
-              json: json,
-              sun: "middle",
-              moon: "middle",
-            },
-          });
-        }
-        loadAstronomy();
-        appLog({
-          source: "app/weather/page.tsx",
-          message: location,
-          metadata: {
-            location,
-
-            sun: "after",
-            moon: "after",
-          },
-        });
         const response = await fetch(
           `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
         );
@@ -163,43 +183,15 @@ export default function WeatherPage() {
 
           appLog({
             source: "app/weather/page.tsx",
-            message: "[full] Astronomy indicators",
+            message: "[full] Weather data loaded",
             metadata: {
               location,
               cached: data.cached ?? false,
               timestamp: new Date().toISOString(),
-              sun: {
-                status: data.data.astronomy?.sunIndicator?.status,
-                countdown: data.data.astronomy?.sunIndicator?.countdown,
-              },
-              moon: {
-                status: data.data.astronomy?.moonIndicator?.status,
-                countdown: data.data.astronomy?.moonIndicator?.countdown,
-              },
-              current: {
-                temperature: data.data.current.temperature,
-                condition: data.data.current.condition,
-              },
-              meta: {
-                duration_ms: Math.round(performance.now() - startTime),
-                severity: "info",
-              },
+              temperature: data.data.current.temperature,
+              condition: data.data.current.condition,
+              duration_ms: Math.round(performance.now() - startTime),
             },
-          });
-
-          appLog({
-            source: "app/weather/page.tsx",
-            message: "Astronomy indicators",
-            metadata: {
-              location,
-              sun: data.data.astronomy.sunIndicator ?? "N/A",
-              moon: data.data.astronomy.moonIndicator ?? "N/A",
-            },
-          });
-
-          logger.info("[debug] Astronomy indicators", {
-            sun: data.data.astronomy.sunIndicator ?? "N/A",
-            moon: data.data.astronomy.moonIndicator ?? "N/A",
           });
         } else if (data.cached) {
           logger.info("Weather data loaded from cache", {
@@ -250,18 +242,14 @@ export default function WeatherPage() {
     try {
       logger.info("Sending weather email", { location: selectedLocation });
 
-      const response = await triggerEmail(
+      await triggerEmail(
         "in weather page",
         "requestId",
         `Subject weather`,
         `Created by \n\nweather content here.`,
       );
 
-      console.log("[astronomy] email", response);
-
-      if (!weatherData) {
-        console.log("weather email");
-      }
+      console.log("[weather] email sent successfully");
 
       setEmailSuccess(true);
       logger.info("Weather email sent successfully", {
@@ -385,18 +373,12 @@ export default function WeatherPage() {
           </motion.div>
         )}
 
-        {/* Countdown Timer */}
-        {weatherData && (
-          <>
-            <CountdownTimer
-              label="☀️ Sun"
-              indicator={weatherData.astronomy.sunIndicator}
-            />
-            <CountdownTimer
-              label="🌙 Moon"
-              indicator={weatherData.astronomy.moonIndicator}
-            />
-          </>
+        {/* Countdown Timers - Now display from sunIndicator/moonIndicator state */}
+        {sunIndicator && (
+          <CountdownTimer label="☀️ Sun" indicator={sunIndicator} />
+        )}
+        {moonIndicator && (
+          <CountdownTimer label="🌙 Moon" indicator={moonIndicator} />
         )}
 
         {/* Weather Card */}
