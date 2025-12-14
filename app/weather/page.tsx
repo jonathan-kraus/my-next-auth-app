@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, resize } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { triggerEmail } from "@/utils/triggerEmail";
 import { useLogger } from "@/lib/axiom/client";
@@ -107,23 +107,34 @@ export default function WeatherPage() {
           },
         });
         async function loadAstronomy() {
-          const res = await fetch("/api/astronomy");
+          const res = await fetch("/api/astronomy/tomorrow");
           const json = await res.json();
-          console.log("In load astro", json);
+          console.log("In load astro", json, res);
           if (!json.success || !json.data) return;
 
           //const sunIndicator = makeIndicator(json.data.sunrise, json.data.sunset);
           //const moonIndicator = makeIndicator(json.data.moonrise, json.data.moonset);
 
           // set into your weatherData.astronomy or local state
+          appLog({
+            source: "app/weather/page.tsx",
+            message: location,
+            metadata: {
+              location,
+              res: res,
+              json: json,
+              sun: "middle",
+              moon: "middle",
+            },
+          });
         }
-
         loadAstronomy();
         appLog({
           source: "app/weather/page.tsx",
           message: location,
           metadata: {
             location,
+
             sun: "after",
             moon: "after",
           },
