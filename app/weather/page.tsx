@@ -48,15 +48,6 @@ function CountdownTimer({
   label: string;
   indicator?: BodyIndicator;
 }) {
-  const [remaining, setRemaining] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!indicator?.countdown) return;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRemaining(indicator.countdown);
-  }, [indicator]);
-
   if (!indicator) return null;
 
   const isUp = indicator.status === "Up";
@@ -71,7 +62,7 @@ function CountdownTimer({
     >
       {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
       <AnimatePresence>
-        {remaining && (
+        {indicator.countdown && (
           <motion.span
             key="countdown"
             initial={{ opacity: 0 }}
@@ -80,7 +71,9 @@ function CountdownTimer({
             transition={{ duration: 0.5 }}
             className="ml-2 text-sm text-gray-600"
           >
-            {isUp ? `(${remaining} left)` : `(↑ in ${remaining})`}
+            {isUp
+              ? `(${indicator.countdown} left)`
+              : `(↑ in ${indicator.countdown})`}
           </motion.span>
         )}
       </AnimatePresence>
