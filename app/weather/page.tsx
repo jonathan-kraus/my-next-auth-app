@@ -65,11 +65,33 @@ function CountdownTimer({
   indicator,
 }: {
   label: string;
-  indicator?: BodyIndicator;
+  indicator?: { status: "Up" | "Down"; rawRise?: string; rawSet?: string };
 }) {
-  if (!indicator) return null;
+  const [remaining, setRemaining] = useState<string | undefined>(undefined);
+  const [status, setStatus] = useState<"Up" | "Down" | undefined>(
+    indicator?.status,
+  );
 
-  const isUp = indicator.status === "Up";
+  useEffect(() => {
+    if (!indicator) return;
+
+    // helper to recompute
+    const update = () => {
+      const now = new Date();
+      const updated = makeIndicator(indicator.rawRise, indicator.rawSet);
+      if (updated) {
+        setRemaining(updated.countdown);
+        setStatus(updated.status);
+      }
+    };
+
+    update(); // initial
+    const interval = setInterval(update, 60_000); // every minute
+    return () => clearInterval(interval);
+  }, [indicator]);
+
+  if (!indicator) return null;
+  const isUp = status === "Up";
 
   return (
     <motion.div
@@ -81,18 +103,16 @@ function CountdownTimer({
     >
       {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
       <AnimatePresence>
-        {indicator.countdown && (
+        {remaining && (
           <motion.span
-            key="countdown"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            key={remaining} // important: lets AnimatePresence animate changes
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.3 }}
             className="ml-2 text-sm text-gray-600"
           >
-            {isUp
-              ? `(${indicator.countdown} left)`
-              : `(↑ in ${indicator.countdown})`}
+            {isUp ? `(${remaining} left)` : `(↑ in ${remaining})`}
           </motion.span>
         )}
       </AnimatePresence>
