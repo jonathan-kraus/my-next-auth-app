@@ -202,6 +202,20 @@ export default function WeatherPage() {
       return;
     }
 
+    async function loadAstronomy() {
+      const res = await fetch("/api/astronomy");
+      const json = await res.json();
+      console.log("In load astro", json);
+      if (!json.success || !json.data) return;
+
+      //const sunIndicator = makeIndicator(json.data.sunrise, json.data.sunset);
+      //const moonIndicator = makeIndicator(json.data.moonrise, json.data.moonset);
+
+      // set into your weatherData.astronomy or local state
+    }
+
+    loadAstronomy();
+
     setEmailLoading(true);
     setEmailError(null);
     setEmailSuccess(false);
@@ -216,7 +230,7 @@ export default function WeatherPage() {
         `Created by \n\nweather content here.`,
       );
 
-      console.log("[astronomy] email");
+      console.log("[astronomy] email", response);
 
       if (!weatherData) {
         console.log("weather email");
