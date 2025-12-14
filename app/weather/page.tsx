@@ -53,22 +53,13 @@ function CountdownTimer({
   useEffect(() => {
     if (!indicator?.countdown) return;
 
-    const target = new Date(indicator.countdown);
+    // Set it immediately
+    setRemaining(indicator.countdown);
 
-    const updateRemaining = () => {
-      const diffMs = target.getTime() - Date.now();
-      if (diffMs <= 0) {
-        setRemaining(null);
-        return;
-      }
-      const diffMinutes = Math.floor(diffMs / 1000 / 60);
-      const hours = Math.floor(diffMinutes / 60);
-      const minutes = diffMinutes % 60;
-      setRemaining(hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`);
-    };
-
-    updateRemaining();
-    const interval = setInterval(updateRemaining, 60_000);
+    // Update every minute to keep countdown fresh
+    const interval = setInterval(() => {
+      setRemaining(indicator.countdown ?? null);
+    }, 60_000);
 
     return () => clearInterval(interval);
   }, [indicator]);
