@@ -54,6 +54,7 @@ function CountdownTimer({
     if (!indicator?.countdown) return;
 
     // Set it immediately
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRemaining(indicator.countdown);
 
     // Update every minute to keep countdown fresh
