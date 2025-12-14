@@ -29,6 +29,14 @@ function makeIndicator(
 
   if (now < start) {
     const diffMinutes = Math.floor((start - now) / 60000);
+    const diffMs = start - now;
+const totalMinutes = Math.floor(diffMs / 1000 / 60);
+const hours = Math.floor(totalMinutes / 60);
+const minutes = totalMinutes % 60;
+
+const countdown =
+  hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
     return { status: "Down", countdown: `${diffMinutes}m` };
   }
 
@@ -37,6 +45,10 @@ function makeIndicator(
   }
 
   const diffMinutes = Math.floor((end - now) / 60000);
+      const diffMs = start - now;
+const totalMinutes = Math.floor(diffMs / 1000 / 60);
+const hours = Math.floor(totalMinutes / 60);
+const minutes = totalMinutes % 60;
   appLog({
     source: "app/weather/page.tsx",
     message: "Astronomy indicators start end diff",
@@ -44,6 +56,9 @@ function makeIndicator(
       now: now,
       start: start,
       end: end,
+      diffMs: diffMs,
+      hours: hours,
+      minutes: minutes,
       diffMinutes: diffMinutes,
     },
   });
