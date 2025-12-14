@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WeatherCard } from "@/components/WeatherCard";
 import { triggerEmail } from "@/utils/triggerEmail";
