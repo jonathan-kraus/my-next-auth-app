@@ -51,12 +51,11 @@ function CountdownTimer({
   const [remaining, setRemaining] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!indicator?.countdown) return;
 
-  if (!indicator?.countdown) return;
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  setRemaining(indicator.countdown);
-}, [indicator]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRemaining(indicator.countdown);
+  }, [indicator]);
 
   if (!indicator) return null;
 
