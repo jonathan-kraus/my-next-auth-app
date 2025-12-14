@@ -6,6 +6,7 @@ import { WeatherCard } from "@/components/WeatherCard";
 import { triggerEmail } from "@/utils/triggerEmail";
 import { useLogger } from "@/lib/axiom/client";
 import { appLog } from "@/utils/app-log";
+import toast from "react-hot-toast";
 import { LocationSelector } from "@/components/LocationSelector";
 import {
   LocationKey,
@@ -74,30 +75,45 @@ function makeIndicator(startIso?: string, endIso?: string): Indicator | undefine
     rawSet: endIso,
   };
 }
-
+function showHourToast(label: string, hour: number, isUp: boolean) {
+  toast(`${label} hour changed → ${hour}h remaining`, {
+    icon: isUp ? "☀️" : "🌙",
+    style: {
+      background: isUp ? "#fef3c7" : "#e0e7ff", // yellow for sun, indigo for moon
+      color: isUp ? "#92400e" : "#3730a3",
+      fontWeight: 500,
+    },
+  });
+}
 // --- Countdown Timer Component ---
-function CountdownTimer({
-  label,
-  indicator,
-}: {
-  label: string;
-  indicator?: Indicator;
-}) {
-  const [current, setCurrent] = useState(indicator);
+function CountdownTimer({ label, indicator }: { label: string; indicator?: Indicator }) {
+  const [current, setCurrent] = useState<Indicator | undefined>(indicator);
+  const lastHourRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!indicator) return;
 
-    // recompute immediately and then every minute
     const update = () => {
       const updated = makeIndicator(indicator.rawRise, indicator.rawSet);
-      if (updated) setCurrent(updated);
+      if (updated) {
+        setCurrent(updated);
+
+        if (updated.countdown) {
+          const match = updated.countdown.match(/(\d+)h/);
+          const hour = match ? parseInt(match[1], 10) : 0;
+
+          if (lastHourRef.current !== null && hour !== lastHourRef.current) {
+            showHourToast(label, hour, updated.status === "Up");
+          }
+          lastHourRef.current = hour;
+        }
+      }
     };
 
     update();
     const interval = setInterval(update, 60_000);
     return () => clearInterval(interval);
-  }, [indicator]);
+  }, [indicator, label]);
 
   if (!current) return null;
   const isUp = current.status === "Up";
