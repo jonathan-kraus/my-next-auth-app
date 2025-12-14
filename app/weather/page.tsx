@@ -127,6 +127,10 @@ export default function WeatherPage() {
             location: selectedLocation,
             sunIndicator: makeIndicator(sunrise, sunset),
             moonIndicator: makeIndicator(moonrise, moonset),
+            sunrise: sunrise,
+            sunset: sunset,
+            moonrise: moonrise,
+            moonset: moonset,
           },
         });
       } catch (err) {
