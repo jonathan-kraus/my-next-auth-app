@@ -32,6 +32,12 @@ export const Sidenav = () => {
       icon: ChartBarIcon,
       protected: false,
     },
+    {
+      name: "Cloudspace",
+      href: "/cloudspace",
+      icon: ChartBarIcon,
+      protected: false,
+    },
     { name: "Weather", href: "/weather", icon: CloudIcon, protected: false },
     { name: "Notes", href: "/notes", icon: PencilSquareIcon, protected: true },
     {

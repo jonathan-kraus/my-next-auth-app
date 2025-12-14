@@ -23,7 +23,10 @@ type Indicator = {
   rawSet?: string;
 };
 
-function makeIndicator(startIso?: string, endIso?: string): Indicator | undefined {
+function makeIndicator(
+  startIso?: string,
+  endIso?: string,
+): Indicator | undefined {
   if (!startIso || !endIso) return undefined;
 
   const now = Date.now();
@@ -86,7 +89,13 @@ function showHourToast(label: string, hour: number, isUp: boolean) {
   });
 }
 // --- Countdown Timer Component ---
-function CountdownTimer({ label, indicator }: { label: string; indicator?: Indicator }) {
+function CountdownTimer({
+  label,
+  indicator,
+}: {
+  label: string;
+  indicator?: Indicator;
+}) {
   const [current, setCurrent] = useState<Indicator | undefined>(indicator);
   const lastHourRef = useRef<number | null>(null);
 
