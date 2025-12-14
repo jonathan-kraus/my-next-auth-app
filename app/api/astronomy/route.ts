@@ -34,8 +34,8 @@ export async function GET(req: NextRequest) {
         data.astronomy.moonPhase ?? 0,
       ),
 
-      rawSunrise: data.astronomy.rawSunrise,
-      rawSunset: data.astronomy.rawSunset,
+      rawRise: data.astronomy.rawSunrise,
+      rawSet: data.astronomy.rawSunset,
       rawMoonrise: data.astronomy.rawMoonrise,
       rawMoonset: data.astronomy.rawMoonset,
 

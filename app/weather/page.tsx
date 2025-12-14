@@ -15,34 +15,46 @@ import {
 } from "@/lib/weather/types";
 
 // --- Make Indicator Helper ---
-type Indicator = { status: "Up" | "Down"; countdown?: string };
+type Indicator = {
+  status: "Up" | "Down";
+  countdown?: string;
+  rawRise?: string;
+  rawSet?: string;
+};
 
-function makeIndicator(
-  startIso?: string,
-  endIso?: string,
-): Indicator | undefined {
+function makeIndicator(startIso?: string, endIso?: string): Indicator | undefined {
   if (!startIso || !endIso) return undefined;
 
   const now = Date.now();
   const start = new Date(startIso).getTime();
   const end = new Date(endIso).getTime();
 
-  if (now < start) {
-    // Body is down → countdown until rise
-    const diffMs = start - now;
+  const formatCountdown = (target: number) => {
+    const diffMs = target - now;
+    if (diffMs <= 0) return undefined;
     const totalMinutes = Math.floor(diffMs / 1000 / 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    const countdown = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  };
 
-    return { status: "Down", countdown };
+  if (now < start) {
+    return {
+      status: "Down",
+      countdown: formatCountdown(start),
+      rawRise: startIso,
+      rawSet: endIso,
+    };
   }
 
   if (now > end) {
-    // Already set → no countdown
-    return { status: "Down", countdown: undefined };
+    return {
+      status: "Down",
+      countdown: undefined,
+      rawRise: startIso,
+      rawSet: endIso,
+    };
   }
-
   // Body is up → countdown until set
   const diffMs = end - now;
   const totalMinutes = Math.floor(diffMs / 1000 / 60);
@@ -55,8 +67,12 @@ function makeIndicator(
     message: "Astronomy indicators start/end diff",
     metadata: { now, start, end, diffMs, hours, minutes, totalMinutes },
   });
-
-  return { status: "Up", countdown };
+  return {
+    status: "Up",
+    countdown: formatCountdown(end),
+    rawRise: startIso,
+    rawSet: endIso,
+  };
 }
 
 // --- Countdown Timer Component ---
@@ -65,33 +81,26 @@ function CountdownTimer({
   indicator,
 }: {
   label: string;
-  indicator?: { status: "Up" | "Down"; rawRise?: string; rawSet?: string };
+  indicator?: Indicator;
 }) {
-  const [remaining, setRemaining] = useState<string | undefined>(undefined);
-  const [status, setStatus] = useState<"Up" | "Down" | undefined>(
-    indicator?.status,
-  );
+  const [current, setCurrent] = useState(indicator);
 
   useEffect(() => {
     if (!indicator) return;
 
-    // helper to recompute
+    // recompute immediately and then every minute
     const update = () => {
-      const now = new Date();
       const updated = makeIndicator(indicator.rawRise, indicator.rawSet);
-      if (updated) {
-        setRemaining(updated.countdown);
-        setStatus(updated.status);
-      }
+      if (updated) setCurrent(updated);
     };
 
-    update(); // initial
-    const interval = setInterval(update, 60_000); // every minute
+    update();
+    const interval = setInterval(update, 60_000);
     return () => clearInterval(interval);
   }, [indicator]);
 
-  if (!indicator) return null;
-  const isUp = status === "Up";
+  if (!current) return null;
+  const isUp = current.status === "Up";
 
   return (
     <motion.div
@@ -102,17 +111,19 @@ function CountdownTimer({
       }`}
     >
       {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
-      <AnimatePresence>
-        {remaining && (
+      <AnimatePresence mode="wait">
+        {current.countdown && (
           <motion.span
-            key={remaining} // important: lets AnimatePresence animate changes
+            key={current.countdown} // ensures AnimatePresence animates on change
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.3 }}
             className="ml-2 text-sm text-gray-600"
           >
-            {isUp ? `(${remaining} left)` : `(↑ in ${remaining})`}
+            {isUp
+              ? `(${current.countdown} left)`
+              : `(↑ in ${current.countdown})`}
           </motion.span>
         )}
       </AnimatePresence>
