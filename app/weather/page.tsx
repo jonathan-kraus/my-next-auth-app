@@ -119,7 +119,9 @@ export default function WeatherPage() {
         // Calculate indicators
         setSunIndicator(makeIndicator(sunrise, sunset));
         setMoonIndicator(makeIndicator(moonrise, moonset));
-        const jMin = Math.floor((sunset - sunrise) / 60000);
+const jMin = Math.floor(
+  (new Date(sunset).getTime() - new Date(sunrise).getTime()) / 60000
+);
         appLog({
           source: "app/weather/page.tsx",
           message: "Astronomy indicators loaded",
