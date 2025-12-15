@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { useRequestId } from "@/app/contexts/RequestIdContext";
+import { createRequestId } from "@/lib/uuidj";
 import NumberCounter from "./NumberCounter";
 import Sparkline from "./Sparkline";
 
@@ -113,7 +113,7 @@ export default function Cloudspace() {
   const [data, setData] = useState<CloudspaceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const requestId = useRequestId();
+  const requestId = createRequestId();
 
   useEffect(() => {
     async function fetchCloudspaceData() {
