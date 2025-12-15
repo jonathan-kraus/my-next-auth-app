@@ -1,19 +1,13 @@
 // eslint.config.mjs
-
 import { defineConfig } from "eslint/config";
-import nextPlugin from "eslint-config-next"; // 🎯 Now imports the main, exposed config object
-
-// You no longer need to import the subpaths (.js files),
-// as the primary package export handles the setup for you.
+import nextPlugin from "eslint-config-next";
 
 const eslintConfig = defineConfig([
   // 1. Next.js Base Configuration
-  // This array spread includes the core rules, React rules, TypeScript rules,
-  // and best practices recommended by Vercel for the Next.js App Router.
-  ...nextPlugin, 
-  
-  // 2. Global Ignores (Keep for stability)
-  // These are the standard directories and files to skip during linting.
+  // Spread in the Next.js recommended rules
+  ...nextPlugin,
+
+  // 2. Global Ignores and custom rules
   {
     ignores: [
       ".next/**",
@@ -21,13 +15,13 @@ const eslintConfig = defineConfig([
       "build/**",
       "next-env.d.ts",
       "node_modules",
-      "**/*.config.js" // Optional: ignore configuration files at root level
+      "**/*.config.js"
     ],
-      "extends": "next/core-web-vitals",
-      "rules": {
+    extends: ["next/core-web-vitals"], // ✅ must be an array
+    rules: {
       "react-hooks/exhaustive-deps": "off"
-      }
     }
-  ],
-);
+  }
+]);
+
 export default eslintConfig;
