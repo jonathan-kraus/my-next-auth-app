@@ -31,7 +31,7 @@ export default function NumberCounter({
       if (ref.current) cancelAnimationFrame(ref.current);
     };
     // Intentionally using only `value` and `duration` as deps to animate on change
-  }, [value, duration]);
+  }, [value, duration, display]);
 
   return <span className={className ?? "text-blue-600 mt-2"}>{display}</span>;
 }
