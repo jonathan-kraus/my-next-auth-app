@@ -198,7 +198,7 @@ export default function Cloudspace() {
     }
 
     fetchCloudspaceData();
-  }, [requestId]);
+  }, []);
 
   if (loading) {
     return (
