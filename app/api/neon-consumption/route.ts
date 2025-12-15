@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
-import { da } from 'zod/v4/locales';
+console.log('Neon Consumption Route Loaded');
 
 export async function GET(request: Request) {
   const requestId = createRequestId();
-  await appLog({
-    source: 'app/api/neon-consumption/route.ts',
-    message: 'Route invoked',
-    metadata: { stage: 'init', requestId },
-  });
+  try {
+    await appLog({
+      source: 'app/api/neon-consumption/route.ts',
+      message: 'Route invoked',
+      metadata: { stage: 'init', requestId },
+    });
+  } catch (err) {
+    console.error('Failed to write appLog', err);
+  }
 
   try {
     const apiKey = process.env.NEON_API_KEY;
