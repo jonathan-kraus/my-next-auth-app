@@ -84,7 +84,6 @@ export async function GET(request: Request) {
   }
 }
 
-
 await appLog({
   source: 'app/api/neon-consumption/route.ts',
   message: '---neon info invoked---',

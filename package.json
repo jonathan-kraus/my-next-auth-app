@@ -32,7 +32,17 @@
       "eslint --fix"
     ]
   },
-  "dependencies": { … },
-  "devDependencies": { … },
-  "packageManager": "pnpm@10.25.0+sha512.…"
+  "dependencies": {
+    "@next-auth/prisma-adapter": "^1.0.5",
+    "bcryptjs": "^2.4.3",
+    "next": "13.4.12",
+    "next-auth": "^4.29.6",
+    "prisma": "^4.20.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/node": "20.4.2"
+  }
 }
