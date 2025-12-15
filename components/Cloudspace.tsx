@@ -110,11 +110,11 @@ function EnvironmentBadge({ environment }: { environment: string }) {
     </span>
   );
 }
-const requestId = createRequestId();
+
 await appLog({
   source: "components/Cloudspace.tsx",
   message: "---init---",
-  requestId: requestId,
+  requestId: "requestId",
   metadata: {
     action: "create",
     status: "started",
@@ -134,12 +134,32 @@ export default function Cloudspace() {
         if (!envResponse.ok)
           throw new Error("Failed to fetch environment info");
         const envData = await envResponse.json();
-
+        await appLog({
+          source: "components/Cloudspace.tsx",
+          message: "---env-info---",
+          requestId: requestId,
+          metadata: {
+            action: "fetch",
+            status: "completed",
+            envData: envData.environment,
+            timestamp: new Date().toISOString(),
+          },
+        });
         // Fetch database status
         const dbResponse = await fetch("/api/db-status");
         if (!dbResponse.ok) throw new Error("Failed to fetch database status");
         const dbData = await dbResponse.json();
-
+        await appLog({
+          source: "components/Cloudspace.tsx",
+          message: "---db-status---",
+          requestId: requestId,
+          metadata: {
+            action: "fetch",
+            status: "completed",
+            dbData: dbData.region,
+            timestamp: new Date().toISOString(),
+          },
+        });
         // Try to fetch consumption metrics (may not be available)
         let consumptionData = null;
         try {
@@ -172,7 +192,21 @@ export default function Cloudspace() {
         } catch {
           console.log("Consumption metrics not available");
         }
-
+        await appLog({
+          source: "components/Cloudspace.tsx",
+          message: "---neon-consumption---",
+          requestId: requestId,
+          metadata: {
+            action: "fetch",
+            status: "completed",
+            activeTimeHours: consumptionData?.activeTimeHours || 0,
+            computeTimeHours: consumptionData?.computeTimeHours || 0,
+            dataWrittenMB: consumptionData?.dataWrittenMB || 0,
+            dataTransferMB: consumptionData?.dataTransferMB || 0,
+            storageGBHours: consumptionData?.storageGBHours || 0,
+            timestamp: new Date().toISOString(),
+          },
+        });
         const cloudspaceData: CloudspaceData = {
           vercel: {
             deploymentUrl: envData.deploymentUrl || "N/A",
