@@ -22,14 +22,12 @@ const eslintConfig = defineConfig([
       "next-env.d.ts",
       "node_modules",
       "**/*.config.js" // Optional: ignore configuration files at root level
-    ]
-  }
-{
-  "extends": "next/core-web-vitals",
-  "rules": {
-    "react-hooks/exhaustive-deps": "off"
-  }
-}
+    ],
+      "extends": "next/core-web-vitals",
+      "rules": {
+      "react-hooks/exhaustive-deps": "off"
+      }
+    }
+  ],
 ]);
-
 export default eslintConfig;
