@@ -51,6 +51,16 @@ export async function GET() {
       const sql = neon(process.env.DATABASE_URL);
       const result = await sql`SELECT COUNT(*)::int as count FROM "WeatherLog"`;
       weatherLogCount = result[0]?.count ?? null;
+      await appLog({
+        source: 'app/api/env-info/route.ts',
+        message: '---DB host check---',
+        requestId: requestId,
+        metadata: {
+          action: 'check',
+          dbHost: dbHost,
+          dbName: dbName,
+        },
+      });
     } catch {
       dbHost = 'Unable to parse';
       weatherLogCount = null;
