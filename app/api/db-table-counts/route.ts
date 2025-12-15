@@ -1,6 +1,6 @@
 // app/api/db-table-counts/route.ts
-import { NextResponse } from "next/server";
-import { dbFetch } from "@/lib/dbFetch";
+import { NextResponse } from 'next/server';
+import { dbFetch } from '@/lib/dbFetch';
 
 type RawRow = {
   schema_name: string;
@@ -27,7 +27,7 @@ export async function GET() {
         AND n.nspname NOT IN ('pg_catalog', 'information_schema')
         AND c.reltuples >= 10           -- exclude very small tables
       ORDER BY schema_name, table_name;
-    `),
+    `)
   );
 
   const serializable: SerializableRow[] = rows.map((r) => ({

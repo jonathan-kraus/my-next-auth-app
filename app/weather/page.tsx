@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { WeatherCard } from "@/components/WeatherCard";
-import { triggerEmail } from "@/utils/triggerEmail";
-import { useLogger } from "@/lib/axiom/client";
-import { appLog } from "@/utils/app-log";
-import toast from "react-hot-toast";
-import { LocationSelector } from "@/components/LocationSelector";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { WeatherCard } from '@/components/WeatherCard';
+import { triggerEmail } from '@/utils/triggerEmail';
+import { useLogger } from '@/lib/axiom/client';
+import { appLog } from '@/utils/app-log';
+import toast from 'react-hot-toast';
+import { LocationSelector } from '@/components/LocationSelector';
 import {
   LocationKey,
   WeatherData,
   ApiResponse,
   BodyIndicator,
-} from "@/lib/weather/types";
+} from '@/lib/weather/types';
 
 // --- Make Indicator Helper ---
 type Indicator = {
-  status: "Up" | "Down";
+  status: 'Up' | 'Down';
   countdown?: string;
   rawRise?: string;
   rawSet?: string;
@@ -25,7 +25,7 @@ type Indicator = {
 
 function makeIndicator(
   startIso?: string,
-  endIso?: string,
+  endIso?: string
 ): Indicator | undefined {
   if (!startIso || !endIso) return undefined;
 
@@ -44,7 +44,7 @@ function makeIndicator(
 
   if (now < start) {
     return {
-      status: "Down",
+      status: 'Down',
       countdown: formatCountdown(start),
       rawRise: startIso,
       rawSet: endIso,
@@ -53,7 +53,7 @@ function makeIndicator(
 
   if (now > end) {
     return {
-      status: "Down",
+      status: 'Down',
       countdown: undefined,
       rawRise: startIso,
       rawSet: endIso,
@@ -67,12 +67,12 @@ function makeIndicator(
   const countdown = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
   appLog({
-    source: "app/weather/page.tsx",
-    message: "Astronomy indicators start/end diff",
+    source: 'app/weather/page.tsx',
+    message: 'Astronomy indicators start/end diff',
     metadata: { now, start, end, diffMs, hours, minutes, totalMinutes },
   });
   return {
-    status: "Up",
+    status: 'Up',
     countdown: formatCountdown(end),
     rawRise: startIso,
     rawSet: endIso,
@@ -80,10 +80,10 @@ function makeIndicator(
 }
 function showHourToast(label: string, hour: number, isUp: boolean) {
   toast(`${label} hour changed → ${hour}h remaining`, {
-    icon: isUp ? "☀️" : "🌙",
+    icon: isUp ? '☀️' : '🌙',
     style: {
-      background: isUp ? "#fef3c7" : "#e0e7ff", // yellow for sun, indigo for moon
-      color: isUp ? "#92400e" : "#3730a3",
+      background: isUp ? '#fef3c7' : '#e0e7ff', // yellow for sun, indigo for moon
+      color: isUp ? '#92400e' : '#3730a3',
       fontWeight: 500,
     },
   });
@@ -112,7 +112,7 @@ function CountdownTimer({
           const hour = match ? parseInt(match[1], 10) : 0;
 
           if (lastHourRef.current !== null && hour !== lastHourRef.current) {
-            showHourToast(label, hour, updated.status === "Up");
+            showHourToast(label, hour, updated.status === 'Up');
           }
           lastHourRef.current = hour;
         }
@@ -125,17 +125,17 @@ function CountdownTimer({
   }, [indicator, label]);
 
   if (!current) return null;
-  const isUp = current.status === "Up";
+  const isUp = current.status === 'Up';
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className={`text-center text-lg font-medium mb-4 ${
-        isUp ? "text-yellow-700" : "text-indigo-700"
+        isUp ? 'text-yellow-700' : 'text-indigo-700'
       }`}
     >
-      {label}: {isUp ? "🟢 Up" : "⚫️ Down"}
+      {label}: {isUp ? '🟢 Up' : '⚫️ Down'}
       <AnimatePresence mode="wait">
         {current.countdown && (
           <motion.span
@@ -158,7 +158,7 @@ function CountdownTimer({
 
 export default function WeatherPage() {
   const logger = useLogger();
-  const [selectedLocation, setSelectedLocation] = useState<LocationKey>("kop");
+  const [selectedLocation, setSelectedLocation] = useState<LocationKey>('kop');
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [sunIndicator, setSunIndicator] = useState<Indicator | undefined>();
   const [moonIndicator, setMoonIndicator] = useState<Indicator | undefined>();
@@ -173,9 +173,9 @@ export default function WeatherPage() {
   useEffect(() => {
     async function loadAstronomy() {
       try {
-        const res = await fetch("/api/astronomy/tomorrow");
+        const res = await fetch('/api/astronomy/tomorrow');
         const json = await res.json();
-        console.log("Astronomy data:", json);
+        console.log('Astronomy data:', json);
 
         if (!json.success || !json.data) return;
 
@@ -185,11 +185,11 @@ export default function WeatherPage() {
         setSunIndicator(makeIndicator(sunrise, sunset));
         setMoonIndicator(makeIndicator(moonrise, moonset));
         const jMin = Math.floor(
-          (new Date(sunset).getTime() - new Date(sunrise).getTime()) / 60000,
+          (new Date(sunset).getTime() - new Date(sunrise).getTime()) / 60000
         );
         appLog({
-          source: "app/weather/page.tsx",
-          message: "Astronomy indicators loaded",
+          source: 'app/weather/page.tsx',
+          message: 'Astronomy indicators loaded',
           metadata: {
             location: selectedLocation,
             sunIndicator: makeIndicator(sunrise, sunset),
@@ -202,7 +202,7 @@ export default function WeatherPage() {
           },
         });
       } catch (err) {
-        console.error("Failed to load astronomy data:", err);
+        console.error('Failed to load astronomy data:', err);
       }
     }
 
@@ -216,14 +216,14 @@ export default function WeatherPage() {
       const startTime = performance.now();
 
       try {
-        logger.info("Fetching weather", { location, forceRefresh });
+        logger.info('Fetching weather', { location, forceRefresh });
 
         const response = await fetch(
-          `/api/weather?location=${location}&refresh=${forceRefresh ? "true" : "false"}`,
+          `/api/weather?location=${location}&refresh=${forceRefresh ? 'true' : 'false'}`
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch weather data");
+          throw new Error('Failed to fetch weather data');
         }
 
         const data: ApiResponse<WeatherData> = await response.json();
@@ -232,7 +232,7 @@ export default function WeatherPage() {
           setWeatherData(data.data);
           setLastUpdate(new Date());
 
-          logger.info("Weather data loaded successfully", {
+          logger.info('Weather data loaded successfully', {
             location,
             temperature: data.data.current.temperature,
             condition: data.data.current.condition,
@@ -241,8 +241,8 @@ export default function WeatherPage() {
           });
 
           appLog({
-            source: "app/weather/page.tsx",
-            message: "[full] Weather data loaded",
+            source: 'app/weather/page.tsx',
+            message: '[full] Weather data loaded',
             metadata: {
               location,
               cached: data.cached ?? false,
@@ -253,20 +253,20 @@ export default function WeatherPage() {
             },
           });
         } else if (data.cached) {
-          logger.info("Weather data loaded from cache", {
+          logger.info('Weather data loaded from cache', {
             location,
             cached: data.cached,
             duration: Math.round(performance.now() - startTime),
           });
         } else {
-          throw new Error(data.error || "Unknown error");
+          throw new Error(data.error || 'Unknown error');
         }
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "Unknown error";
+          err instanceof Error ? err.message : 'Unknown error';
         setError(errorMessage);
 
-        logger.error("Weather fetch failed", {
+        logger.error('Weather fetch failed', {
           location,
           error: errorMessage,
           duration: Math.round(performance.now() - startTime),
@@ -275,22 +275,22 @@ export default function WeatherPage() {
         setLoading(false);
       }
     },
-    [logger],
+    [logger]
   );
 
   useEffect(() => {
-    logger.info("Weather page loaded", { location: selectedLocation });
+    logger.info('Weather page loaded', { location: selectedLocation });
     fetchWeather(selectedLocation);
   }, [selectedLocation, logger, fetchWeather]);
 
   const handleRefresh = () => {
-    logger.info("Manual refresh triggered", { location: selectedLocation });
+    logger.info('Manual refresh triggered', { location: selectedLocation });
     fetchWeather(selectedLocation, true);
   };
 
   const handleEmailWeather = async () => {
     if (!weatherData) {
-      setEmailError("No weather data available to send");
+      setEmailError('No weather data available to send');
       return;
     }
 
@@ -299,29 +299,29 @@ export default function WeatherPage() {
     setEmailSuccess(false);
 
     try {
-      logger.info("Sending weather email", { location: selectedLocation });
+      logger.info('Sending weather email', { location: selectedLocation });
 
       await triggerEmail(
-        "in weather page",
-        "requestId",
+        'in weather page',
+        'requestId',
         `Subject weather`,
-        `Created by \n\nweather content here.`,
+        `Created by \n\nweather content here.`
       );
 
-      console.log("[weather] email sent successfully");
+      console.log('[weather] email sent successfully');
 
       setEmailSuccess(true);
-      logger.info("Weather email sent successfully", {
+      logger.info('Weather email sent successfully', {
         location: selectedLocation,
       });
 
       // Clear success message after 5 seconds
       setTimeout(() => setEmailSuccess(false), 5000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setEmailError(errorMessage);
 
-      logger.error("Email send failed", {
+      logger.error('Email send failed', {
         location: selectedLocation,
         error: errorMessage,
       });
@@ -374,7 +374,7 @@ export default function WeatherPage() {
             disabled={loading}
             className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? "⏳ Refreshing..." : "🔄 Refresh Data"}
+            {loading ? '⏳ Refreshing...' : '🔄 Refresh Data'}
           </motion.button>
 
           <motion.button
@@ -384,7 +384,7 @@ export default function WeatherPage() {
             disabled={emailLoading || !weatherData}
             className="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {emailLoading ? "📧 Sending..." : "📧 Email Report"}
+            {emailLoading ? '📧 Sending...' : '📧 Email Report'}
           </motion.button>
 
           {lastUpdate && (

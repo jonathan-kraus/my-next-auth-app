@@ -1,8 +1,8 @@
-export const runtime = "nodejs";
-import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import db from "@/lib/db";
+export const runtime = 'nodejs';
+import NextAuth from 'next-auth';
+import GitHub from 'next-auth/providers/github';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import db from '@/lib/db';
 
 // 👇 force Node runtime so Prisma doesn't get bundled into client engine
 
@@ -17,7 +17,7 @@ const handler = NextAuth({
   callbacks: {
     async session({ session, token, user }) {
       // If you are using a database adapter, user will be defined
-      if (user && "id" in user) {
+      if (user && 'id' in user) {
         session.user.id = user.id;
       } else if (token && token.sub) {
         session.user.id = token.sub;

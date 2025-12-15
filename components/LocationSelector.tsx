@@ -1,7 +1,7 @@
 // components/LocationSelector.tsx
-import { LOCATIONS, LocationKey } from "@/lib/weather/types";
+import { LOCATIONS, LocationKey } from '@/lib/weather/types';
 
-const locationKeys: LocationKey[] = ["kop", "brookline", "williamstown"];
+const locationKeys: LocationKey[] = ['kop', 'brookline', 'williamstown'];
 
 export function LocationSelector({
   selectedLocation,
@@ -26,8 +26,8 @@ export function LocationSelector({
               onClick={() => onChange(locationKey)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 isSelected
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                  : "bg-white/10 text-gray-200 hover:bg-white/20"
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                  : 'bg-white/10 text-gray-200 hover:bg-white/20'
               }`}
             >
               {location.flag && <span className="mr-2">{location.flag}</span>}

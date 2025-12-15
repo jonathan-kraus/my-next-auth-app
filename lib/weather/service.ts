@@ -1,18 +1,18 @@
 // lib/weather/service.ts
-import db from "../db";
+import db from '../db';
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
   LocationKey,
   WeatherData,
-} from "@/lib/weather/types";
+} from '@/lib/weather/types';
 
 const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
-const BASE_URL = "https://api.tomorrow.io/v4/timelines";
+const BASE_URL = 'https://api.tomorrow.io/v4/timelines';
 const MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
 if (!TOMORROW_API_KEY) {
-  console.warn("TOMORROW API key env var is not set");
+  console.warn('TOMORROW API key env var is not set');
 }
 
 // ---- Indicator helper ------------------------------------------------------
@@ -20,10 +20,10 @@ if (!TOMORROW_API_KEY) {
 function computeIndicator(
   now: Date,
   rise?: Date | null,
-  set?: Date | null,
-): { status: "Up" | "Down"; countdown?: string } {
+  set?: Date | null
+): { status: 'Up' | 'Down'; countdown?: string } {
   if (!rise || !set) {
-    return { status: "Down", countdown: undefined };
+    return { status: 'Down', countdown: undefined };
   }
 
   if (now >= rise && now < set) {
@@ -33,7 +33,7 @@ function computeIndicator(
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     return {
-      status: "Up",
+      status: 'Up',
       countdown: hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
     };
   } else {
@@ -45,7 +45,7 @@ function computeIndicator(
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     return {
-      status: "Down",
+      status: 'Down',
       countdown: hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
     };
   }
@@ -56,7 +56,7 @@ function computeIndicator(
 async function getCachedRaw(locationKey: LocationKey) {
   return db.weatherCache.findFirst({
     where: { location: locationKey },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   });
 }
 
@@ -110,50 +110,50 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
   const body = {
     location: [location.lat, location.lon],
     fields: [
-      "temperature",
-      "temperatureApparent",
-      "humidity",
-      "windSpeed",
-      "windGust",
-      "windDirection",
-      "pressureSeaLevel",
-      "uvIndex",
-      "visibility",
-      "cloudCover",
-      "weatherCode",
-      "sunriseTime",
-      "sunsetTime",
-      "moonriseTime",
-      "moonsetTime",
-      "moonPhase",
+      'temperature',
+      'temperatureApparent',
+      'humidity',
+      'windSpeed',
+      'windGust',
+      'windDirection',
+      'pressureSeaLevel',
+      'uvIndex',
+      'visibility',
+      'cloudCover',
+      'weatherCode',
+      'sunriseTime',
+      'sunsetTime',
+      'moonriseTime',
+      'moonsetTime',
+      'moonPhase',
     ],
-    units: "imperial",
-    timesteps: ["current", "1h", "1d"],
-    timezone: "America/New_York",
+    units: 'imperial',
+    timesteps: ['current', '1h', '1d'],
+    timezone: 'America/New_York',
   };
 
-  console.log("[weather] calling Tomorrow.io", {
+  console.log('[weather] calling Tomorrow.io', {
     locationKey,
     lat: location.lat,
     lon: location.lon,
   });
 
   const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
   if (!res.ok) {
     const text = await res.text();
-    console.error("[weather] Tomorrow.io error", {
+    console.error('[weather] Tomorrow.io error', {
       locationKey,
       status: res.status,
       statusText: res.statusText,
       body: text,
     });
     throw new Error(
-      `Tomorrow.io API error (${locationKey}): ${res.status} ${res.statusText}`,
+      `Tomorrow.io API error (${locationKey}): ${res.status} ${res.statusText}`
     );
   }
 
@@ -163,38 +163,38 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
 // ---- Mapping ---------------------------------------------------------------
 
 const weatherCodeMap: Record<number, string> = {
-  1000: "Clear",
-  1100: "Mostly Clear",
-  1101: "Partly Cloudy",
-  1102: "Mostly Cloudy",
-  1001: "Cloudy",
-  2000: "Foggy",
-  2100: "Light Fog",
-  4000: "Drizzle",
-  4001: "Rain",
-  4200: "Light Rain",
-  4201: "Heavy Rain",
-  5000: "Snow",
-  5001: "Flurries",
-  5100: "Light Snow",
-  5101: "Heavy Snow",
-  6000: "Freezing Drizzle",
-  6001: "Freezing Rain",
-  6200: "Light Freezing Rain",
-  6201: "Heavy Freezing Rain",
-  7000: "Ice Pellets",
-  7101: "Heavy Ice Pellets",
-  7102: "Light Ice Pellets",
-  8000: "Thunderstorm",
+  1000: 'Clear',
+  1100: 'Mostly Clear',
+  1101: 'Partly Cloudy',
+  1102: 'Mostly Cloudy',
+  1001: 'Cloudy',
+  2000: 'Foggy',
+  2100: 'Light Fog',
+  4000: 'Drizzle',
+  4001: 'Rain',
+  4200: 'Light Rain',
+  4201: 'Heavy Rain',
+  5000: 'Snow',
+  5001: 'Flurries',
+  5100: 'Light Snow',
+  5101: 'Heavy Snow',
+  6000: 'Freezing Drizzle',
+  6001: 'Freezing Rain',
+  6200: 'Light Freezing Rain',
+  6201: 'Heavy Freezing Rain',
+  7000: 'Ice Pellets',
+  7101: 'Heavy Ice Pellets',
+  7102: 'Light Ice Pellets',
+  8000: 'Thunderstorm',
 };
 
 const formatTime = (timeString?: string): string => {
-  if (!timeString) return "N/A";
-  return new Date(timeString).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
+  if (!timeString) return 'N/A';
+  return new Date(timeString).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
     hour12: true,
-    timeZone: "America/New_York",
+    timeZone: 'America/New_York',
   });
 };
 
@@ -202,14 +202,14 @@ function mapTomorrowIOToWeatherData(
   rawData: any,
   locationKey: LocationKey,
   isCached: boolean,
-  lastUpdatedIso: string,
+  lastUpdatedIso: string
 ): WeatherData {
   const location = LOCATIONS_BY_KEY[locationKey];
 
   const timelines = rawData.data?.timelines ?? [];
-  const currentTimeline = timelines.find((t: any) => t.timestep === "current");
-  const hourlyTimeline = timelines.find((t: any) => t.timestep === "1h");
-  const dailyTimeline = timelines.find((t: any) => t.timestep === "1d");
+  const currentTimeline = timelines.find((t: any) => t.timestep === 'current');
+  const hourlyTimeline = timelines.find((t: any) => t.timestep === '1h');
+  const dailyTimeline = timelines.find((t: any) => t.timestep === '1d');
 
   if (!currentTimeline?.intervals?.[0]) {
     throw new Error(`No current weather data for ${locationKey}`);
@@ -223,7 +223,7 @@ function mapTomorrowIOToWeatherData(
     .map((i: any) => ({
       time: i.startTime,
       temperature: Math.round(i.values.temperature),
-      condition: weatherCodeMap[i.values.weatherCode] ?? "Unknown",
+      condition: weatherCodeMap[i.values.weatherCode] ?? 'Unknown',
       precipitation: Math.round(i.values.precipitationIntensity ?? 0),
     }));
 
@@ -231,7 +231,7 @@ function mapTomorrowIOToWeatherData(
     date: i.startTime,
     high: Math.round(i.values.temperatureMax ?? i.values.temperature),
     low: Math.round(i.values.temperatureMin ?? i.values.temperature),
-    condition: weatherCodeMap[i.values.weatherCode] ?? "Unknown",
+    condition: weatherCodeMap[i.values.weatherCode] ?? 'Unknown',
     precipitation: Math.round(i.values.precipitationIntensity ?? 0),
   }));
 
@@ -249,7 +249,7 @@ function mapTomorrowIOToWeatherData(
       uvIndex: Math.round(currentValues.uvIndex ?? 0),
       visibility: Math.round(currentValues.visibility ?? 0),
       cloudCover: Math.round(currentValues.cloudCover ?? 0),
-      condition: weatherCodeMap[currentValues.weatherCode] ?? "Unknown",
+      condition: weatherCodeMap[currentValues.weatherCode] ?? 'Unknown',
     },
     astronomy: {
       sunrise: formatTime(dailyValues.sunriseTime),
@@ -280,7 +280,7 @@ export async function getWeather(locationKey: LocationKey) {
       cached.data,
       locationKey,
       true,
-      cached.createdAt.toISOString(),
+      cached.createdAt.toISOString()
     );
 
     // ✅ Enrich astronomy with Prisma fields
@@ -295,12 +295,12 @@ export async function getWeather(locationKey: LocationKey) {
       mapped.astronomy.sunIndicator = computeIndicator(
         now,
         cached.sunrise,
-        cached.sunset,
+        cached.sunset
       );
       mapped.astronomy.moonIndicator = computeIndicator(
         now,
         cached.moonrise,
-        cached.moonset,
+        cached.moonset
       );
     }
 
@@ -313,11 +313,11 @@ export async function getWeather(locationKey: LocationKey) {
     await saveCachedRaw(locationKey, raw);
 
     const nowIso = new Date().toISOString();
-    console.log("[weather] served live and cached", { locationKey });
+    console.log('[weather] served live and cached', { locationKey });
 
     return mapTomorrowIOToWeatherData(raw, locationKey, false, nowIso);
   } catch (error) {
-    console.error("[weather] live fetch failed, no cache available", {
+    console.error('[weather] live fetch failed, no cache available', {
       locationKey,
       message: error instanceof Error ? error.message : String(error),
     });

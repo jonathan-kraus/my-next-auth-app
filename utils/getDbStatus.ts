@@ -1,10 +1,10 @@
 //utils/getDbStatus.ts
-"use server";
+'use server';
 
-import db from "@/lib/db";
-import { appLog } from "@/utils/app-log";
-import { createRequestId } from "@/lib/uuidj";
-import { Note } from "../src/generated/index";
+import db from '@/lib/db';
+import { appLog } from '@/utils/app-log';
+import { createRequestId } from '@/lib/uuidj';
+import { Note } from '../src/generated/index';
 
 /**
  * Extract AWS region from Neon database host
@@ -12,20 +12,20 @@ import { Note } from "../src/generated/index";
  */
 function extractRegionFromDbHost(): string {
   try {
-    if (!process.env.DATABASE_URL) return "Unknown";
+    if (!process.env.DATABASE_URL) return 'Unknown';
     const url = new URL(process.env.DATABASE_URL);
     const host = url.hostname;
 
     // Match pattern like ".us-east-1.aws.neon.tech" or ".eu-west-1.aws.neon.tech"
     const regionMatch = host.match(
-      /\.(us|eu|ap|ca|sa|me|af)-([a-z]+)-(\d+)\.aws\.neon\.tech$/,
+      /\.(us|eu|ap|ca|sa|me|af)-([a-z]+)-(\d+)\.aws\.neon\.tech$/
     );
     if (regionMatch) {
       return `${regionMatch[1]}-${regionMatch[2]}-${regionMatch[3]}`;
     }
-    return "Unknown";
+    return 'Unknown';
   } catch {
-    return "Unknown";
+    return 'Unknown';
   }
 }
 const requestId = createRequestId();
@@ -46,11 +46,11 @@ async function getLastDatabaseActivity() {
       last_backend_start: Date | null;
     }[];
     await appLog({
-      source: "utils/getDbStatus.ts",
-      message: "---DB check---",
+      source: 'utils/getDbStatus.ts',
+      message: '---DB check---',
       requestId: requestId,
       metadata: {
-        action: "get",
+        action: 'get',
         AC: activeConnections[0]?.active_connections,
       },
     });
@@ -94,7 +94,7 @@ async function getLastDatabaseActivity() {
     };
   } catch (error) {
     // Note: Can't use logger here as we're in a nested function without requestId
-    console.warn("[getDbStatus] Error getting database activity:", error);
+    console.warn('[getDbStatus] Error getting database activity:', error);
     return {
       activeConnections: 0,
       lastActivity: null,
@@ -113,7 +113,7 @@ export async function getDbStatus(requestId?: string) {
     await Promise.all([
       db.$queryRaw`SELECT version()`,
       db.note.count(),
-      db.note.findFirst({ orderBy: { createdAt: "desc" } }),
+      db.note.findFirst({ orderBy: { createdAt: 'desc' } }),
       db.log.count(),
 
       getLastDatabaseActivity(),
@@ -122,8 +122,8 @@ export async function getDbStatus(requestId?: string) {
 
   const region = extractRegionFromDbHost();
   await appLog({
-    source: "utils/getDbStatus.ts",
-    message: "---DB count---",
+    source: 'utils/getDbStatus.ts',
+    message: '---DB count---',
     requestId: requestId,
     metadata: {
       latencyMs: latencyMs,
@@ -137,8 +137,8 @@ export async function getDbStatus(requestId?: string) {
     version: (version as { version: string }[])[0].version,
     postCount,
     latestPostDate: latestPost?.createdAt || null,
-    latestPostTitle: latestPost?.title || "No Title",
-    latestPostContent: latestPost?.content || "No Content",
+    latestPostTitle: latestPost?.title || 'No Title',
+    latestPostContent: latestPost?.content || 'No Content',
     logCount,
     weatherHourlyCount,
     latencyMs,

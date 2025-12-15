@@ -1,11 +1,11 @@
 // components/Cloudspace.tsx
-"use client";
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
-import { appLog } from "@/utils/app-log";
-import { createRequestId } from "@/lib/uuidj";
-import NumberCounter from "./NumberCounter";
-import Sparkline from "./Sparkline";
+'use client';
+import { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+import { appLog } from '@/utils/app-log';
+import { createRequestId } from '@/lib/uuidj';
+import NumberCounter from './NumberCounter';
+import Sparkline from './Sparkline';
 
 type CloudspaceData = {
   vercel: {
@@ -96,13 +96,13 @@ function InfoRow({
 
 function EnvironmentBadge({ environment }: { environment: string }) {
   const colors = {
-    production: "bg-green-100 text-green-800",
-    preview: "bg-yellow-100 text-yellow-800",
-    development: "bg-blue-100 text-blue-800",
+    production: 'bg-green-100 text-green-800',
+    preview: 'bg-yellow-100 text-yellow-800',
+    development: 'bg-blue-100 text-blue-800',
   } as const;
 
   const color =
-    colors[environment as keyof typeof colors] || "bg-gray-100 text-gray-800";
+    colors[environment as keyof typeof colors] || 'bg-gray-100 text-gray-800';
 
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${color}`}>
@@ -112,12 +112,12 @@ function EnvironmentBadge({ environment }: { environment: string }) {
 }
 
 await appLog({
-  source: "components/Cloudspace.tsx",
-  message: "---init---",
-  requestId: "requestId",
+  source: 'components/Cloudspace.tsx',
+  message: '---init---',
+  requestId: 'requestId',
   metadata: {
-    action: "create",
-    status: "started",
+    action: 'create',
+    status: 'started',
   },
 });
 export default function Cloudspace() {
@@ -130,32 +130,32 @@ export default function Cloudspace() {
     async function fetchCloudspaceData() {
       try {
         // Fetch environment info
-        const envResponse = await fetch("/api/env-info");
+        const envResponse = await fetch('/api/env-info');
         if (!envResponse.ok)
-          throw new Error("Failed to fetch environment info");
+          throw new Error('Failed to fetch environment info');
         const envData = await envResponse.json();
         await appLog({
-          source: "components/Cloudspace.tsx",
-          message: "---env-info---",
+          source: 'components/Cloudspace.tsx',
+          message: '---env-info---',
           requestId: requestId,
           metadata: {
-            action: "fetch",
-            status: "completed",
+            action: 'fetch',
+            status: 'completed',
             envData: envData.environment,
             timestamp: new Date().toISOString(),
           },
         });
         // Fetch database status
-        const dbResponse = await fetch("/api/db-status");
-        if (!dbResponse.ok) throw new Error("Failed to fetch database status");
+        const dbResponse = await fetch('/api/db-status');
+        if (!dbResponse.ok) throw new Error('Failed to fetch database status');
         const dbData = await dbResponse.json();
         await appLog({
-          source: "components/Cloudspace.tsx",
-          message: "---db-status---",
+          source: 'components/Cloudspace.tsx',
+          message: '---db-status---',
           requestId: requestId,
           metadata: {
-            action: "fetch",
-            status: "completed",
+            action: 'fetch',
+            status: 'completed',
             dbData: dbData.region,
             timestamp: new Date().toISOString(),
           },
@@ -163,42 +163,42 @@ export default function Cloudspace() {
         // Try to fetch consumption metrics (may not be available)
         let consumptionData = null;
         try {
-          const consumptionResponse = await fetch("/api/neon-consumption");
+          const consumptionResponse = await fetch('/api/neon-consumption');
           if (consumptionResponse.ok) {
             const rawConsumption = await consumptionResponse.json();
             if (rawConsumption.periods && rawConsumption.periods.length > 0) {
               const period = rawConsumption.periods[0];
               consumptionData = {
                 activeTimeHours: parseFloat(
-                  (period.active_time_seconds / 3600).toFixed(2),
+                  (period.active_time_seconds / 3600).toFixed(2)
                 ),
                 computeTimeHours: parseFloat(
-                  (period.compute_time_seconds / 3600).toFixed(2),
+                  (period.compute_time_seconds / 3600).toFixed(2)
                 ),
                 dataWrittenMB: parseFloat(
-                  (period.written_data_bytes / 1024 / 1024).toFixed(2),
+                  (period.written_data_bytes / 1024 / 1024).toFixed(2)
                 ),
                 dataTransferMB: parseFloat(
-                  (period.data_transfer_bytes / 1024 / 1024).toFixed(2),
+                  (period.data_transfer_bytes / 1024 / 1024).toFixed(2)
                 ),
                 storageGBHours: parseFloat(
                   (period.data_storage_bytes_hour / 1024 / 1024 / 1024).toFixed(
-                    4,
-                  ),
+                    4
+                  )
                 ),
               };
             }
           }
         } catch {
-          console.log("Consumption metrics not available");
+          console.log('Consumption metrics not available');
         }
         await appLog({
-          source: "components/Cloudspace.tsx",
-          message: "---neon-consumption---",
+          source: 'components/Cloudspace.tsx',
+          message: '---neon-consumption---',
           requestId: requestId,
           metadata: {
-            action: "fetch",
-            status: "completed",
+            action: 'fetch',
+            status: 'completed',
             activeTimeHours: consumptionData?.activeTimeHours || 0,
             computeTimeHours: consumptionData?.computeTimeHours || 0,
             dataWrittenMB: consumptionData?.dataWrittenMB || 0,
@@ -209,22 +209,22 @@ export default function Cloudspace() {
         });
         const cloudspaceData: CloudspaceData = {
           vercel: {
-            deploymentUrl: envData.deploymentUrl || "N/A",
-            environment: envData.environment || "development",
-            region: envData.vercelRegion || "N/A",
-            deploymentId: envData.VERCEL_DEPLOYMENT_ID || "N/A",
-            gitProvider: envData.VERCEL_GIT_PROVIDER || "N/A",
-            gitRepo: envData.VERCEL_GIT_REPO_SLUG || "N/A",
-            gitOwner: envData.VERCEL_GIT_REPO_OWNER || "N/A",
-            commitSha: envData.gitCommitSha || "N/A",
-            commitMessage: envData.gitCommitMessage || "N/A",
-            commitAuthor: envData.gitCommitAuthor || "N/A",
+            deploymentUrl: envData.deploymentUrl || 'N/A',
+            environment: envData.environment || 'development',
+            region: envData.vercelRegion || 'N/A',
+            deploymentId: envData.VERCEL_DEPLOYMENT_ID || 'N/A',
+            gitProvider: envData.VERCEL_GIT_PROVIDER || 'N/A',
+            gitRepo: envData.VERCEL_GIT_REPO_SLUG || 'N/A',
+            gitOwner: envData.VERCEL_GIT_REPO_OWNER || 'N/A',
+            commitSha: envData.gitCommitSha || 'N/A',
+            commitMessage: envData.gitCommitMessage || 'N/A',
+            commitAuthor: envData.gitCommitAuthor || 'N/A',
           },
           neon: {
-            databaseHost: envData.databaseHost || "N/A",
-            databaseName: envData.databaseName || "N/A",
-            region: dbData.region || "N/A",
-            version: dbData.version || "N/A",
+            databaseHost: envData.databaseHost || 'N/A',
+            databaseName: envData.databaseName || 'N/A',
+            region: dbData.region || 'N/A',
+            version: dbData.version || 'N/A',
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
@@ -235,8 +235,8 @@ export default function Cloudspace() {
 
         setData(cloudspaceData);
       } catch (err) {
-        console.error("Failed to fetch cloudspace data:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
+        console.error('Failed to fetch cloudspace data:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
       }
@@ -280,8 +280,7 @@ export default function Cloudspace() {
   const avgQueryTime = Math.round(data.neon.latencyMs * 0.8);
   const poolUsagePercent = data.neon.activeConnections
     ? Math.round(
-        (data.neon.activeConnections / (data.neon.activeConnections + 10)) *
-          100,
+        (data.neon.activeConnections / (data.neon.activeConnections + 10)) * 100
       )
     : 0;
   const cacheHitRate = 85; // placeholder / estimated
@@ -315,13 +314,13 @@ export default function Cloudspace() {
         <InfoCard title="🚀 Vercel Deployment">
           <InfoRow label="Deployment URL" value={data.vercel.deploymentUrl} />
           <InfoRow label="Region" value="  " badge={data.vercel.region} />
-          {data.vercel.deploymentId !== "N/A" && (
+          {data.vercel.deploymentId !== 'N/A' && (
             <InfoRow label="Deployment ID" value={data.vercel.deploymentId} />
           )}
-          {data.vercel.gitProvider !== "N/A" && (
+          {data.vercel.gitProvider !== 'N/A' && (
             <InfoRow label="Git Provider" value={data.vercel.gitProvider} />
           )}
-          {data.vercel.gitOwner !== "N/A" && data.vercel.gitRepo !== "N/A" && (
+          {data.vercel.gitOwner !== 'N/A' && data.vercel.gitRepo !== 'N/A' && (
             <InfoRow
               label="Repository"
               value={`${data.vercel.gitOwner}/${data.vercel.gitRepo}`}
@@ -332,7 +331,7 @@ export default function Cloudspace() {
         {/* Neon Database Info */}
         <InfoCard title="🐘 Neon Database">
           <InfoRow label="Host" value={data.neon.databaseHost} />
-          {data.neon.databaseName !== "N/A" && (
+          {data.neon.databaseName !== 'N/A' && (
             <InfoRow label="Database" value={data.neon.databaseName} />
           )}
           <InfoRow label="Region" value=" " badge={data.neon.region} />
@@ -357,13 +356,13 @@ export default function Cloudspace() {
         </InfoCard>
 
         {/* Git Commit Info */}
-        {data.vercel.commitSha !== "N/A" && (
+        {data.vercel.commitSha !== 'N/A' && (
           <InfoCard title="📝 Git Commit">
             <InfoRow
               label="Commit SHA"
               value={data.vercel.commitSha.substring(0, 8)}
             />
-            {data.vercel.commitMessage !== "N/A" && (
+            {data.vercel.commitMessage !== 'N/A' && (
               <div className="pt-2">
                 <p className="text-gray-600 font-medium mb-1">Message:</p>
                 <p className="text-gray-900 text-sm italic">
@@ -371,7 +370,7 @@ export default function Cloudspace() {
                 </p>
               </div>
             )}
-            {data.vercel.commitAuthor !== "N/A" && (
+            {data.vercel.commitAuthor !== 'N/A' && (
               <InfoRow label="Author" value={data.vercel.commitAuthor} />
             )}
           </InfoCard>
@@ -387,10 +386,10 @@ export default function Cloudspace() {
           </InfoRow>
           <div className="pt-2 border-t border-gray-200">
             <p className="text-gray-600 text-sm">
-              Database is running smoothly with{" "}
+              Database is running smoothly with{' '}
               <NumberCounter value={data.neon.activeConnections} /> active
               connection
-              {data.neon.activeConnections !== 1 ? "s" : ""}
+              {data.neon.activeConnections !== 1 ? 's' : ''}
             </p>
           </div>
         </InfoCard>
@@ -535,7 +534,7 @@ export default function Cloudspace() {
       {/* Footer Info */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
         <p className="text-gray-600 text-sm">
-          🔄 Data refreshed at {new Date().toLocaleString()} · Request ID:{" "}
+          🔄 Data refreshed at {new Date().toLocaleString()} · Request ID:{' '}
           <code className="text-xs bg-gray-200 px-2 py-1 rounded">
             {requestId}
           </code>

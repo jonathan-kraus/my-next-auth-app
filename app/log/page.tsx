@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { appLog } from "@/utils/app-log";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { appLog } from '@/utils/app-log';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
-  const [severity, setSeverity] = useState<string>("");
-  const [userId, setUserId] = useState<string>("");
+  const [severity, setSeverity] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const seenIds = useRef<Set<string>>(new Set());
   async function logViewInvocation() {
     await appLog({
-      source: "app/logs/page",
-      message: "Invoking viewer",
-      metadata: { action: "view" },
+      source: 'app/logs/page',
+      message: 'Invoking viewer',
+      metadata: { action: 'view' },
     });
   }
   useEffect(() => {
     // fire-and-forget logging call
-    fetch("/api/log-view", { method: "POST" }).catch(() => {});
+    fetch('/api/log-view', { method: 'POST' }).catch(() => {});
   }, []);
   logViewInvocation();
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
-    if (severity) params.append("severity", severity);
-    if (userId) params.append("userId", userId);
+    if (severity) params.append('severity', severity);
+    if (userId) params.append('userId', userId);
 
     fetch(`/api/logs?${params.toString()}`)
       .then((res) => res.json())
@@ -60,13 +60,13 @@ export default function LogsPage() {
   }, [autoRefresh, fetchLogs]);
 
   const severityBadge = (sev: string) => {
-    const base = "px-2 py-1 rounded text-xs font-bold";
+    const base = 'px-2 py-1 rounded text-xs font-bold';
     switch (sev.toUpperCase()) {
-      case "INFO":
+      case 'INFO':
         return `${base} bg-green-700 text-green-100`;
-      case "WARN":
+      case 'WARN':
         return `${base} bg-yellow-600 text-yellow-100`;
-      case "ERROR":
+      case 'ERROR':
         return `${base} bg-red-700 text-red-100`;
       default:
         return `${base} bg-gray-700 text-gray-100`;
@@ -76,8 +76,8 @@ export default function LogsPage() {
   const toggleExpand = (id: string) => {
     setLogs((prev) =>
       prev.map((log) =>
-        log.id === id ? { ...log, expanded: !log.expanded } : log,
-      ),
+        log.id === id ? { ...log, expanded: !log.expanded } : log
+      )
     );
   };
 
@@ -115,11 +115,11 @@ export default function LogsPage() {
           onClick={() => setAutoRefresh((prev) => !prev)}
           className={`px-4 py-2 rounded font-semibold ${
             autoRefresh
-              ? "bg-green-600 hover:bg-green-700"
-              : "bg-gray-700 hover:bg-gray-600"
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-gray-700 hover:bg-gray-600'
           }`}
         >
-          {autoRefresh ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
+          {autoRefresh ? 'Auto-Refresh: ON' : 'Auto-Refresh: OFF'}
         </button>
       </div>
 
@@ -147,7 +147,7 @@ export default function LogsPage() {
                 <tr
                   key={log.id}
                   className={`hover:bg-gray-800 transition-colors duration-1000 ${
-                    log.isNew ? "bg-blue-900" : ""
+                    log.isNew ? 'bg-blue-900' : ''
                   } cursor-pointer`}
                   onClick={() => toggleExpand(log.id)}
                 >
@@ -162,10 +162,10 @@ export default function LogsPage() {
                   <td className="p-2 border border-gray-700">{log.source}</td>
                   <td className="p-2 border border-gray-700">{log.message}</td>
                   <td className="p-2 border border-gray-700">
-                    {log.user?.name ?? "-"}
+                    {log.user?.name ?? '-'}
                   </td>
                   <td className="p-2 border border-gray-700">
-                    {log.requestId ?? "-"}
+                    {log.requestId ?? '-'}
                   </td>
                 </tr>
                 {log.expanded && (

@@ -1,7 +1,7 @@
 // app/api/test-log/route.ts
 
-import db from "@/lib/db";
-import { NextResponse } from "next/server";
+import db from '@/lib/db';
+import { NextResponse } from 'next/server';
 
 // We'll use a dynamic name/email to ensure the record is new every time
 const TEST_NAME = `TestUser-${Date.now()}`;
@@ -28,12 +28,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "JTemp record created and verified.",
+      message: 'JTemp record created and verified.',
       newRow: newJtempRow,
       totalRows: allJtempRows.length,
     });
   } catch (error) {
-    let errorMessage = "An error occurred during jtemp write test.";
+    let errorMessage = 'An error occurred during jtemp write test.';
 
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -44,10 +44,10 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: "JTemp write failed.",
+        message: 'JTemp write failed.',
         error: errorMessage,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

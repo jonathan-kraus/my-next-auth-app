@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 const requestId = crypto.randomUUID();
 
 export default function NewNote() {
   const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
-    title: "",
-    content: "",
+    title: '',
+    content: '',
     published: true, // default published
     needsFollowUp: false,
-    followUpDate: "",
-    followUpNotes: "",
+    followUpDate: '',
+    followUpNotes: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
@@ -25,22 +25,22 @@ export default function NewNote() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (status === "loading") {
-      toast.error("Still loading session, please wait.");
+    if (status === 'loading') {
+      toast.error('Still loading session, please wait.');
       return;
     }
 
     if (!authorId) {
-      toast.error("No logged-in user found. Please sign in first.");
+      toast.error('No logged-in user found. Please sign in first.');
       return;
     }
 
     try {
       setSubmitting(true);
 
-      const res = await fetch("/api/notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           authorId,
@@ -50,16 +50,16 @@ export default function NewNote() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Failed to create note.");
+        toast.error(data.error ?? 'Failed to create note.');
         return;
       }
 
-      toast.success("Note created successfully!");
-      router.push("/notes");
+      toast.success('Note created successfully!');
+      router.push('/notes');
       router.refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Network error while creating note.");
+      toast.error('Network error while creating note.');
     } finally {
       setSubmitting(false);
     }
@@ -74,7 +74,7 @@ export default function NewNote() {
         <span className="px-2 py-1 rounded bg-white border">{status}</span>
         <span className="ml-4 font-semibold">User ID:</span>
         <code className="px-2 py-1 rounded bg-white border">
-          {authorId ?? "none"}
+          {authorId ?? 'none'}
         </code>
       </div>
 
@@ -161,10 +161,10 @@ export default function NewNote() {
 
         <button
           type="submit"
-          disabled={submitting || status !== "authenticated"}
+          disabled={submitting || status !== 'authenticated'}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {submitting ? "Creating..." : "Create Note"}
+          {submitting ? 'Creating...' : 'Create Note'}
         </button>
       </form>
     </div>

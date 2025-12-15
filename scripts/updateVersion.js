@@ -1,22 +1,22 @@
 // scripts/updateVersion.js
-import fs from "fs";
-import { execSync } from "child_process";
+import fs from 'fs';
+import { execSync } from 'child_process';
 
-const versionFile = "./version.json";
-const versionData = JSON.parse(fs.readFileSync(versionFile, "utf8"));
+const versionFile = './version.json';
+const versionData = JSON.parse(fs.readFileSync(versionFile, 'utf8'));
 
 // Get bump type from CLI args: major | minor | patch
-const bumpType = process.argv[2] || "patch";
+const bumpType = process.argv[2] || 'patch';
 
-let [major, minor, patch] = versionData.version.split(".").map(Number);
+let [major, minor, patch] = versionData.version.split('.').map(Number);
 
 switch (bumpType) {
-  case "major":
+  case 'major':
     major += 1;
     minor = 0;
     patch = 0;
     break;
-  case "minor":
+  case 'minor':
     minor += 1;
     patch = 0;
     break;
@@ -25,17 +25,17 @@ switch (bumpType) {
 }
 
 versionData.version = `${major}.${minor}.${patch}`;
-versionData.date = new Date().toLocaleDateString("en-US");
+versionData.date = new Date().toLocaleDateString('en-US');
 
-fs.writeFileSync(versionFile, JSON.stringify(versionData, null, 2) + "\n");
+fs.writeFileSync(versionFile, JSON.stringify(versionData, null, 2) + '\n');
 
 // Run Prettier on the file
 try {
-  execSync(`pnpm prettier --write ${versionFile}`, { stdio: "inherit" });
+  execSync(`pnpm prettier --write ${versionFile}`, { stdio: 'inherit' });
 } catch (error) {
-  console.warn("Prettier formatting failed, continuing anyway...");
+  console.warn('Prettier formatting failed, continuing anyway...');
 }
 
 console.log(
-  `Updated to version ${versionData.version} released ${versionData.date}`,
+  `Updated to version ${versionData.version} released ${versionData.date}`
 );

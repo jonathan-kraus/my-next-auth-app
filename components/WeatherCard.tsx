@@ -1,19 +1,19 @@
 // components/WeatherCard.tsx
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { locationLabels } from "@/lib/weather/locationLabels";
-import { useMemo } from "react";
-import { WeatherData } from "@/lib/weather/types";
+import { motion } from 'framer-motion';
+import { locationLabels } from '@/lib/weather/locationLabels';
+import { useMemo } from 'react';
+import { WeatherData } from '@/lib/weather/types';
 const getMoonPhaseEmoji = (phase: number): string => {
-  if (phase === 0 || phase === 1) return "🌑 New Moon";
-  if (phase < 0.25) return "🌒 Waxing Crescent";
-  if (phase === 0.25) return "🌓 First Quarter";
-  if (phase < 0.5) return "🌔 Waxing Gibbous";
-  if (phase === 0.5) return "🌕 Full Moon";
-  if (phase < 0.75) return "🌖 Waning Gibbous";
-  if (phase === 0.75) return "🌗 Last Quarter";
-  return "🌘 Waning Crescent";
+  if (phase === 0 || phase === 1) return '🌑 New Moon';
+  if (phase < 0.25) return '🌒 Waxing Crescent';
+  if (phase === 0.25) return '🌓 First Quarter';
+  if (phase < 0.5) return '🌔 Waxing Gibbous';
+  if (phase === 0.5) return '🌕 Full Moon';
+  if (phase < 0.75) return '🌖 Waning Gibbous';
+  if (phase === 0.75) return '🌗 Last Quarter';
+  return '🌘 Waning Crescent';
 };
 interface WeatherCardProps {
   data: WeatherData;
@@ -54,7 +54,7 @@ const WindIndicator = ({
             opacity: 0.6,
           }}
           animate={{
-            x: ["0%", "110%"],
+            x: ['0%', '110%'],
             y: [`${particle.animateY1}%`, `${particle.animateY2}%`],
             rotate: [0, 360],
           }}
@@ -62,7 +62,7 @@ const WindIndicator = ({
             duration: isVeryWindy ? 2 : 4,
             repeat: Infinity,
             delay: particle.id * (isVeryWindy ? 0.3 : 0.6),
-            ease: "linear",
+            ease: 'linear',
           }}
         >
           🍃
@@ -75,23 +75,23 @@ const WindIndicator = ({
 export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
   const getWeatherEmoji = (condition: string) => {
     const emoji: Record<string, string> = {
-      Clear: "☀️",
-      "Mostly Clear": "🌤️",
-      Cloudy: "☁️",
-      "Mostly Cloudy": "⛅",
-      "Partly Cloudy": "⛅",
-      Hazy: "🌫️",
-      Foggy: "🌫️",
-      "Light Rain": "🌦️",
-      Rain: "🌧️",
-      "Heavy Rain": "⛈️",
-      "Freezing Rain": "🧊",
-      "Ice Pellets": "🧊",
-      Snow: "❄️",
-      "Heavy Snow": "🌨️",
-      Thunderstorm: "⛈️",
+      Clear: '☀️',
+      'Mostly Clear': '🌤️',
+      Cloudy: '☁️',
+      'Mostly Cloudy': '⛅',
+      'Partly Cloudy': '⛅',
+      Hazy: '🌫️',
+      Foggy: '🌫️',
+      'Light Rain': '🌦️',
+      Rain: '🌧️',
+      'Heavy Rain': '⛈️',
+      'Freezing Rain': '🧊',
+      'Ice Pellets': '🧊',
+      Snow: '❄️',
+      'Heavy Snow': '🌨️',
+      Thunderstorm: '⛈️',
     };
-    return emoji[condition] || "🌡️";
+    return emoji[condition] || '🌡️';
   };
 
   const isWindy = data.current.windSpeed > 10;
@@ -143,9 +143,9 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
             ? {
                 duration: isVeryWindy ? 0.5 : 1,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: 'easeInOut',
               }
-            : { delay: 0.2, type: "spring" }
+            : { delay: 0.2, type: 'spring' }
         }
         className="flex items-center justify-between mb-6 relative z-10"
       >
@@ -168,7 +168,7 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
           transition={{
             duration: 1.5,
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
         >
           {getWeatherEmoji(data.current.condition)}
@@ -207,9 +207,9 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
             isWindy
               ? {
                   backgroundColor: [
-                    "rgba(255,255,255,0.2)",
-                    "rgba(255,255,255,0.3)",
-                    "rgba(255,255,255,0.2)",
+                    'rgba(255,255,255,0.2)',
+                    'rgba(255,255,255,0.3)',
+                    'rgba(255,255,255,0.2)',
                   ],
                 }
               : {}
@@ -217,7 +217,7 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
           transition={{ duration: 2, repeat: Infinity }}
         >
           <div className="text-sm opacity-75 flex items-center gap-1">
-            Wind Speed {isWindy && "💨"}
+            Wind Speed {isWindy && '💨'}
           </div>
           <div className="text-2xl font-semibold">
             {data.current.windSpeed} mph
@@ -229,9 +229,9 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
             isVeryWindy
               ? {
                   backgroundColor: [
-                    "rgba(255,255,255,0.2)",
-                    "rgba(255,200,0,0.3)",
-                    "rgba(255,255,255,0.2)",
+                    'rgba(255,255,255,0.2)',
+                    'rgba(255,200,0,0.3)',
+                    'rgba(255,255,255,0.2)',
                   ],
                 }
               : {}
@@ -273,13 +273,13 @@ export function WeatherCard({ data, isLoading = false }: WeatherCardProps) {
           <div>
             <div className="text-xs opacity-75 mb-1">🌔 Moonrise</div>
             <div className="text-lg font-semibold">
-              {data.astronomy.moonrise || "No rise today"}
+              {data.astronomy.moonrise || 'No rise today'}
             </div>
           </div>
           <div>
             <div className="text-xs opacity-75 mb-1">🌘 Moonset</div>
             <div className="text-lg font-semibold">
-              {data.astronomy.moonset || "No set today"}
+              {data.astronomy.moonset || 'No set today'}
             </div>
           </div>
         </div>

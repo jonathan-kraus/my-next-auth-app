@@ -10,7 +10,7 @@ export interface Location {
 
 // Indicator type for sun/moon status
 export interface BodyIndicator {
-  status: "Up" | "Down";
+  status: 'Up' | 'Down';
   countdown?: string;
 }
 
@@ -75,25 +75,25 @@ export interface ApiResponse<T> {
 // Predefined locations to monitor
 export const LOCATIONS: Location[] = [
   {
-    name: "kop",
-    displayName: "King of Prussia, PA",
+    name: 'kop',
+    displayName: 'King of Prussia, PA',
     lat: 40.0893,
     lon: -75.396,
-    flag: "🇺🇸",
+    flag: '🇺🇸',
   },
   {
-    name: "brookline",
-    displayName: "Brookline, MA",
+    name: 'brookline',
+    displayName: 'Brookline, MA',
     lat: 42.33176,
     lon: -71.12116,
-    flag: "🇺🇸",
+    flag: '🇺🇸',
   },
   {
-    name: "williamstown",
-    displayName: "Williamstown, MA",
+    name: 'williamstown',
+    displayName: 'Williamstown, MA',
     lat: 42.712025,
     lon: -73.203718,
-    flag: "🇺🇸",
+    flag: '🇺🇸',
   },
 ];
 
@@ -107,12 +107,12 @@ export function getAllLocationNames(): string[] {
   return LOCATIONS.map((loc) => loc.name);
 }
 
-export type LocationKey = (typeof LOCATIONS)[number]["name"];
+export type LocationKey = (typeof LOCATIONS)[number]['name'];
 
 export const LOCATIONS_BY_KEY: Record<LocationKey, Location> = LOCATIONS.reduce(
   (acc, loc) => {
     acc[loc.name as LocationKey] = loc;
     return acc;
   },
-  {} as Record<LocationKey, Location>,
+  {} as Record<LocationKey, Location>
 );

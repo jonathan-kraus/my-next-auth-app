@@ -41,7 +41,7 @@ export function getRepoInfo(payload: any): {
  * Resolve the commit message from payload or GitHub API fallback.
  */
 export async function getCommitMessage(
-  payload: any,
+  payload: any
 ): Promise<string | undefined> {
   // First try to get message directly from payload
   let message =
@@ -65,9 +65,9 @@ export async function getCommitMessage(
         {
           headers: {
             Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            Accept: "application/vnd.github+json",
+            Accept: 'application/vnd.github+json',
           },
-        },
+        }
       );
 
       if (res.ok) {
@@ -77,7 +77,7 @@ export async function getCommitMessage(
         console.error(`GitHub API error: ${res.status} ${await res.text()}`);
       }
     } catch (err) {
-      console.error("Commit fetch failed:", err);
+      console.error('Commit fetch failed:', err);
     }
   }
 
@@ -90,7 +90,7 @@ export async function getCommitMessage(
 export async function getCommitDetails(
   owner: string,
   repo: string,
-  sha: string,
+  sha: string
 ): Promise<any> {
   try {
     const res = await fetch(
@@ -98,9 +98,9 @@ export async function getCommitDetails(
       {
         headers: {
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-          Accept: "application/vnd.github+json",
+          Accept: 'application/vnd.github+json',
         },
-      },
+      }
     );
 
     if (!res.ok) {
@@ -109,7 +109,7 @@ export async function getCommitDetails(
 
     return await res.json();
   } catch (error) {
-    console.error("Failed to get commit details:", error);
+    console.error('Failed to get commit details:', error);
     throw error;
   }
 }

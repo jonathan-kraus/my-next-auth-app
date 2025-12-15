@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SparklineProps {
   /** The current value to display (e.g., utilization) */
@@ -14,7 +14,7 @@ interface SparklineProps {
 const Sparkline: React.FC<SparklineProps> = ({
   value,
   max,
-  color = "#2563eb", // blue-600
+  color = '#2563eb', // blue-600
   height = 8,
 }) => {
   const percentage = max > 0 ? (value / max) * 100 : 0;
@@ -25,7 +25,7 @@ const Sparkline: React.FC<SparklineProps> = ({
   return (
     <div
       className="rounded-full bg-gray-200 overflow-hidden"
-      style={{ height: `${height}px`, width: "100%" }}
+      style={{ height: `${height}px`, width: '100%' }}
       title={`${value} / ${max} (${normalizedPercentage.toFixed(1)}%)`}
     >
       <div
@@ -33,7 +33,7 @@ const Sparkline: React.FC<SparklineProps> = ({
         style={{
           width: `${normalizedPercentage}%`,
           backgroundColor: color,
-          transition: "width 0.5s ease-out",
+          transition: 'width 0.5s ease-out',
         }}
       />
     </div>

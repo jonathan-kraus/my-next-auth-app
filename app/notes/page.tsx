@@ -1,15 +1,15 @@
-import db from "@/lib/db";
-import Link from "next/link";
-import { UnpublishButton } from "./PublishToggle";
+import db from '@/lib/db';
+import Link from 'next/link';
+import { UnpublishButton } from './PublishToggle';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function NotesPage() {
   // Only published notes
   const notes = await db.note.findMany({
     where: { published: true },
     include: { author: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   });
 
   // Follow-ups due TODAY or earlier

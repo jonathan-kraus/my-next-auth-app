@@ -1,6 +1,6 @@
-import axiomClient from "@/lib/axiom/axiom";
-import { Logger, AxiomJSTransport, ConsoleTransport } from "@axiomhq/logging";
-import { createAxiomRouteHandler, nextJsFormatters } from "@axiomhq/nextjs";
+import axiomClient from '@/lib/axiom/axiom';
+import { Logger, AxiomJSTransport, ConsoleTransport } from '@axiomhq/logging';
+import { createAxiomRouteHandler, nextJsFormatters } from '@axiomhq/nextjs';
 
 export const logger = new Logger({
   transports: [

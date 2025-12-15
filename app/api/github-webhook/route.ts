@@ -1,29 +1,29 @@
-import { NextRequest } from "next/server";
-import { createLogger } from "@/lib/logger";
-import { createRequestId } from "@/lib/uuidj";
-import { getCommitMessage, getSha } from "@/lib/github";
-import crypto from "crypto";
+import { NextRequest } from 'next/server';
+import { createLogger } from '@/lib/logger';
+import { createRequestId } from '@/lib/uuidj';
+import { getCommitMessage, getSha } from '@/lib/github';
+import crypto from 'crypto';
 
 async function verifySignature(
   req: NextRequest,
-  body: string,
+  body: string
 ): Promise<boolean> {
-  const signature = req.headers.get("x-hub-signature-256");
+  const signature = req.headers.get('x-hub-signature-256');
   const secret = process.env.GITHUB_WEBHOOK_SECRET;
 
   if (!signature || !secret) {
     return false;
   }
 
-  const hmac = crypto.createHmac("sha256", secret);
-  const digest = "sha256=" + hmac.update(body).digest("hex");
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = 'sha256=' + hmac.update(body).digest('hex');
 
   return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
 }
 
 export async function POST(req: NextRequest) {
   const requestId = createRequestId();
-  const log = createLogger("app/api/github-webhook/route.ts");
+  const log = createLogger('app/api/github-webhook/route.ts');
 
   // Get raw body for signature verification
   const body = await req.text();
@@ -32,33 +32,33 @@ export async function POST(req: NextRequest) {
   const isValid = await verifySignature(req, body);
   if (!isValid) {
     await log.warn(
-      "Webhook signature verification failed",
-      "cmiz0p9ro000004ldrxgn3a1c",
-      requestId,
+      'Webhook signature verification failed',
+      'cmiz0p9ro000004ldrxgn3a1c',
+      requestId
     );
-    return new Response("Unauthorized", { status: 401 });
+    return new Response('Unauthorized', { status: 401 });
   }
 
   const payload = JSON.parse(body);
-  const je = req.headers.get("x-github-event");
+  const je = req.headers.get('x-github-event');
   const sha = getSha(payload);
   const commitMessage = getCommitMessage(payload);
   log.info(
-    "Verifying webhook signature",
-    "cmiz0p9ro000004ldrxgn3a1c",
+    'Verifying webhook signature',
+    'cmiz0p9ro000004ldrxgn3a1c',
     requestId,
     {
       sha,
       commitMessage,
-    },
+    }
   );
   switch (je) {
-    case "check_run":
+    case 'check_run':
       {
         const run = payload.check_run;
         await log.info(
-          "✅ check.run 🏃",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          '✅ check.run 🏃',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             id: run.id,
@@ -71,14 +71,14 @@ export async function POST(req: NextRequest) {
             externalId: run.external_id,
             app: run.app?.name,
             requestId,
-          },
+          }
         );
       }
       break;
-    case "check_suite":
+    case 'check_suite':
       {
         const suite = payload.check_suite;
-        await log.info(`✅ ${je} ✅`, "cmiz0p9ro000004ldrxgn3a1c", requestId, {
+        await log.info(`✅ ${je} ✅`, 'cmiz0p9ro000004ldrxgn3a1c', requestId, {
           id: suite.id,
           status: suite.status,
           conclusion: suite.conclusion,
@@ -89,12 +89,12 @@ export async function POST(req: NextRequest) {
         });
       }
       break;
-    case "deployment":
+    case 'deployment':
       {
         const deployment = payload.deployment;
         await log.info(
-          "deployment.created",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          'deployment.created',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             environment: deployment.environment,
@@ -104,17 +104,17 @@ export async function POST(req: NextRequest) {
             creator: deployment.creator?.login,
             description: deployment.description,
             requestId,
-          },
+          }
         );
       }
       break;
-    case "deployment_status":
+    case 'deployment_status':
       {
         const deploymentStatus = payload.deployment_status;
         const deployment = payload.deployment;
         await log.info(
-          "deployment.status",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          'deployment.status',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             state: deploymentStatus.state,
@@ -128,17 +128,17 @@ export async function POST(req: NextRequest) {
             creator: deployment.creator?.login,
             pusher: deployment.payload?.pusher?.name || payload.sender?.login,
             requestId,
-          },
+          }
         );
       }
       break;
-    case "issue_comment":
+    case 'issue_comment':
       {
         const comment = payload.comment;
         const issue = payload.issue;
         await log.info(
-          "issue.comment",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          'issue.comment',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             event: je,
@@ -150,14 +150,14 @@ export async function POST(req: NextRequest) {
             state: issue.state,
             title: issue.title,
             requestId,
-          },
+          }
         );
       }
       break;
-    case "issues":
+    case 'issues':
       {
         const issue = payload.issue;
-        await log.info("issues", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
+        await log.info('issues', 'cmiz0p9ro000004ldrxgn3a1c', requestId, {
           event: je,
           action: payload.action,
           issue_ID: issue.id,
@@ -172,24 +172,24 @@ export async function POST(req: NextRequest) {
         });
       }
       break;
-    case "pull_request":
+    case 'pull_request':
       {
         const pr = payload.pull_request;
-        const isRenovate = pr.user?.login === "renovate[bot]";
+        const isRenovate = pr.user?.login === 'renovate[bot]';
 
         if (isRenovate) {
           const branch = pr.head.ref;
           const title = pr.title;
-          const packageGroup = branch.replace("renovate/", "");
-          const severity = title.includes("major") ? "warning" : "info";
+          const packageGroup = branch.replace('renovate/', '');
+          const severity = title.includes('major') ? 'warning' : 'info';
 
-          if (payload.action === "opened") {
+          if (payload.action === 'opened') {
             await log.info(
-              "dependency.update.opened",
-              "cmiz0p9ro000004ldrxgn3a1c",
+              'dependency.update.opened',
+              'cmiz0p9ro000004ldrxgn3a1c',
               requestId,
               {
-                source: "renovate",
+                source: 'renovate',
                 packageGroup,
                 branch,
                 title,
@@ -197,15 +197,15 @@ export async function POST(req: NextRequest) {
                 severity,
                 prUrl: pr.html_url,
                 requestId,
-              },
+              }
             );
-          } else if (payload.action === "closed" && pr.merged) {
+          } else if (payload.action === 'closed' && pr.merged) {
             await log.info(
-              "dependency.update.merged",
-              "cmiz0p9ro000004ldrxgn3a1c",
+              'dependency.update.merged',
+              'cmiz0p9ro000004ldrxgn3a1c',
               requestId,
               {
-                source: "renovate",
+                source: 'renovate',
                 packageGroup,
                 branch,
                 title,
@@ -213,34 +213,34 @@ export async function POST(req: NextRequest) {
                 prUrl: pr.html_url,
                 mergedAt: pr.merged_at,
                 requestId,
-              },
+              }
             );
-          } else if (payload.action === "synchronize") {
+          } else if (payload.action === 'synchronize') {
             await log.info(
-              "dependency.update.synchronized",
-              "cmiz0p9ro000004ldrxgn3a1c",
+              'dependency.update.synchronized',
+              'cmiz0p9ro000004ldrxgn3a1c',
               requestId,
               {
-                source: "renovate",
+                source: 'renovate',
                 packageGroup,
                 branch,
                 title,
                 severity,
                 prUrl: pr.html_url,
                 requestId,
-              },
+              }
             );
           }
         }
       }
       break;
-    case "pull_request_review":
+    case 'pull_request_review':
       {
         const review = payload.review;
         const pr = payload.pull_request;
         await log.info(
-          "pull_request.review",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          'pull_request.review',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             event: je,
@@ -257,17 +257,17 @@ export async function POST(req: NextRequest) {
             pr_author: pr?.user?.login,
             timestamp: new Date().toISOString(),
             requestId,
-          },
+          }
         );
       }
       break;
-    case "pull_request_review_comment":
+    case 'pull_request_review_comment':
       {
         const comment = payload.comment;
         const pr = payload.pull_request;
         await log.info(
-          "pull_request.review_comment",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          'pull_request.review_comment',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             event: je,
@@ -284,37 +284,37 @@ export async function POST(req: NextRequest) {
             pr_url: pr?.html_url,
             timestamp: new Date().toISOString(),
             requestId,
-          },
+          }
         );
       }
       break;
-    case "push":
+    case 'push':
       {
         const commits = payload.commits || [];
         for (const commit of commits) {
           await log.info(
-            "commit.pushed",
-            "cmiz0p9ro000004ldrxgn3a1c",
+            'commit.pushed',
+            'cmiz0p9ro000004ldrxgn3a1c',
             requestId,
             {
               sha: commit.id.substring(0, 7),
               message: commit.message,
               author: commit.author?.name,
               email: commit.author?.email,
-              branch: payload.ref?.replace("refs/heads/", ""),
+              branch: payload.ref?.replace('refs/heads/', ''),
               pusher: payload.pusher?.name,
               requestId,
-            },
+            }
           );
         }
       }
       break;
-    case "repository":
+    case 'repository':
       {
         const repository = payload.repository;
         await log.info(
-          "repository.event",
-          "cmiz0p9ro000004ldrxgn3a1c",
+          'repository.event',
+          'cmiz0p9ro000004ldrxgn3a1c',
           requestId,
           {
             id: repository.id,
@@ -323,25 +323,25 @@ export async function POST(req: NextRequest) {
             description: repository.description,
             ownerLogin: repository.owner?.login,
             requestId,
-          },
+          }
         );
       }
       break;
-    case "status":
-      await log.info("commit.status", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
+    case 'status':
+      await log.info('commit.status', 'cmiz0p9ro000004ldrxgn3a1c', requestId, {
         state: payload.state,
         context: payload.context,
         description: payload.description,
         sha: payload.sha?.substring(0, 7),
         targetUrl: payload.target_url,
-        branches: payload.branches?.map((b: any) => b.name).join(", "),
+        branches: payload.branches?.map((b: any) => b.name).join(', '),
         requestId,
       });
       break;
-    case "workflow_job":
+    case 'workflow_job':
       {
         const job = payload.workflow_job;
-        await log.info("workflow.job", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
+        await log.info('workflow.job', 'cmiz0p9ro000004ldrxgn3a1c', requestId, {
           jobName: job.name,
           action: payload.action,
           status: job.status,
@@ -351,15 +351,15 @@ export async function POST(req: NextRequest) {
           runId: job.run_id,
           runUrl: job.html_url,
           runnerName: job.runner_name,
-          labels: job.labels?.join(", "),
+          labels: job.labels?.join(', '),
           requestId,
         });
       }
       break;
-    case "workflow_run":
+    case 'workflow_run':
       {
         const workflow = payload.workflow_run;
-        await log.info("workflow.run", "cmiz0p9ro000004ldrxgn3a1c", requestId, {
+        await log.info('workflow.run', 'cmiz0p9ro000004ldrxgn3a1c', requestId, {
           workflowName: workflow.name,
           status: workflow.status,
           conclusion: workflow.conclusion,
@@ -374,17 +374,17 @@ export async function POST(req: NextRequest) {
       break;
     default:
       await log.info(
-        "webhook.unhandled",
-        "cmiz0p9ro000004ldrxgn3a1c",
+        'webhook.unhandled',
+        'cmiz0p9ro000004ldrxgn3a1c',
         requestId,
         {
           event: je,
           action: payload.action,
           keys: Object.keys(payload),
           requestId,
-        },
+        }
       );
   }
 
-  return new Response("OK", { status: 200 });
+  return new Response('OK', { status: 200 });
 }

@@ -1,6 +1,6 @@
-import axiomClient from "@/lib/axiom/axiom";
-import { Logger, AxiomJSTransport } from "@axiomhq/logging";
-import { createUseLogger, createWebVitalsComponent } from "@axiomhq/react";
+import axiomClient from '@/lib/axiom/axiom';
+import { Logger, AxiomJSTransport } from '@axiomhq/logging';
+import { createUseLogger, createWebVitalsComponent } from '@axiomhq/react';
 
 const clientLogger = new Logger({
   transports: [

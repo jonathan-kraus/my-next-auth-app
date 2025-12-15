@@ -1,5 +1,5 @@
-import db from "@/lib/db";
-import { createLogger } from "../utils/logger";
+import db from '@/lib/db';
+import { createLogger } from '../utils/logger';
 
 export type SendWithDedupOptions = {
   source: string; // module name
@@ -29,16 +29,16 @@ export async function sendWithDedup(opts: SendWithDedupOptions) {
         stack: obj.stack,
       };
       // Add additional diagnostics if available
-      if ("code" in obj && obj.code) errorObj.code = obj.code;
-      if ("status" in obj && obj.status) errorObj.status = obj.status;
-      if ("statusText" in obj && obj.statusText)
+      if ('code' in obj && obj.code) errorObj.code = obj.code;
+      if ('status' in obj && obj.status) errorObj.status = obj.status;
+      if ('statusText' in obj && obj.statusText)
         errorObj.statusText = obj.statusText;
-      if ("response" in obj && obj.response) {
+      if ('response' in obj && obj.response) {
         // For HTTP errors (e.g., from axios or similar), serialize the response
         try {
           errorObj.response = safeSerialize(obj.response);
         } catch {
-          errorObj.response = "[Error serializing response]";
+          errorObj.response = '[Error serializing response]';
         }
       }
       return errorObj;
@@ -49,22 +49,22 @@ export async function sendWithDedup(opts: SendWithDedupOptions) {
     try {
       return JSON.parse(
         JSON.stringify(obj, (_key, value) => {
-          if (typeof value === "bigint") return String(value);
-          if (typeof value === "function")
-            return `[Function: ${value.name || "anonymous"}]`;
-          if (value && typeof value === "object") {
-            if (seen.has(value)) return "[Circular]";
+          if (typeof value === 'bigint') return String(value);
+          if (typeof value === 'function')
+            return `[Function: ${value.name || 'anonymous'}]`;
+          if (value && typeof value === 'object') {
+            if (seen.has(value)) return '[Circular]';
             seen.add(value);
           }
           return value;
-        }),
+        })
       );
     } catch {
       // Fallback to string representation
       try {
         return String(obj);
       } catch {
-        return "[Unserializable]";
+        return '[Unserializable]';
       }
     }
   }
@@ -77,21 +77,21 @@ export async function sendWithDedup(opts: SendWithDedupOptions) {
       where: {
         source,
         //message: { contains: message, mode: 'insensitive' }, // timer per component
-        message: { contains: "email sent", mode: "insensitive" },
+        message: { contains: 'email sent', mode: 'insensitive' },
       },
-      orderBy: { timestamp: "desc" },
+      orderBy: { timestamp: 'desc' },
     });
 
     const minutesSince = recent
       ? (now.getTime() - recent.timestamp.getTime()) / 60000
       : Infinity;
     const log = createLogger(source, requestId);
-    await log.info("Checking email throttle", {
+    await log.info('Checking email throttle', {
       safeMessage,
       minutesSince: Math.round(minutesSince),
       effectiveThrottle,
     });
-    const isNew = safeMessage.includes("Post:"); // allow immediate send for new post emails
+    const isNew = safeMessage.includes('Post:'); // allow immediate send for new post emails
     if (!isNew && minutesSince < effectiveThrottle) {
       // Suppress
       const suppressedMessage = `Email suppressed: ${safeMessage}
@@ -99,13 +99,13 @@ export async function sendWithDedup(opts: SendWithDedupOptions) {
         throttle: ${effectiveThrottle} mins)`;
 
       await log.info(suppressedMessage, {
-        action: "throttle",
+        action: 'throttle',
         minutesSince: Math.round(minutesSince),
       });
 
       return {
         sent: false,
-        reason: "throttled",
+        reason: 'throttled',
         minutesSince: Math.round(minutesSince),
       };
     }
@@ -116,7 +116,7 @@ export async function sendWithDedup(opts: SendWithDedupOptions) {
     // record sent
     const sentMessage = `${safeMessage} - email sent`;
 
-    await log.info(sentMessage, { action: "sent" });
+    await log.info(sentMessage, { action: 'sent' });
 
     return { sent: true };
   } catch (err) {
@@ -124,14 +124,14 @@ export async function sendWithDedup(opts: SendWithDedupOptions) {
     try {
       const log = createLogger(source, requestId);
       await log.error(`Email send failure: ${safeMessage}`, {
-        action: "error",
+        action: 'error',
         error: safeSerialize(err),
       });
     } catch (logErr) {
       // Fallback if logging fails
-      console.warn("[sendWithDedup] Failed to log error:", logErr);
+      console.warn('[sendWithDedup] Failed to log error:', logErr);
     }
 
-    return { sent: false, reason: "error", error: safeSerialize(err) };
+    return { sent: false, reason: 'error', error: safeSerialize(err) };
   }
 }

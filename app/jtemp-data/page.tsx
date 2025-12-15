@@ -1,7 +1,7 @@
 // app/jtemp-data/page.tsx
-"use client";
-export const runtime = "nodejs";
-import { useState, useEffect } from "react";
+'use client';
+export const runtime = 'nodejs';
+import { useState, useEffect } from 'react';
 
 // Define the expected structure of the jtemp record
 interface JTempData {
@@ -19,22 +19,22 @@ export default function JTempDataPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch("/api/jtemp");
+        const response = await fetch('/api/jtemp');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
         setData(result.data);
       } catch (err) {
-        let errorMessage = "Failed to fetch data";
+        let errorMessage = 'Failed to fetch data';
 
         // 🎯 FIX: Safely check if the error has a message property
         if (err instanceof Error) {
           errorMessage = err.message;
         } else if (
-          typeof err === "object" &&
+          typeof err === 'object' &&
           err !== null &&
-          "message" in err
+          'message' in err
         ) {
           errorMessage = (err as { message: string }).message;
         }
@@ -54,13 +54,13 @@ export default function JTempDataPage() {
 
       {loading && <p>Loading data...</p>}
 
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
       {data && data.length > 0 ? (
         <table
           border={1}
           cellPadding={10}
-          style={{ borderCollapse: "collapse" }}
+          style={{ borderCollapse: 'collapse' }}
         >
           <thead>
             <tr>

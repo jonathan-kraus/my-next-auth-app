@@ -1,23 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
-import { WeatherData } from "@/lib/weather/types";
-import { getIndicator, getMoonPhaseDescription } from "@/lib/weather/utils";
+import { NextRequest, NextResponse } from 'next/server';
+import db from '@/lib/db';
+import { WeatherData } from '@/lib/weather/types';
+import { getIndicator, getMoonPhaseDescription } from '@/lib/weather/utils';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const locationParam = searchParams.get("location") || "kop";
+    const locationParam = searchParams.get('location') || 'kop';
 
     // Read latest cached record
     const cached = await db.weatherCache.findFirst({
       where: { location: locationParam },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     if (!cached) {
       return NextResponse.json(
-        { success: false, error: "No cache found" },
-        { status: 404 },
+        { success: false, error: 'No cache found' },
+        { status: 404 }
       );
     }
 
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       moonset: data.astronomy.moonset,
       moonPhase: data.astronomy.moonPhase,
       moonPhaseDescription: getMoonPhaseDescription(
-        data.astronomy.moonPhase ?? 0,
+        data.astronomy.moonPhase ?? 0
       ),
 
       rawRise: data.astronomy.rawSunrise,
@@ -52,10 +52,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, astronomy });
   } catch (err: any) {
-    console.error("[astronomy] error", err);
+    console.error('[astronomy] error', err);
     return NextResponse.json(
-      { success: false, error: err.message ?? "Unknown error" },
-      { status: 500 },
+      { success: false, error: err.message ?? 'Unknown error' },
+      { status: 500 }
     );
   }
 }

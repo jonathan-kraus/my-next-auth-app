@@ -1,37 +1,37 @@
 // app/notes/PublishToggle.tsx
-"use client";
+'use client';
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { appLog } from "@/utils/app-log";
-import { createRequestId } from "@/lib/uuidj";
+import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { appLog } from '@/utils/app-log';
+import { createRequestId } from '@/lib/uuidj';
 export function UnpublishButton({ id }: { id: number }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
   const requestId = createRequestId();
-  console.log("PublishToggle requestId:", requestId);
+  console.log('PublishToggle requestId:', requestId);
 
   useEffect(() => {
     appLog({
-      source: "app/notes/PublishToggle.tsx",
-      message: "UnpublishButton mounted",
+      source: 'app/notes/PublishToggle.tsx',
+      message: 'UnpublishButton mounted',
       requestId,
-      metadata: { action: "mount" },
+      metadata: { action: 'mount' },
     });
   }, []);
 
   async function handleUnpublish() {
     await appLog({
-      source: "app/notes/PublishToggle.tsx",
-      message: "unpublish button clicked",
-      metadata: { action: "view" },
+      source: 'app/notes/PublishToggle.tsx',
+      message: 'unpublish button clicked',
+      metadata: { action: 'view' },
     });
     startTransition(async () => {
       await fetch(`/api/notes/${id}/publish`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ published: false }),
       });
       router.refresh();
@@ -45,7 +45,7 @@ export function UnpublishButton({ id }: { id: number }) {
       disabled={pending}
       className="text-xs px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
     >
-      {pending ? "Unpublishing..." : "Unpublish"}
+      {pending ? 'Unpublishing...' : 'Unpublish'}
     </button>
   );
 }

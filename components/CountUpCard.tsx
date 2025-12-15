@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 interface CountUpCardProps {
   title: string;
@@ -12,7 +12,7 @@ interface CountUpCardProps {
 export const CountUpCard: React.FC<CountUpCardProps> = ({
   title,
   value,
-  unit = "",
+  unit = '',
   description,
 }) => {
   const [currentValue, setCurrentValue] = useState(0);

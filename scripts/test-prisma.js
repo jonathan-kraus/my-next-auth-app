@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 var __awaiter =
   (this && this.__awaiter) ||
   function (thisArg, _arguments, P, generator) {
@@ -19,7 +19,7 @@ var __awaiter =
       }
       function rejected(value) {
         try {
-          step(generator["throw"](value));
+          step(generator['throw'](value));
         } catch (e) {
           reject(e);
         }
@@ -48,13 +48,13 @@ var __generator =
       y,
       t,
       g = Object.create(
-        (typeof Iterator === "function" ? Iterator : Object).prototype,
+        (typeof Iterator === 'function' ? Iterator : Object).prototype
       );
     return (
       (g.next = verb(0)),
-      (g["throw"] = verb(1)),
-      (g["return"] = verb(2)),
-      typeof Symbol === "function" &&
+      (g['throw'] = verb(1)),
+      (g['return'] = verb(2)),
+      typeof Symbol === 'function' &&
         (g[Symbol.iterator] = function () {
           return this;
         }),
@@ -66,7 +66,7 @@ var __generator =
       };
     }
     function step(op) {
-      if (f) throw new TypeError("Generator is already executing.");
+      if (f) throw new TypeError('Generator is already executing.');
       while ((g && ((g = 0), op[0] && (_ = 0)), _))
         try {
           if (
@@ -74,9 +74,9 @@ var __generator =
             y &&
               (t =
                 op[0] & 2
-                  ? y["return"]
+                  ? y['return']
                   : op[0]
-                    ? y["throw"] || ((t = y["return"]) && t.call(y), 0)
+                    ? y['throw'] || ((t = y['return']) && t.call(y), 0)
                     : y.next) &&
               !(t = t.call(y, op[1])).done)
           )
@@ -136,9 +136,9 @@ var __generator =
       return { value: op[0] ? op[1] : void 0, done: true };
     }
   };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, '__esModule', { value: true });
 // scripts/test-prisma.ts
-var client_1 = require("@prisma/client");
+var client_1 = require('@prisma/client');
 var prisma = new client_1.PrismaClient();
 function main() {
   return __awaiter(this, void 0, void 0, function () {
@@ -149,7 +149,7 @@ function main() {
           return [4 /*yield*/, prisma.jtemp.findMany()];
         case 1:
           rows = _a.sent();
-          console.log("jtemp rows:", rows);
+          console.log('jtemp rows:', rows);
           return [2 /*return*/];
       }
     });
@@ -157,7 +157,7 @@ function main() {
 }
 main()
   .catch(function (e) {
-    console.error("Error querying jtemp:", e);
+    console.error('Error querying jtemp:', e);
   })
   .finally(function () {
     return __awaiter(void 0, void 0, void 0, function () {

@@ -1,8 +1,8 @@
 // app/logs/LiveToggle.tsx
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const POLL_MS = 30_000; // 30 seconds
 
@@ -29,14 +29,14 @@ export function LiveToggle() {
       type="button"
       onClick={handleClick}
       className={
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition " +
+        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition ' +
         (isLive
-          ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/50"
-          : "bg-slate-800/80 text-slate-300 ring-1 ring-slate-700/80")
+          ? 'bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/50'
+          : 'bg-slate-800/80 text-slate-300 ring-1 ring-slate-700/80')
       }
     >
       <span className="mr-1 h-1.5 w-1.5 rounded-full bg-current" />
-      {isLive ? "Live view (30s)" : "Paused"}
+      {isLive ? 'Live view (30s)' : 'Paused'}
     </button>
   );
 }

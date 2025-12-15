@@ -1,19 +1,19 @@
 // lib/db.ts
 
-import { PrismaClient } from "@/src/generated/client";
+import { PrismaClient } from '@/src/generated/client';
 // 🎯 DRIVER: Keep the Pool object from the serverless driver
-import { Pool } from "@neondatabase/serverless";
+import { Pool } from '@neondatabase/serverless';
 
 // 🎯 FIX: Import the standard PrismaNeon adapter class instead of PrismaNeonHttp
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaNeon } from '@prisma/adapter-neon';
 // NOTE: If this fails, try { PrismaNeon } instead of { PrismaNeon }
 
 // 1. Initialize the adapter components
 const connectionString = process.env.DATABASE_URL;
 
 // 🎯 FIX 1: Throw the error and assert the type strictly
-if (typeof connectionString !== "string" || connectionString === "") {
-  throw new Error("DATABASE_URL must be set in the environment variables.");
+if (typeof connectionString !== 'string' || connectionString === '') {
+  throw new Error('DATABASE_URL must be set in the environment variables.');
 }
 
 // 🎯 FIX 2: Create the configuration object that PrismaNeon expects.
@@ -30,12 +30,12 @@ declare global {
 
 let db: PrismaClient;
 
-if (typeof window === "undefined") {
+if (typeof window === 'undefined') {
   if (!global.db) {
     // 2. Instantiate with the adapter to satisfy the validation check
     global.db = new PrismaClient({
       adapter, // 🎯 CRITICAL: This satisfies the engine validation check.
-      log: ["query", "error", "warn"],
+      log: ['query', 'error', 'warn'],
     });
   }
   db = global.db;
@@ -46,6 +46,6 @@ if (typeof window === "undefined") {
 
 export default db;
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   global.db = db;
 }

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { locationLabels } from "@/lib/weather/locationLabels";
-import { WeatherData, ApiResponse } from "@/lib/weather/types";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { locationLabels } from '@/lib/weather/locationLabels';
+import { WeatherData, ApiResponse } from '@/lib/weather/types';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -14,7 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     // Only fetch if user is authenticated
-    if (status !== "authenticated") {
+    if (status !== 'authenticated') {
       setLoading(false);
       return;
     }
@@ -24,18 +24,18 @@ export default function Home() {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
 
-        const response = await fetch("/api/weather/all", {
+        const response = await fetch('/api/weather/all', {
           signal: controller.signal,
         });
 
         clearTimeout(timeout);
 
-        if (!response.ok) throw new Error("Failed to fetch weather");
+        if (!response.ok) throw new Error('Failed to fetch weather');
 
         const data: ApiResponse<WeatherData[]> = await response.json();
 
         // Debug: log what we're getting back
-        console.log("Weather API response:", data);
+        console.log('Weather API response:', data);
 
         if (data.success && data.data) {
           // Filter out any locations that don't have labels
@@ -43,7 +43,7 @@ export default function Home() {
             const hasLabel = weather.location in locationLabels;
             if (!hasLabel) {
               console.warn(
-                `Location "${weather.location}" has no label defined`,
+                `Location "${weather.location}" has no label defined`
               );
             }
             return hasLabel;
@@ -52,7 +52,7 @@ export default function Home() {
           setWeatherData(validWeatherData);
         }
       } catch (error) {
-        console.error("Failed to load weather:", error);
+        console.error('Failed to load weather:', error);
         setWeatherData([]);
       } finally {
         setLoading(false);
@@ -62,12 +62,12 @@ export default function Home() {
     fetchAllWeather();
   }, [status]);
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <main className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+          transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
           className="text-7xl"
         >
           ⏳
@@ -108,7 +108,7 @@ export default function Home() {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className="text-8xl mb-6"
           >
             🌤️
@@ -144,7 +144,7 @@ export default function Home() {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 200 }}
+            transition={{ type: 'spring', stiffness: 200 }}
             className="text-7xl mb-4"
           >
             🌤️
@@ -187,8 +187,8 @@ export default function Home() {
                 {Math.round(
                   weatherData.reduce(
                     (sum, w) => sum + w.current.temperature,
-                    0,
-                  ) / weatherData.length,
+                    0
+                  ) / weatherData.length
                 )}
                 <span className="text-3xl">°F</span>
               </div>
@@ -216,7 +216,7 @@ export default function Home() {
           >
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+              transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
               className="text-7xl"
             >
               ⏳
@@ -261,15 +261,15 @@ export default function Home() {
                           }}
                           transition={{ duration: 2, repeat: Infinity }}
                         >
-                          {weather.current.condition.includes("Clear")
-                            ? "☀️"
-                            : weather.current.condition.includes("Cloud")
-                              ? "☁️"
-                              : weather.current.condition.includes("Rain")
-                                ? "🌧️"
-                                : weather.current.condition.includes("Snow")
-                                  ? "❄️"
-                                  : "🌤️"}
+                          {weather.current.condition.includes('Clear')
+                            ? '☀️'
+                            : weather.current.condition.includes('Cloud')
+                              ? '☁️'
+                              : weather.current.condition.includes('Rain')
+                                ? '🌧️'
+                                : weather.current.condition.includes('Snow')
+                                  ? '❄️'
+                                  : '🌤️'}
                         </motion.div>
                       </div>
 

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useSession, signOut, signIn } from "next-auth/react";
+import Link from 'next/link';
+import { useSession, signOut, signIn } from 'next-auth/react';
 import {
   HomeIcon,
   ChartBarIcon,
@@ -11,8 +11,8 @@ import {
   UserIcon,
   MagnifyingGlassIcon,
   CloudIcon,
-} from "@heroicons/react/24/outline";
-import versionInfo from "../version.json";
+} from '@heroicons/react/24/outline';
+import versionInfo from '../version.json';
 
 interface NavItem {
   name: string;
@@ -25,45 +25,45 @@ export const Sidenav = () => {
   const { data: session } = useSession();
 
   const navItems: NavItem[] = [
-    { name: "Home", href: "/", icon: HomeIcon, protected: false },
+    { name: 'Home', href: '/', icon: HomeIcon, protected: false },
     {
-      name: "Dashboard",
-      href: "/dashboard",
+      name: 'Dashboard',
+      href: '/dashboard',
       icon: ChartBarIcon,
       protected: false,
     },
     {
-      name: "Cloudspace",
-      href: "/cloudspace",
+      name: 'Cloudspace',
+      href: '/cloudspace',
       icon: ChartBarIcon,
       protected: false,
     },
-    { name: "Weather", href: "/weather", icon: CloudIcon, protected: false },
-    { name: "Notes", href: "/notes", icon: PencilSquareIcon, protected: true },
+    { name: 'Weather', href: '/weather', icon: CloudIcon, protected: false },
+    { name: 'Notes', href: '/notes', icon: PencilSquareIcon, protected: true },
     {
-      name: "Jtemp",
-      href: "/jtemp-data",
+      name: 'Jtemp',
+      href: '/jtemp-data',
       icon: DocumentTextIcon,
       protected: false,
     },
     {
-      name: "Test-log",
-      href: "/api/test-log",
+      name: 'Test-log',
+      href: '/api/test-log',
       icon: BugAntIcon,
       protected: false,
     },
-    { name: "Test user", href: "/test", icon: UserIcon, protected: false },
+    { name: 'Test user', href: '/test', icon: UserIcon, protected: false },
     {
-      name: "Log Explorer",
-      href: "/logs",
+      name: 'Log Explorer',
+      href: '/logs',
       icon: MagnifyingGlassIcon,
       protected: false,
     },
-    { name: "Log", href: "/log", icon: MagnifyingGlassIcon, protected: false },
+    { name: 'Log', href: '/log', icon: MagnifyingGlassIcon, protected: false },
   ];
 
-  const displayName = session?.user?.name ?? "Unknown User";
-  const email = session?.user?.email ?? "";
+  const displayName = session?.user?.name ?? 'Unknown User';
+  const email = session?.user?.email ?? '';
 
   // Filter items based on authentication - safely check protected property
   const visibleItems = navItems.filter((item) => !item.protected || !!session);
@@ -103,7 +103,7 @@ export const Sidenav = () => {
         <div className="mb-6 flex flex-col gap-3">
           <p className="text-gray-400 text-sm">Not signed in</p>
           <button
-            onClick={() => signIn("github")}
+            onClick={() => signIn('github')}
             className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors duration-200"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

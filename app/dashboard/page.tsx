@@ -1,9 +1,9 @@
 // app/dashboard/page.tsx
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { CountUpCard } from "@/components/CountUpCard";
-import { useLogger } from "@/lib/axiom/client";
+import { useEffect, useState } from 'react';
+import { CountUpCard } from '@/components/CountUpCard';
+import { useLogger } from '@/lib/axiom/client';
 
 interface CommitData {
   sha: string;
@@ -28,30 +28,30 @@ export default function DashboardPage() {
   const [fetchDuration, setFetchDuration] = useState<number>(0);
 
   useEffect(() => {
-    logger.info("Dashboard page accessed", {
-      page: "dashboard",
+    logger.info('Dashboard page accessed', {
+      page: 'dashboard',
       timestamp: new Date().toISOString(),
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "N/A",
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
     });
 
     async function fetchData() {
       const startTime = performance.now();
 
       try {
-        logger.debug("Fetching dashboard metrics", {
-          endpoint: "/api/dashboard-metrics",
+        logger.debug('Fetching dashboard metrics', {
+          endpoint: '/api/dashboard-metrics',
           timestamp: new Date().toISOString(),
         });
 
-        const response = await fetch("/api/dashboard-metrics");
+        const response = await fetch('/api/dashboard-metrics');
 
         if (!response.ok) {
-          const error = new Error("Failed to fetch dashboard metrics.");
-          logger.error("Dashboard fetch failed", {
+          const error = new Error('Failed to fetch dashboard metrics.');
+          logger.error('Dashboard fetch failed', {
             status: response.status,
             statusText: response.statusText,
             error: error.message,
-            endpoint: "/api/dashboard-metrics",
+            endpoint: '/api/dashboard-metrics',
           });
           throw error;
         }
@@ -60,13 +60,13 @@ export default function DashboardPage() {
         const duration = performance.now() - startTime;
         setFetchDuration(duration);
 
-        logger.info("Dashboard metrics fetched successfully", {
+        logger.info('Dashboard metrics fetched successfully', {
           duration: Math.round(duration),
           totalLogs: result.data.totalLogs,
           uniqueUsers: result.data.uniqueUserCount,
           errorSourcesCount: result.data.topErrorSources.length,
           commitsCount: result.data.recentCommits.length,
-          endpoint: "/api/dashboard-metrics",
+          endpoint: '/api/dashboard-metrics',
         });
 
         setData(result.data);
@@ -74,7 +74,7 @@ export default function DashboardPage() {
         const error = e as Error;
         setError(error.message);
 
-        logger.error("Dashboard data fetch error", {
+        logger.error('Dashboard data fetch error', {
           error: error.message,
           stack: error.stack,
           duration: Math.round(performance.now() - startTime),
@@ -104,7 +104,7 @@ export default function DashboardPage() {
       ? Math.round(
           (data.topErrorSources.reduce((sum, item) => sum + item._count.id, 0) /
             data.totalLogs) *
-            100,
+            100
         )
       : 0;
 
@@ -157,7 +157,7 @@ export default function DashboardPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <p className="font-medium text-gray-800 mb-1">
-                            {commit.message.split("\n")[0]}
+                            {commit.message.split('\n')[0]}
                           </p>
                           <div className="flex items-center gap-3 text-sm text-gray-500">
                             <span className="flex items-center gap-1">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                       key={item.source}
                       className="flex justify-between items-center border-b pb-2 last:border-b-0"
                       onClick={() => {
-                        logger.debug("Error source clicked", {
+                        logger.debug('Error source clicked', {
                           source: item.source,
                           count: item._count.id,
                           index: index + 1,

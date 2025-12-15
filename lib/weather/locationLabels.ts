@@ -1,11 +1,11 @@
-import { LocationKey } from "@/lib/weather/types";
+import { LocationKey } from '@/lib/weather/types';
 
 export const locationLabels: Record<
   LocationKey,
   { name: string; flag: string }
 > = {
-  kop: { name: "King of Prussia, PA", flag: "🇺🇸" },
-  brookline: { name: "Brookline, MA", flag: "🇺🇸" },
-  williamstown: { name: "Williamstown, MA", flag: "🇺🇸" },
+  kop: { name: 'King of Prussia, PA', flag: '🇺🇸' },
+  brookline: { name: 'Brookline, MA', flag: '🇺🇸' },
+  williamstown: { name: 'Williamstown, MA', flag: '🇺🇸' },
   // add more keys here as needed
 };

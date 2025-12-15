@@ -1,13 +1,13 @@
 // lib/logger.ts
 
-import { Prisma } from "@/src/generated/edge";
+import { Prisma } from '@/src/generated/edge';
 
-import db from "./db";
+import db from './db';
 
 /**
  * Logger API Severity Levels
  */
-export type LogSeverity = "info" | "warn" | "error" | "debug";
+export type LogSeverity = 'info' | 'warn' | 'error' | 'debug';
 
 /**
  * Standard Log Entry Structure (Used internally)
@@ -34,12 +34,12 @@ export interface LogEntry {
  */
 const writeLog = async (entry: LogEntry): Promise<void> => {
   // 🎯 CRITICAL TEST: Console Output MUST be the first thing.
-  const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || "N/A"}) (User: ${entry.userId}) - ${entry.message}`;
+  const formattedOutput = `[${entry.timestamp}] [${entry.severity.toUpperCase()}] [${entry.source}] (Req: ${entry.requestId || 'N/A'}) (User: ${entry.userId}) - ${entry.message}`;
 
   // 1. Console Output - If this fails, the issue is outside the function call.
-  console.log("--- LOG START ---"); // New line for debugging
-  console.log(formattedOutput, entry.metadata || "");
-  console.log("--- LOG END ---"); // New line for debugging
+  console.log('--- LOG START ---'); // New line for debugging
+  console.log(formattedOutput, entry.metadata || '');
+  console.log('--- LOG END ---'); // New line for debugging
 
   // 2. Database Persistence (Wrap this entire block in a local try/catch)
   try {
@@ -64,7 +64,7 @@ const writeLog = async (entry: LogEntry): Promise<void> => {
     // 🚨 Log failures to save logs—this should now be visible if the console logs fire.
     console.error(
       `🚨 FATAL LOGGING ERROR: Failed to save log to DB for source ${entry.source}.`,
-      dbError,
+      dbError
     );
   }
 };
@@ -80,25 +80,25 @@ export interface Logger {
     message: string,
     userId: string,
     requestId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ) => Promise<void>;
   warn: (
     message: string,
     userId: string,
     requestId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ) => Promise<void>;
   error: (
     message: string,
     userId: string,
     requestId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ) => Promise<void>;
   debug: (
     message: string,
     userId: string,
     requestId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ) => Promise<void>;
 }
 
@@ -111,7 +111,7 @@ export const createLogger = (source: string): Logger => {
     message: string,
     userId: string, // Required
     requestId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, any>
   ) => {
     // We run the async writeLog and return its promise
     return writeLog({
@@ -127,12 +127,12 @@ export const createLogger = (source: string): Logger => {
 
   return {
     info: (message, userId, requestId, metadata) =>
-      log("info", message, userId, requestId, metadata),
+      log('info', message, userId, requestId, metadata),
     warn: (message, userId, requestId, metadata) =>
-      log("warn", message, userId, requestId, metadata),
+      log('warn', message, userId, requestId, metadata),
     error: (message, userId, requestId, metadata) =>
-      log("error", message, userId, requestId, metadata),
+      log('error', message, userId, requestId, metadata),
     debug: (message, userId, requestId, metadata) =>
-      log("debug", message, userId, requestId, metadata),
+      log('debug', message, userId, requestId, metadata),
   };
 };

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 type LogRow = {
   id: string;
@@ -29,8 +29,8 @@ type ColumnConfig = {
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<LogRow[]>([]);
-  const [severity, setSeverity] = useState<string>("");
-  const [userId, setUserId] = useState<string>("");
+  const [severity, setSeverity] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -44,41 +44,41 @@ export default function LogsPage() {
   // Column configuration - reorder these as needed!
   const [columns, setColumns] = useState<ColumnConfig[]>([
     {
-      id: "timestamp",
-      header: "Timestamp",
+      id: 'timestamp',
+      header: 'Timestamp',
       accessor: (log) => new Date(log.timestamp).toLocaleString(),
     },
     {
-      id: "severity",
-      header: "Severity",
+      id: 'severity',
+      header: 'Severity',
       accessor: (log) => log.severity,
     },
     {
-      id: "source",
-      header: "Source",
+      id: 'source',
+      header: 'Source',
       accessor: (log) => log.source,
     },
     {
-      id: "message",
-      header: "Message",
+      id: 'message',
+      header: 'Message',
       accessor: (log) => log.message,
     },
     {
-      id: "user",
-      header: "User",
-      accessor: (log) => log.user?.name ?? "-",
+      id: 'user',
+      header: 'User',
+      accessor: (log) => log.user?.name ?? '-',
     },
     {
-      id: "metadata",
-      header: "Metadata",
-      accessor: (log) => JSON.stringify(log.metadata).slice(0, 50) + "...",
+      id: 'metadata',
+      header: 'Metadata',
+      accessor: (log) => JSON.stringify(log.metadata).slice(0, 50) + '...',
     },
   ]);
 
   const fetchLogs = useCallback(() => {
     const params = new URLSearchParams();
-    if (severity) params.append("severity", severity);
-    if (userId) params.append("userId", userId);
+    if (severity) params.append('severity', severity);
+    if (userId) params.append('userId', userId);
 
     fetch(`/api/logs?${params.toString()}`)
       .then((res) => res.json())
@@ -111,7 +111,7 @@ export default function LogsPage() {
   }, [autoRefresh, fetchLogs]);
 
   useEffect(() => {
-    fetch("/api/db-table-counts")
+    fetch('/api/db-table-counts')
       .then((res) => res.json())
       .then((rows: TableCount[]) => {
         setTableCounts(rows);
@@ -125,13 +125,13 @@ export default function LogsPage() {
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedColumn(index);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/html", e.currentTarget.innerHTML);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
+    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
@@ -151,13 +151,13 @@ export default function LogsPage() {
   };
 
   const severityBadge = (sev: string) => {
-    const base = "px-2 py-1 rounded text-xs font-bold";
+    const base = 'px-2 py-1 rounded text-xs font-bold';
     switch (sev.toUpperCase()) {
-      case "INFO":
+      case 'INFO':
         return `${base} bg-green-700 text-green-100`;
-      case "WARN":
+      case 'WARN':
         return `${base} bg-yellow-600 text-yellow-100`;
-      case "ERROR":
+      case 'ERROR':
         return `${base} bg-red-700 text-red-100`;
       default:
         return `${base} bg-gray-700 text-gray-100`;
@@ -167,8 +167,8 @@ export default function LogsPage() {
   const toggleExpand = (id: string) => {
     setLogs((prev) =>
       prev.map((log) =>
-        log.id === id ? { ...log, expanded: !log.expanded } : log,
-      ),
+        log.id === id ? { ...log, expanded: !log.expanded } : log
+      )
     );
   };
 
@@ -177,7 +177,7 @@ export default function LogsPage() {
   };
 
   const renderCell = (log: LogRow, column: ColumnConfig) => {
-    if (column.id === "severity") {
+    if (column.id === 'severity') {
       return (
         <span className={severityBadge(log.severity)}>{log.severity}</span>
       );
@@ -265,11 +265,11 @@ export default function LogsPage() {
             onClick={() => setAutoRefresh((prev) => !prev)}
             className={`px-4 py-2 rounded font-semibold ${
               autoRefresh
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-gray-700 hover:bg-gray-600"
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-gray-700 hover:bg-gray-600'
             }`}
           >
-            {autoRefresh ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
+            {autoRefresh ? 'Auto-Refresh: ON' : 'Auto-Refresh: OFF'}
           </button>
         </div>
 
@@ -292,8 +292,8 @@ export default function LogsPage() {
                     key={column.id}
                     className={`p-2 border border-gray-700 cursor-move select-none ${
                       draggedColumn === index
-                        ? "opacity-50 bg-indigo-900"
-                        : "hover:bg-gray-700"
+                        ? 'opacity-50 bg-indigo-900'
+                        : 'hover:bg-gray-700'
                     }`}
                     draggable
                     onDragStart={(e) => handleDragStart(e, index)}
@@ -312,7 +312,7 @@ export default function LogsPage() {
                   <tr
                     key={log.id}
                     className={`hover:bg-gray-800 transition-colors duration-1000 ${
-                      log.isNew ? "bg-blue-900" : ""
+                      log.isNew ? 'bg-blue-900' : ''
                     } cursor-pointer`}
                     onClick={() => toggleExpand(log.id)}
                   >
