@@ -1,13 +1,16 @@
 // eslint.config.mjs
 import { defineConfig } from "eslint/config";
 import nextPlugin from "eslint-config-next";
+import prettierPlugin from "eslint-config-prettier";
 
-const eslintConfig = defineConfig([
-  // 1. Next.js Base Configuration
-  // Spread in the Next.js recommended rules
+export default defineConfig([
+  // ✅ Next.js recommended rules
   ...nextPlugin,
 
-  // 2. Global Ignores and custom rules
+  // ✅ Prettier integration
+  ...prettierPlugin,
+
+  // ✅ Your overrides
   {
     ignores: [
       ".next/**",
@@ -17,11 +20,10 @@ const eslintConfig = defineConfig([
       "node_modules",
       "**/*.config.js"
     ],
-    extends: ["next/core-web-vitals"], // ✅ must be an array
     rules: {
-      "react-hooks/exhaustive-deps": "off"
+      "react-hooks/exhaustive-deps": "off",
+      // Example: enforce semicolons via Prettier
+      "prettier/prettier": ["error", { semi: true }]
     }
   }
 ]);
-
-export default eslintConfig;
