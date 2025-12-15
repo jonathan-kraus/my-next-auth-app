@@ -14,7 +14,13 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
-
+    await appLog({
+      source: 'app/api/neon-consumption/route.ts',
+      message: '---neon info invoked---',
+      metadata: {
+        action: 'initiate',
+      },
+    });
     // Get query parameters for date range
     const { searchParams } = new URL(request.url);
     const from =
