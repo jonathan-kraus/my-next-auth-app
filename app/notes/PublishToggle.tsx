@@ -20,7 +20,7 @@ export function UnpublishButton({ id }: { id: number }) {
       requestId,
       metadata: { action: "mount" },
     });
-  }, [requestId]);
+  }, []);
 
   async function handleUnpublish() {
     await appLog({
