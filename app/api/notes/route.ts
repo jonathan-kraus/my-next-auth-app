@@ -6,7 +6,7 @@ import { createRequestId } from "@/lib/uuidj";
 
 const log = createLogger("Notes_API");
 const requestId = createRequestId();
- 
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
@@ -20,25 +20,23 @@ export async function POST(request: NextRequest) {
         followUpDate: z.string().optional(),
         followUpNotes: z.string().optional(),
       });
-      const values = {
-        title: data.get('title') as string,
-        content: data.get('content') as string,
-        published: data.get('published') === 'true',
-        needsFollowUp: data.get('needsFollowUp') === 'true',
-        authorId: data.get('authorId') as string,
-        followUpDate: data.get('followUpDate') as string,
-        followUpNotes: data.get('followUpNotes') as string,
+            const values = {
+        title: data.title as string,
+        content: data.content as string,
+        published: data.published === 'true',
+        needsFollowUp: data.needsFollowUp === 'true',
+        authorId: data.authorId as string,
+        followUpDate: data.followUpDate as string,
+        followUpNotes: data.followUpNotes as string,
       };
       const parsed = schema.safeParse(values);
       if (parsed.success) {
-        // log fiewlds
+        // log fields
         console.log('Parsed data:', parsed.data);
       } else {
         console.log('Validation errors:', parsed.error.format());
         return NextResponse.json({ errors: parsed.error.format() }, { status: 400 });
       }
-        const errors: Record<string, string> = {};
-        console.log('Validation errors:', errors);
     const note = await db.note.create({
       data: {
         title: data.title,
