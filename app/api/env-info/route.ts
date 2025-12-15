@@ -42,6 +42,7 @@ export async function GET() {
   let weatherLogCount = null;
 
   if (process.env.DATABASE_URL) {
+    console.log('Parsing DATABASE_URL for host and name');
     try {
       const url = new URL(process.env.DATABASE_URL);
       dbHost = url.hostname;
