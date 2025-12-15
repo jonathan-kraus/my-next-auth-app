@@ -24,7 +24,7 @@ export function UnpublishButton({ id }: { id: number }) {
 
   async function handleUnpublish() {
     await appLog({
-      source: 'app/notes/PublishToggle.tsx',
+      source: "app/notes/PublishToggle.tsx",
       message: 'unpublish button clicked',
       metadata: { action: 'view' },
     });
