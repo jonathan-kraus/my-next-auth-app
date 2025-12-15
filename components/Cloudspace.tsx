@@ -161,6 +161,16 @@ export default function Cloudspace() {
           },
         });
         // Try to fetch consumption metrics (may not be available)
+        await appLog({
+          source: 'components/Cloudspace.tsx',
+          message: '---neon-consumption-entry---',
+          requestId: requestId,
+          metadata: {
+            action: 'entry',
+            status: 'started',
+            timestamp: new Date().toISOString(),
+          },
+        });
         let consumptionData = null;
         try {
           const consumptionResponse = await fetch('/api/neon-consumption');
@@ -194,16 +204,16 @@ export default function Cloudspace() {
         }
         await appLog({
           source: 'components/Cloudspace.tsx',
-          message: '---neon-consumption---',
+          message: '---neon-consumption-exit---',
           requestId: requestId,
           metadata: {
             action: 'fetch',
             status: 'completed',
-            activeTimeHours: consumptionData?.activeTimeHours || 0,
-            computeTimeHours: consumptionData?.computeTimeHours || 0,
-            dataWrittenMB: consumptionData?.dataWrittenMB || 0,
-            dataTransferMB: consumptionData?.dataTransferMB || 0,
-            storageGBHours: consumptionData?.storageGBHours || 0,
+            activeTimeHours: consumptionData?.activeTimeHours || -9,
+            computeTimeHours: consumptionData?.computeTimeHours || -9,
+            dataWrittenMB: consumptionData?.dataWrittenMB || -9,
+            dataTransferMB: consumptionData?.dataTransferMB || -9,
+            storageGBHours: consumptionData?.storageGBHours || -9,
             timestamp: new Date().toISOString(),
           },
         });
