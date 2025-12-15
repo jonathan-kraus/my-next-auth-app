@@ -96,10 +96,7 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    await log.info('Fetched consumption metrics from Neon API', {
-      itemCount: data.items?.length || 0,
-      dataSummary: JSON.stringify(data), //.slice(0, 500), // Log first 500 chars
-    });
+
     await appLog({
       source: 'app/api/neon-consumption/route.ts',
       message: 'Fetched consumption metrics from Neon API',
