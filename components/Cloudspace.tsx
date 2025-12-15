@@ -1,6 +1,8 @@
+// components/Cloudspace.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { appLog } from "@/utils/app-log";
 import { createRequestId } from "@/lib/uuidj";
 import NumberCounter from "./NumberCounter";
 import Sparkline from "./Sparkline";
@@ -108,7 +110,16 @@ function EnvironmentBadge({ environment }: { environment: string }) {
     </span>
   );
 }
-
+const requestId = createRequestId();
+await appLog({
+  source: "components/Cloudspace.tsx",
+  message: "---init---",
+  requestId: requestId,
+  metadata: {
+    action: "create",
+    status: "started",
+  },
+});
 export default function Cloudspace() {
   const [data, setData] = useState<CloudspaceData | null>(null);
   const [loading, setLoading] = useState(true);
