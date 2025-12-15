@@ -1,4 +1,5 @@
 // utils/app-log.ts (CLIENT-ONLY)
+console.log('appLog about to run');
 export type AppLogInput = {
   source: string;
   message: string;
@@ -6,9 +7,10 @@ export type AppLogInput = {
   severity?: 'info' | 'warn' | 'error';
   requestId?: string;
 };
-
+console.log('appLog about to run middle');
 export async function appLog(input: AppLogInput) {
   try {
+    console.log('appLog in try block', input);
     await fetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -17,4 +19,5 @@ export async function appLog(input: AppLogInput) {
   } catch {
     // ignore on client
   }
+  console.log('appLog finished');
 }
