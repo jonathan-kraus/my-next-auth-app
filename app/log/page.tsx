@@ -14,7 +14,7 @@ export default function LogsPage() {
   async function logViewInvocation() {
     await appLog({
       source: "app/logs/page",
-      message: "CCCInvoking viewer",
+      message: "Invoking viewer",
       metadata: { action: "view" },
     });
   }

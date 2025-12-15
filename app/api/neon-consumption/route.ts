@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   try {
     const apiKey = process.env.NEON_API_KEY;
 
-    if (!apiKey) {
+    if (apiKey) {  // changed from !apiKey to make fail
       return NextResponse.json(
         { error: "NEON_API_KEY not configured" },
         { status: 500 },
