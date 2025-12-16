@@ -28,6 +28,7 @@ export async function appLog(input: AppLogInput) {
     if (typeof window === 'undefined') {
       await prisma.log.create({
         data: {
+          userId: 'cmiz0p9ro000004ldrxgn3a1c', // ✅ always attached
           source: input.source,
           message: input.message,
           metadata: input.metadata
