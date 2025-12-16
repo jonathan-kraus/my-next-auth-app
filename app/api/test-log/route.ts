@@ -1,24 +1,30 @@
 // app/api/test-log/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth'; // make sure you export your NextAuth options here
 import { dbFetch } from '@/lib/dbFetch';
 import { stackServerApp } from '@/stack/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
 import { triggerEmail } from '@/utils/triggerEmail';
-const requestId = createRequestId();
-export async function GET(request: Request) {
+
+export async function GET(request: NextRequest) {
+  const requestId = createRequestId();
   const TEST_NAME = `TestUser-${Date.now()}`;
-  const USER_ID = '70044dfe-d497-41d9-99ae-3d9e39761e6d'; // Melissa's id
-  //   const USER_ID = "cmiz0p9ro000004ldrxgn3a1c"; // Jonathan's id
-  //   const session = await auth(); // or getServerSession(...)
-  // const userId = session?.user?.id ?? null;
-  console.log(`--- STARTING JTEMP WRITE for ${TEST_NAME} ---`);
-  const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
-  const BASE_URL = 'https://api.tomorrow.io/v4/timelines';
+  const USER_ID = '70044dfe-d497-41d9-99ae-3d9e39761e6d'; // Melissa’s id
 
-  async function fetchAstronomy(locationKey: string) {
-    const location = 'LOCATIONS_BY_KEY[locationKey]';
+  // get current session user
+  const session = await getServerSession(authOptions);
+  console.log('Current session user:', session?.user);
 
+  // or via your stackServerApp wrapper
+  const user1 = await stackServerApp.getUser();
+  console.log('Current user via stackServerApp:', user1);
+
+  // astronomy fetch
+  async function fetchAstronomy() {
+    const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
+    const BASE_URL = 'https://api.tomorrow.io/v4/timelines';
     const body = {
       location: [40.0913, -75.3802],
       fields: [
@@ -28,79 +34,46 @@ export async function GET(request: Request) {
         'moonsetTime',
         'moonPhase',
       ],
-      timesteps: ['1d'], // daily values
+      timesteps: ['1d'],
       units: 'imperial',
       timezone: 'America/New_York',
     };
-    console.log('app/api/test-log/route.ts about to call applog');
-    await appLog({
-      source: 'app/api/test-log/route.ts',
-      message: 'test applog',
-      metadata: { stage: 'init', request: request, requestId: requestId },
-    });
-    console.log('app/api/test-log/route.ts just called applog');
     const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-
-    if (!res.ok) {
+    if (!res.ok)
       throw new Error(`Tomorrow.io API error: ${res.status} ${res.statusText}`);
-    }
-
     const data = await res.json();
-    const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values;
-    console.log('Astronomy data fetched:', daily);
-    console.log('Full response data:', data);
-    console.log('sunrise:', daily.sunriseTime);
-    console.log('sunset:', daily.sunsetTime);
-    console.log('moonrise:', daily.moonriseTime);
-    console.log('moonset:', daily.moonsetTime);
-    console.log('moonPhase:', daily.moonPhase);
-    return {
-      sunrise: daily?.sunriseTime,
-      sunset: daily?.sunsetTime,
-      moonrise: daily?.moonriseTime,
-      moonset: daily?.moonsetTime,
-      moonPhase: daily?.moonPhase,
-    };
-  }
-  fetchAstronomy('kop');
-  async function GET(request: NextRequest) {
-    try {
-      await triggerEmail(
-        'in test-log route',
-        requestId,
-        `Subject here: ${TEST_NAME}`,
-        `Created by ${USER_ID}\n\nTest content here.`
-      );
-    } catch (emailErr) {
-      console.error('Failed to send post creation email:', emailErr);
-      // non-fatal
-    }
-    return NextResponse.json(
-      { success: true, TEST_NAME, note: 'Email sent! Check your inbox.' },
-      { status: 200 }
+    console.log(
+      'Astronomy data:',
+      data?.data?.timelines?.[0]?.intervals?.[0]?.values
     );
   }
-  const user1 = await stackServerApp.getUser();
-  console.log('Current user:', user1);
-  await appLog({
-    source: 'app/api/test-log/route.ts',
-    message: '---test-log invoked---',
-    metadata: { action: 'view' },
-  });
-  console.log('About to write log with userId:', USER_ID);
-  // 1. Write a log row
+  await fetchAstronomy();
+
+  // send test email
+  try {
+    await triggerEmail(
+      'in test-log route',
+      requestId,
+      `Subject here: ${TEST_NAME}`,
+      `Created by ${USER_ID}\n\nTest content here.`
+    );
+  } catch (err) {
+    console.error('Failed to send email:', err);
+  }
+
+  // write a log row
   await dbFetch(({ db }) =>
     db.log.create({
       data: {
-        userId: USER_ID, // test user id
+        userId: USER_ID,
         severity: 'info',
         source: 'test-log',
         message: 'Invoked /api/test-log',
-        requestId: requestId,
+        requestId,
         metadata: {
           userAgent: request.headers.get('User-Agent') || 'Unknown',
           action: 'write jtemp',
@@ -108,13 +81,13 @@ export async function GET(request: Request) {
             request.headers.get('X-Forwarded-For') ||
             request.headers.get('Remote-Addr') ||
             'Unknown',
-          user: user1 as any,
+          user: user1,
         },
       },
     })
   );
 
-  // 2. Create a jtemp row
+  // create a jtemp row
   const jtemp = await dbFetch(({ db }) =>
     db.jtemp.create({
       data: {
@@ -123,13 +96,10 @@ export async function GET(request: Request) {
       },
     })
   );
-
   console.log(`JTemp record created with ID: ${jtemp.id}`);
-
-  console.log(`--- JTEMP WRITE SUCCESSFUL ---`);
 
   return NextResponse.json({
     success: true,
-    message: 'JTemp created.',
+    message: 'JTemp created and email sent',
   });
 }
