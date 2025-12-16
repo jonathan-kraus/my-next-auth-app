@@ -1,5 +1,7 @@
 import { PrismaClient } from '@/src/generated';
+import { Prisma } from '@prisma/client';
 import { PrismaNeonHttp } from '@prisma/adapter-neon';
+import { safeMetadata } from './safe-metadata';
 
 export type AppLogInput = {
   source: string;
@@ -28,7 +30,9 @@ export async function appLog(input: AppLogInput) {
         data: {
           source: input.source,
           message: input.message,
-          metadata: input.metadata as any,
+          metadata: input.metadata
+            ? safeMetadata(input.metadata)
+            : Prisma.JsonNull,
           severity: input.severity ?? 'info',
           requestId: input.requestId,
           timestamp: new Date(),
