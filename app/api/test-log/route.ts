@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
     source: 'app/api/test-log/route.ts',
     message: 'get user via stackServerApp',
     metadata: {
-      userAgent: req.headers.get('User-Agent') || 'Unknown',
-      ip: req.headers.get('X-Forwarded-For') || 'Unknown',
+      userAgent: request.headers.get('User-Agent') || 'Unknown',
+      ip: request.headers.get('X-Forwarded-For') || 'Unknown',
       user: session?.user
         ? { id: session.user.id, email: session.user.email }
         : null,
@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
   }
 
   // write a log row
+
   await dbFetch(({ db }) =>
     db.log.create({
       data: {
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
             request.headers.get('X-Forwarded-For') ||
             request.headers.get('Remote-Addr') ||
             'Unknown',
-          user: user1,
+          user: safeUser,
         },
       },
     })
