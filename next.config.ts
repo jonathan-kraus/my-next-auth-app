@@ -1,9 +1,12 @@
+import type { NextConfig } from 'next';
+import type { Configuration } from 'webpack';
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  webpack(config) {
+const nextConfig: NextConfig = {
+  webpack(config: Configuration) {
     // Suppress Babel deoptimisation warnings
     config.infrastructureLogging = {
-      level: 'error', // only show errors, hide warnings
+      level: 'error',
     };
     return config;
   },
