@@ -1,77 +1,38 @@
 import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
-console.log('Neon Consumption Route Loaded');
 
 export async function GET(request: Request) {
   const requestId = createRequestId();
+
   try {
     await appLog({
       source: 'app/api/neon-consumption/route.ts',
       message: 'Route invoked',
       metadata: { stage: 'init', requestId },
     });
-  } catch (err) {
-    console.error('Failed to write appLog', err);
-  }
 
-  try {
     const apiKey = process.env.NEON_API_KEY;
-
     if (!apiKey) {
+      await appLog({
+        source: 'app/api/neon-consumption/route.ts',
+        message: 'Missing NEON_API_KEY',
+        metadata: { stage: 'error', requestId },
+      });
       return NextResponse.json(
         { error: 'NEON_API_KEY not configured' },
         { status: 500 }
       );
     }
 
-    // Get query parameters for date range
-    const { searchParams } = new URL(request.url);
-    const from =
-      searchParams.get('from') ||
-      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const to = searchParams.get('to') || new Date().toISOString();
-    const limit = searchParams.get('limit') || '10';
-    const granularity = searchParams.get('granularity') || 'hourly'; // Required: hourly, daily, monthly
+    // Fetch consumption history
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+    const apiUrl = `https://console.neon.tech/api/v2/consumption_history/projects?from=${encodeURIComponent(
+      oneWeekAgo.toISOString()
+    )}&to=${encodeURIComponent(now.toISOString())}&limit=10&granularity=hourly`;
 
-    // Construct API URL with query parameters
-    // Note: The consumption_history endpoint returns 406 (Not Acceptable) errors
-    // This endpoint likely requires a paid Neon plan or is not publicly accessible
-    // TODO: Re-enable when upgraded to paid plan or Neon provides alternative endpoint
-    const apiUrl = new URL(
-      'https://console.neon.tech/api/v2/consumption_history/projects'
-    );
-    apiUrl.searchParams.set('from', from);
-    apiUrl.searchParams.set('to', to);
-    apiUrl.searchParams.set('limit', limit);
-    apiUrl.searchParams.set('granularity', granularity); // Required by Neon API
-    if (searchParams.get('cursor')) {
-      apiUrl.searchParams.set('cursor', searchParams.get('cursor')!);
-    }
-    // Try adding org_id if available
-    if (searchParams.get('org_id')) {
-      apiUrl.searchParams.set('org_id', searchParams.get('org_id')!);
-    }
-
-    // Log the actual URL being called for debugging
-    await appLog({
-      source: 'app/api/neon-consumption/route.ts',
-      message: 'Route invoked',
-      metadata: {
-        stage: 'init',
-        requestId: requestId,
-        apiUrl: apiUrl.toString(),
-        from: from,
-        to: to,
-        limit: limit,
-        granularity: granularity,
-      },
-    });
-
-    const apiUrl2 = new URL('https://console.neon.tech/api/v2/projects');
-    // Fetch consumption history from Neon API
-    const response = await fetch(apiUrl2.toString(), {
-      method: 'GET',
+    const response = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         Accept: 'application/json',
@@ -84,44 +45,54 @@ export async function GET(request: Request) {
         source: 'app/api/neon-consumption/route.ts',
         message: 'Neon API error',
         metadata: {
+          stage: 'error',
           status: response.status,
           details: errorText,
+          requestId,
         },
-        requestId,
       });
-
       return NextResponse.json(
-        {
-          error: `Neon API error: ${response.status}`,
-          details: errorText,
-        },
+        { error: 'Neon API error', details: errorText },
         { status: response.status }
       );
     }
 
     const data = await response.json();
 
+    // Extract metrics from projects
+    const projects = data.projects ?? [];
+    const metrics = projects.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      activeTimeHours: +(p.active_time / 3600).toFixed(2),
+      cpuHours: +(p.cpu_used_sec / 3600).toFixed(2),
+      storageMB: +(p.synthetic_storage_size / 1024 / 1024).toFixed(2),
+    }));
+
     await appLog({
       source: 'app/api/neon-consumption/route.ts',
       message: 'Fetched consumption metrics from Neon API',
       metadata: {
-        itemCount: data.items?.length || -9,
+        stage: 'success',
         requestId,
-        dataSummary: JSON.stringify(data),
+        projectCount: projects.length,
+        metricsSummary: metrics,
       },
     });
-    return NextResponse.json({
-      success: true,
-      ...data,
-      period: { from, to },
-    });
+
+    return NextResponse.json({ success: true, projects, metrics });
   } catch (error) {
-    console.log('Error fetching consumption metrics', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch consumption metrics',
-        details: error instanceof Error ? error.message : 'Unknown error',
+    await appLog({
+      source: 'app/api/neon-consumption/route.ts',
+      message: 'Unhandled error',
+      metadata: {
+        stage: 'error',
+        error: error instanceof Error ? error.message : String(error),
+        requestId,
       },
+    });
+    return NextResponse.json(
+      { error: 'Failed to fetch consumption metrics' },
       { status: 500 }
     );
   }
