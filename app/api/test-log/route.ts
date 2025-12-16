@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { dbFetch } from '@/lib/dbFetch';
-import { safeMetadata } from '@/lib/safeMetadata';
+import { safeMetadata } from '@/utils/safe-metadata';
 import { stackServerApp } from '@/stack/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
