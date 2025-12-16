@@ -1,3 +1,4 @@
+// app/api/neon-basic/route.ts
 import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
@@ -7,15 +8,15 @@ export async function GET(request: Request) {
 
   try {
     await appLog({
-      source: 'app/api/neon-consumption/route.ts',
-      message: 'Route invoked',
-      metadata: { stage: 'init', requestId },
+      source: 'app/api/neon-basic/route.ts',
+      message: 'Basic Neon route invoked',
+      metadata: { stage: 'init', request: request, requestId: requestId },
     });
 
     const apiKey = process.env.NEON_API_KEY;
     if (!apiKey) {
       await appLog({
-        source: 'app/api/neon-consumption/route.ts',
+        source: 'app/api/neon-basic/route.ts',
         message: 'Missing NEON_API_KEY',
         metadata: { stage: 'error', requestId },
       });
@@ -25,14 +26,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch consumption history
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
-    const apiUrl = `https://console.neon.tech/api/v2/consumption_history/projects?from=${encodeURIComponent(
-      oneWeekAgo.toISOString()
-    )}&to=${encodeURIComponent(now.toISOString())}&limit=10&granularity=hourly`;
-
-    const response = await fetch(apiUrl, {
+    // Fetch projects (works on free plans)
+    const response = await fetch('https://console.neon.tech/api/v2/projects', {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         Accept: 'application/json',
@@ -42,7 +37,7 @@ export async function GET(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       await appLog({
-        source: 'app/api/neon-consumption/route.ts',
+        source: 'app/api/neon-basic/route.ts',
         message: 'Neon API error',
         metadata: {
           stage: 'error',
@@ -58,32 +53,28 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-
-    // Extract metrics from projects
     const projects = data.projects ?? [];
+
+    // Extract basic metrics
     const metrics = projects.map((p: any) => ({
       id: p.id,
       name: p.name,
       activeTimeHours: +(p.active_time / 3600).toFixed(2),
       cpuHours: +(p.cpu_used_sec / 3600).toFixed(2),
       storageMB: +(p.synthetic_storage_size / 1024 / 1024).toFixed(2),
+      lastActive: p.compute_last_active_at,
     }));
 
     await appLog({
-      source: 'app/api/neon-consumption/route.ts',
-      message: 'Fetched consumption metrics from Neon API',
-      metadata: {
-        stage: 'success',
-        requestId,
-        projectCount: projects.length,
-        metricsSummary: metrics,
-      },
+      source: 'app/api/neon-basic/route.ts',
+      message: 'Fetched basic Neon project metrics',
+      metadata: { stage: 'success', requestId, projectCount: projects.length },
     });
 
     return NextResponse.json({ success: true, projects, metrics });
   } catch (error) {
     await appLog({
-      source: 'app/api/neon-consumption/route.ts',
+      source: 'app/api/neon-basic/route.ts',
       message: 'Unhandled error',
       metadata: {
         stage: 'error',
@@ -92,7 +83,7 @@ export async function GET(request: Request) {
       },
     });
     return NextResponse.json(
-      { error: 'Failed to fetch consumption metrics' },
+      { error: 'Failed to fetch basic Neon metrics' },
       { status: 500 }
     );
   }
