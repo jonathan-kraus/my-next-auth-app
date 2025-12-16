@@ -1,7 +1,7 @@
 // app/api/test-log/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth'; // make sure you export your NextAuth options here
+import { authOptions } from '@/lib/authOptions';
 import { dbFetch } from '@/lib/dbFetch';
 import { stackServerApp } from '@/stack/server';
 import { createRequestId } from '@/lib/uuidj';
@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
   // or via your stackServerApp wrapper
   const user1 = await stackServerApp.getUser();
   console.log('Current user via stackServerApp:', user1);
-
+  await appLog({
+    source: 'app/api/test-log/route.ts',
+    message: 'get user via stackServerApp',
+    metadata: { stage: 'success', requestId, user1: user1 },
+  });
   // astronomy fetch
   async function fetchAstronomy() {
     const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
