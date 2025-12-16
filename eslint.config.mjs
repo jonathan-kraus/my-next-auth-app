@@ -12,6 +12,7 @@ export default defineConfig([
     ignores: [
       ".next/**",
       "out/**",
+      "src/generated/**",
       "build/**",
       "next-env.d.ts",
       "node_modules",
