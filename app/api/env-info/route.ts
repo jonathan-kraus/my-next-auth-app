@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
 import { neon } from '@neondatabase/serverless';
+import { env } from 'node:process';
 
 console.log('DB module loaded');
 
@@ -107,7 +108,10 @@ export async function GET() {
       environment: envInfo.environment,
       region: envInfo.vercelRegion,
       dbHost: dbHost,
+      dbName: dbName,
       gitSha: envInfo.gitCommitSha,
+      envInfo: envInfo,
+
       CWL: weatherLogCount,
     },
   });
