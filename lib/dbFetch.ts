@@ -1,5 +1,5 @@
 // lib/dbFetch.ts
-import db from '../lib/db';
+import { db } from '../lib/db';
 
 type DbClient = typeof db;
 

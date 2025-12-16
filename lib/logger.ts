@@ -2,7 +2,7 @@
 
 import { Prisma } from '@/src/generated/edge';
 
-import db from './db';
+import { db } from './db';
 
 /**
  * Logger API Severity Levels

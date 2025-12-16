@@ -1,6 +1,6 @@
 // app/api/dashboard-metrics/route.ts
 
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logger';
 import { createRequestId } from '@/lib/uuidj';

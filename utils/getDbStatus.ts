@@ -1,7 +1,7 @@
 //utils/getDbStatus.ts
 'use server';
 
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
 import { Note } from '../src/generated/index';

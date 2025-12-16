@@ -1,5 +1,5 @@
 // lib/weather/service.ts
-import db from '../db';
+import { db } from '../db';
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,

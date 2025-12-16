@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 import { createLogger } from '../utils/logger';
 
 export type SendWithDedupOptions = {

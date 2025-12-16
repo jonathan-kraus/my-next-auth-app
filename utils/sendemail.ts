@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend';
 import { sendWithDedup } from './sendWithDedup';
-import db from '../lib/db';
+import { db } from '../lib/db';
 import { createRequestId } from '@/lib/uuidj';
 import { createLogger } from './logger';
 

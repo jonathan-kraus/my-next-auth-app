@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 import Link from 'next/link';
 import { UnpublishButton } from './PublishToggle';
 

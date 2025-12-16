@@ -1,6 +1,6 @@
 // app/api/test-log/route.ts
 
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 // We'll use a dynamic name/email to ensure the record is new every time

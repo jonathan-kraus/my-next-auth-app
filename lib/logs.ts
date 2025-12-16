@@ -1,7 +1,7 @@
 // lib/logs.ts
 //import { createLogger, createRequestId } from "@/lib/logger";
 import { dbFetch } from './dbFetch';
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 // const TEST_USER_ID = "cmivgk9b2000004lgnewb1boe";
 // const log = createLogger("Initiating_Log_Viewer_Page");
 // const requestId = createRequestId();

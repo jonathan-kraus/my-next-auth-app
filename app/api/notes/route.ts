@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
 import { createRequestId } from '@/lib/uuidj';

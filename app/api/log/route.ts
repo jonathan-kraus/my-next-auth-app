@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { dbFetch } from '@/lib/dbFetch';
 import { createRequestId } from '@/lib/uuidj';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@/src/generated';
 
 type Body = {
   source?: string;

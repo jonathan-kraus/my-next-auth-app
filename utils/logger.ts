@@ -1,5 +1,5 @@
 // utils/logger.ts
-import db from '@/lib/db';
+import { db } from '@/lib/db';
 
 export type LogPayload = {
   severity: 'info' | 'warning' | 'error';
