@@ -1,13 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ... your existing config
-  webpack: (config) => {
+  webpack(config) {
+    // Suppress Babel deoptimisation warnings
     config.infrastructureLogging = {
-      level: 'error',
+      level: 'error', // only show errors, hide warnings
     };
     return config;
   },
 };
 
-module.exports = nextConfig;
 export default nextConfig;
