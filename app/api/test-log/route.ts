@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       },
     })
   );
-  console.log('Log entry created', safeUser);
+  console.log('Log entry created!', safeUser);
   console.log('Log entry created', safeMetadata(user1));
   // create a jtemp row
   const jtemp = await dbFetch(({ db }) =>
