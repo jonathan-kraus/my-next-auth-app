@@ -23,7 +23,13 @@ export async function GET(request: NextRequest) {
   await appLog({
     source: 'app/api/test-log/route.ts',
     message: 'get user via stackServerApp',
-    metadata: { stage: 'success', requestId, user1: user1 },
+    metadata: {
+      userAgent: req.headers.get('User-Agent') || 'Unknown',
+      ip: req.headers.get('X-Forwarded-For') || 'Unknown',
+      user: session?.user
+        ? { id: session.user.id, email: session.user.email }
+        : null,
+    },
   });
   // astronomy fetch
   async function fetchAstronomy() {
