@@ -32,7 +32,13 @@ export async function GET(request: Request) {
       units: 'imperial',
       timezone: 'America/New_York',
     };
-
+    console.log('app/api/test-log/route.ts about to call applog');
+    await appLog({
+      source: 'app/api/test-log/route.ts',
+      message: 'test applog',
+      metadata: { stage: 'init', request: request, requestId: requestId },
+    });
+    console.log('app/api/test-log/route.ts just called applog');
     const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
