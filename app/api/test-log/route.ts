@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
   }
 
   // write a log row
-
+  const safeUser = user1 ? { id: user1.id, user1: user1 } : null;
   await dbFetch(({ db }) =>
     db.log.create({
       data: {
