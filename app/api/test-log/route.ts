@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { dbFetch } from '@/lib/dbFetch';
+import { safeMetadata } from '@/lib/safeMetadata';
 import { stackServerApp } from '@/stack/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
             request.headers.get('X-Forwarded-For') ||
             request.headers.get('Remote-Addr') ||
             'Unknown',
-          user: safeUser,
+          user: safeMetadata(user1),
         },
       },
     })
