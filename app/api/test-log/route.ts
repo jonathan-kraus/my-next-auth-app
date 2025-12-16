@@ -93,12 +93,12 @@ export async function GET(request: NextRequest) {
             request.headers.get('X-Forwarded-For') ||
             request.headers.get('Remote-Addr') ||
             'Unknown',
-          user: safeMetadata(user1),
         },
       },
     })
   );
-
+  console.log('Log entry created', safeuser);
+  console.log('Log entry created', safeMetadata(user1));
   // create a jtemp row
   const jtemp = await dbFetch(({ db }) =>
     db.jtemp.create({
