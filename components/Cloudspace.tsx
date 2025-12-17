@@ -28,8 +28,8 @@ type CloudspaceData = {
     latencyMs: number;
     postCount: number;
     logCount: number;
-    activeConnections: number;
-    idleConnections: number;
+    //activeConnections: number;
+    //idleConnections: number;
   };
   consumption?: {
     activeTimeHours: number;
