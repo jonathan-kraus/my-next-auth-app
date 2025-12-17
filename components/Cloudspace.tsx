@@ -294,7 +294,7 @@ export default function Cloudspace() {
       )
     : 0;
   const cacheHitRate = 85; // placeholder / estimated
-
+  console.log('Consumption data:', data.consumption);
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -312,6 +312,10 @@ export default function Cloudspace() {
             <h2 className="text-2xl font-bold text-gray-800">
               Environment Status
             </h2>
+            <InfoCard title="📈 Resource Consumption (Last 7 Days)">
+              <p>Active Time: {data.consumption?.activeTimeHours}</p>
+              <p>Compute Time: {data.consumption?.computeTimeHours}</p>
+            </InfoCard>
             <p className="text-gray-600 mt-1">Current deployment environment</p>
           </div>
           <EnvironmentBadge environment={data.vercel.environment} />

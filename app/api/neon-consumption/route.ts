@@ -86,11 +86,11 @@ export async function GET(request: Request) {
       name: p.name,
       activeTimeHours: +(p.active_time / 3600).toFixed(2),
       cpuHours: +(p.cpu_used_sec / 3600).toFixed(2),
-      activeConnections: activeConnections,
-      idleConnections: idleConnections,
       storageGB: +(p.storage_size / 1024 / 1024 / 1024).toFixed(2),
       storageMB: +(p.synthetic_storage_size / 1024 / 1024).toFixed(2),
       lastActive: p.compute_last_active_at,
+      activeConnections: activeConnections,
+      idleConnections: idleConnections,
     }));
 
     await appLog({
