@@ -185,11 +185,29 @@ export default function Cloudspace() {
               timestamp: new Date().toISOString(),
             },
           });
+
           if (consumptionResponse.ok) {
             const rawConsumption = await consumptionResponse.json();
             console.log('Parsed consumption data:', rawConsumption);
             if (rawConsumption.metrics && rawConsumption.metrics.length > 0) {
               const m = rawConsumption.metrics[0];
+              await appLog({
+                source: 'app/api/env-info/route.ts',
+                message: '---DB host check---',
+                requestId: requestId,
+                metadata: {
+                  action: 'check',
+
+                  metricId: m.id,
+                  metricName: m.name,
+                  activeTimeHours: m.activeTimeHours,
+                  computeTimeHours: m.cpuHours,
+                  dataWrittenMB: m.dataWrittenMB,
+                  dataTransferMB: m.dataTransferMB,
+                  storageGBHours: m.storageGBHours,
+                  rawMetric: m, // optional: dump the whole object for inspection
+                },
+              });
               consumptionData = {
                 activeTimeHours: m.activeTimeHours ?? 0,
                 computeTimeHours: m.cpuHours ?? 0,
@@ -312,11 +330,7 @@ export default function Cloudspace() {
             <h2 className="text-2xl font-bold text-gray-800">
               Environment Status
             </h2>
-            <InfoCard title="📈 Resource Consumption (Last 7 Days)">
-              <p>Active Time: {data.consumption?.activeTimeHours}</p>
-              <pre>{JSON.stringify(data.consumption, null, 2)}</pre>
-              <p>Compute Time: {data.consumption?.computeTimeHours}</p>
-            </InfoCard>
+
             <p className="text-gray-600 mt-1">Current deployment environment</p>
           </div>
           <EnvironmentBadge environment={data.vercel.environment} />
@@ -369,7 +383,11 @@ export default function Cloudspace() {
             </div>
           </InfoRow>
         </InfoCard>
-
+        <InfoCard title="📈 Resource Consumption (Last 7 Days)">
+          <p>Active Time: {data.consumption?.activeTimeHours}</p>
+          <pre>{JSON.stringify(data.consumption, null, 2)}</pre>
+          <p>Compute Time: {data.consumption?.computeTimeHours}</p>
+        </InfoCard>
         {/* Git Commit Info */}
         {data.vercel.commitSha !== 'N/A' && (
           <InfoCard title="📝 Git Commit">
