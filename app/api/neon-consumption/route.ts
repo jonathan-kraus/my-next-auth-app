@@ -41,8 +41,6 @@ export async function GET(request: Request) {
     const activeConnections = Number(activeResult[0].count);
     const idleConnections = Number(idleResult[0].count);
 
-    const activeConnections = Number(activeResult[0].count);
-    const idleConnections = Number(idleResult[0].count);
     // Fetch projects (works on free plans)
     const response = await fetch('https://console.neon.tech/api/v2/projects', {
       headers: {
