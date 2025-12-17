@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
 import { db } from '@/lib/db';
+import { number } from 'zod';
 
 export async function GET(request: Request) {
   const requestId = createRequestId();
@@ -96,7 +97,13 @@ export async function GET(request: Request) {
     await appLog({
       source: 'app/api/neon-basic/route.ts',
       message: 'Fetched basic Neon project metrics',
-      metadata: { stage: 'success', requestId, projectCount: projects.length },
+      metadata: {
+        stage: 'success',
+        requestId,
+        projectCount: projects.length,
+        idleConnections,
+        activeConnections,
+      },
     });
 
     return NextResponse.json({ success: true, projects, metrics });
