@@ -390,7 +390,7 @@ export default function Cloudspace() {
               />
             </div>
           </InfoRow>
-          <InfoRow label="Active Connections" value="">
+          <InfoRow label="Idle Connections" value="">
             <div className="flex items-center">
               <NumberCounter value={data.neon.idleConnections} />
               <Sparkline
