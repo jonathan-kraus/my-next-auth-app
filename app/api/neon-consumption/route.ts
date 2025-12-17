@@ -26,13 +26,20 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
-    // Query active and idle connections
-    const activeResult = await db.$queryRaw<{ count: bigint }[]>(
-      `SELECT count(*)::bigint AS count FROM pg_stat_activity WHERE state = 'active'`
-    );
-    const idleResult = await db.$queryRaw<{ count: bigint }[]>(
-      `SELECT count(*)::bigint AS count FROM pg_stat_activity WHERE state = 'idle'`
-    );
+    const activeResult = await db.$queryRaw<{ count: bigint }[]>`
+  SELECT count(*)::bigint AS count 
+  FROM pg_stat_activity 
+  WHERE state = 'active'
+`;
+
+    const idleResult = await db.$queryRaw<{ count: bigint }[]>`
+  SELECT count(*)::bigint AS count 
+  FROM pg_stat_activity 
+  WHERE state = 'idle'
+`;
+
+    const activeConnections = Number(activeResult[0].count);
+    const idleConnections = Number(idleResult[0].count);
 
     const activeConnections = Number(activeResult[0].count);
     const idleConnections = Number(idleResult[0].count);
