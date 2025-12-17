@@ -135,6 +135,7 @@ async function logWeatherFetch(
 ) {
   try {
     // Get the cached record to access raw DateTime values
+    const requestId = createRequestId();
     const cached = await db.weatherCache.findUnique({
       where: { location: locationKey },
     });
