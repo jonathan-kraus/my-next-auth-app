@@ -134,22 +134,20 @@ async function logWeatherFetch(
   source: 'cache' | 'live'
 ) {
   try {
-    const requestId = createRequestId();
+    // Get the cached record to access raw DateTime values
+    const cached = await db.weatherCache.findUnique({
+      where: { location: locationKey },
+    });
+
     await db.weatherLog.create({
       data: {
         location: locationKey,
         temperature: data.current.temperature,
         condition: data.current.condition,
-        sunrise: data.astronomy?.sunrise
-          ? new Date(data.astronomy.sunrise)
-          : null,
-        sunset: data.astronomy?.sunset ? new Date(data.astronomy.sunset) : null,
-        moonrise: data.astronomy?.rawMoonrise
-          ? new Date(data.astronomy.rawMoonrise)
-          : null,
-        moonset: data.astronomy?.rawMoonset
-          ? new Date(data.astronomy.rawMoonset)
-          : null,
+        sunrise: cached?.sunrise ?? null,
+        sunset: cached?.sunset ?? null,
+        moonrise: cached?.moonrise ?? null,
+        moonset: cached?.moonset ?? null,
         moonPhase: data.astronomy?.moonPhase ?? null,
         data: data as any,
         source: source,
