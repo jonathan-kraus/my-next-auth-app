@@ -1,15 +1,14 @@
-export const runtime = 'nodejs';
+// app/api/auth/[...nextauth]/route.ts
 import NextAuth from 'next-auth';
-import GitHub from 'next-auth/providers/github';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { db } from '@/lib/db';
+import GitHubProvider from 'next-auth/providers/github';
+import type { NextAuthOptions } from 'next-auth';
 
-// 👇 force Node runtime so Prisma doesn't get bundled into client engine
-
-const handler = NextAuth({
-  adapter: PrismaAdapter(db as any), // 👈 cast fixes the TS type mismatch
+// Define your auth options
+export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: 'jwt' },
   providers: [
-    GitHub({
+    GitHubProvider({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
     }),
@@ -20,11 +19,16 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (session.user) session.user.id = token.id as string;
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
+// Create the handler
+const handler = NextAuth(authOptions);
+
+// Export for both GET and POST
 export { handler as GET, handler as POST };
