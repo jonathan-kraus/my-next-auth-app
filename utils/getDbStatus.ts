@@ -47,7 +47,7 @@ async function getLastDatabaseActivity() {
     }[];
     await appLog({
       source: 'utils/getDbStatus.ts',
-      message: '---DB check---',
+      message: '---DB check AC---',
       requestId: requestId,
       metadata: {
         action: 'get',
