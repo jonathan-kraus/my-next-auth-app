@@ -15,13 +15,12 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, token, user }) {
-      // If you are using a database adapter, user will be defined
-      if (user && 'id' in user) {
-        session.user.id = user.id;
-      } else if (token && token.sub) {
-        session.user.id = token.sub;
-      }
+    async jwt({ token, user }) {
+      if (user) token.id = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) session.user.id = token.id as string;
       return session;
     },
   },
