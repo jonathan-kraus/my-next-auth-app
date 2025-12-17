@@ -33,7 +33,7 @@ async function getLastDatabaseActivity() {
   try {
     // Check current active connections
     const activeConnections = (await db.$queryRaw`
-      SELECT count(*) as active_connections,
+      SELECT count(*) as 
              max(state_change) as last_state_change,
              max(backend_start) as last_backend_start
       FROM pg_stat_activity
@@ -41,20 +41,10 @@ async function getLastDatabaseActivity() {
         AND pid <> pg_backend_pid()
         AND state IS NOT NULL
     `) as {
-      active_connections: bigint;
       last_state_change: Date | null;
       last_backend_start: Date | null;
     }[];
-    await appLog({
-      source: 'utils/getDbStatus.ts',
-      message: '---DB check AC---',
-      requestId: requestId,
-      metadata: {
-        action: 'get',
-        AC: activeConnections,
-        IC: idleConnections,
-      },
-    });
+
     // Check last modification times from user tables
     const tableActivity = (await db.$queryRaw`
       SELECT max(last_vacuum) as last_vacuum,
