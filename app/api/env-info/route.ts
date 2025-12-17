@@ -15,7 +15,7 @@ export async function checkDbConnection() {
   try {
     const sql = neon(process.env.DATABASE_URL);
     const countWeatherLog =
-      await sql`SELECT COUNT(*)::int as count FROM "WeatherLog"`;
+      await sql`SELECT COUNT(*)::int as count FROM "WeatherCache"`;
 
     await appLog({
       source: 'app/api/env-info/route.ts',
