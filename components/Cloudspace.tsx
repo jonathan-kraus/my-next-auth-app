@@ -203,9 +203,9 @@ export default function Cloudspace() {
                   metricName: m.name,
                   activeTimeHours: m.activeTimeHours,
                   computeTimeHours: m.cpuHours,
-                  dataWrittenMB: m.dataWrittenMB,
-                  dataTransferMB: m.dataTransferMB,
-                  storageGBHours: m.storageGBHours,
+                  storageMB: m.storageMB,
+                  activeConnections: m.activeConnections,
+                  idleConnections: m.idleConnections,
                   rawMetric: m, // optional: dump the whole object for inspection
                 },
               });
@@ -257,6 +257,8 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
+            activeConnections: activeConnections || 0,
+            idleConnections: idleConnections || 0,
           },
           consumption: consumptionData || undefined,
         };

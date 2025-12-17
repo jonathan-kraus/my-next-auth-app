@@ -63,8 +63,6 @@ async function getLastDatabaseActivity() {
 
     // Get the most recent activity timestamp
     const timestamps = [
-      activeConnections[0]?.last_state_change,
-      activeConnections[0]?.last_backend_start,
       tableActivity[0]?.last_vacuum,
       tableActivity[0]?.last_autovacuum,
       tableActivity[0]?.last_analyze,
