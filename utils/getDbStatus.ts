@@ -75,7 +75,6 @@ async function getLastDatabaseActivity() {
         : null;
 
     return {
-      activeConnections: Number(activeConnections[0]?.active_connections || 0),
       lastActivity,
       lastVacuum: tableActivity[0]?.last_vacuum,
       lastAutoVacuum: tableActivity[0]?.last_autovacuum,

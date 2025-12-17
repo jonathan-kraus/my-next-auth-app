@@ -249,6 +249,7 @@ export default function Cloudspace() {
             commitMessage: envData.gitCommitMessage || 'N/A',
             commitAuthor: envData.gitCommitAuthor || 'N/A',
           },
+
           neon: {
             databaseHost: envData.databaseHost || 'N/A',
             databaseName: envData.databaseName || 'N/A',
@@ -257,8 +258,8 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-            activeConnections: activeConnections || 0,
-            idleConnections: idleConnections || 0,
+            //activeConnections: activeConnections || 0,
+            //idleConnections: idleConnections || 0,
           },
           consumption: consumptionData || undefined,
         };
