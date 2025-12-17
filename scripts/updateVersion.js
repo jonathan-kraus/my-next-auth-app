@@ -24,7 +24,11 @@ switch (bumpType) {
     patch += 1;
 }
 
-versionData.version = `${major}.${minor}.${patch}`;
+// Format with two digits for minor and patch
+const minorStr = String(minor).padStart(2, '0');
+const patchStr = String(patch).padStart(2, '0');
+
+versionData.version = `${major}.${minorStr}.${patchStr}`;
 versionData.date = new Date().toLocaleDateString('en-US');
 
 fs.writeFileSync(versionFile, JSON.stringify(versionData, null, 2) + '\n');
