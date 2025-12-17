@@ -256,7 +256,6 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-            activeConnections: activeConnections || 0,
           },
           consumption: consumptionData || undefined,
         };
@@ -306,9 +305,7 @@ export default function Cloudspace() {
   // Derived metrics for extra cards
   const reqRate = Math.max(0, Math.round(data.neon.postCount / Math.max(1, 1))); // simple per-post derived rate
   const avgQueryTime = Math.round(data.neon.latencyMs * 0.8);
-  const poolUsagePercent = activeConnections
-    ? Math.round((activeConnections / (activeConnections + 10)) * 100)
-    : 0;
+  const poolUsagePercent = 75; // placeholder / estimated
   const cacheHitRate = 85; // placeholder / estimated
   console.log('Consumption data:', data.consumption);
   return (
@@ -370,12 +367,6 @@ export default function Cloudspace() {
               <Sparkline value={data.neon.latencyMs} max={500} color="purple" />
             </div>
           </InfoRow>
-          <InfoRow label="Active Connections" value="">
-            <div className="flex items-center">
-              <NumberCounter value={activeConnections} />
-              <Sparkline value={activeConnections} max={100} color="green" />
-            </div>
-          </InfoRow>
         </InfoCard>
 
         {/* Git Commit Info */}
@@ -407,13 +398,7 @@ export default function Cloudspace() {
           <InfoRow label="Total Logs" value="">
             <NumberCounter value={data.neon.logCount} />
           </InfoRow>
-          <div className="pt-2 border-t border-gray-200">
-            <p className="text-gray-600 text-sm">
-              Database is running smoothly with{' '}
-              <NumberCounter value={activeConnections} /> active connection
-              {activeConnections !== 1 ? 's' : ''}
-            </p>
-          </div>
+          <div className="pt-2 border-t border-gray-200"></div>
         </InfoCard>
 
         {/* Performance Metrics */}
