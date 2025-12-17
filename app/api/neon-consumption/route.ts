@@ -40,7 +40,16 @@ export async function GET(request: Request) {
 
     const activeConnections = Number(activeResult[0].count);
     const idleConnections = Number(idleResult[0].count);
-
+    await appLog({
+      source: 'app/api/neon-basic/route.ts',
+      message: 'Neon connection data fetched',
+      metadata: {
+        activeConnections: activeConnections,
+        idleConnections: idleConnections,
+        stage: 'fetched',
+        requestId,
+      },
+    });
     // Fetch projects (works on free plans)
     const response = await fetch('https://console.neon.tech/api/v2/projects', {
       headers: {
@@ -58,8 +67,7 @@ export async function GET(request: Request) {
           stage: 'error',
           status: response.status,
           details: errorText,
-          activeConnections,
-          idleConnections,
+
           requestId,
         },
       });
