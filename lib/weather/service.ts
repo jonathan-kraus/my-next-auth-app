@@ -86,6 +86,11 @@ export async function saveCachedRaw(locationKey: LocationKey, raw: any) {
       requestId,
       metadata: {
         action: 'Initializing cache save',
+        sunrise,
+        sunset,
+        moonrise,
+        moonset,
+        location: locationKey,
         timestamp: new Date().toISOString(),
       },
     },
