@@ -44,21 +44,27 @@ export async function GET() {
   console.log('About to parse DATABASE_URL for host and name');
 
   if (process.env.DATABASE_URL) {
-    console.log('Parsing DATABASE_URL for host and name');
-
+    console.log('About to parse DATABASE_URL for host and name');
     console.log(
       'DATABASE_URL format:',
       process.env.DATABASE_URL?.substring(0, 20) + '...'
-    ); // Log first 20 chars
+    );
     try {
+      console.log('Step 1: Creating URL object'); // ✅ Add this
       const url = new URL(process.env.DATABASE_URL);
-      dbHost = url.hostname;
-      dbName = url.pathname.slice(1); // Remove leading slash
+      console.log('Step 2: URL parsed successfully'); // ✅ Add this
 
-      // Query WeatherLog count
+      dbHost = url.hostname;
+      dbName = url.pathname.slice(1);
+      console.log('Step 3: Got hostname and dbname:', dbHost, dbName); // ✅ Add this
+
+      console.log('Step 4: Creating Neon SQL client'); // ✅ Add this
       const sql = neon(process.env.DATABASE_URL);
+
+      console.log('Step 5: Querying WeatherLog count'); // ✅ Add this
       const result = await sql`SELECT COUNT(*)::int as count FROM "WeatherLog"`;
       weatherLogCount = result[0]?.count ?? null;
+      console.log('Step 6: Query completed, count:', weatherLogCount); // ✅ Add this
       await appLog({
         source: 'app/api/env-info/route.ts',
         message: '---DB host check---',
