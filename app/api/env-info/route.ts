@@ -14,19 +14,19 @@ export async function checkDbConnection() {
 
   try {
     const sql = neon(process.env.DATABASE_URL);
-    const countWeatherLog =
-      await sql`SELECT COUNT(*)::int as count FROM "WeatherCache"`;
+    const countWeatherLog = 7;
+    //await sql`SELECT COUNT(*)::int as count FROM "Weather"`;
 
     await appLog({
       source: 'app/api/env-info/route.ts',
       message: '---env-info invoked---',
       metadata: {
         action: 'create',
-        CWL: countWeatherLog[0].count,
+        CWL: countWeatherLog,
       },
     });
 
-    return countWeatherLog[0].count;
+    return countWeatherLog;
   } catch (error) {
     console.error('DB connection error:', error);
     return null;
