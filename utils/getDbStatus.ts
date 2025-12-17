@@ -51,7 +51,8 @@ async function getLastDatabaseActivity() {
       requestId: requestId,
       metadata: {
         action: 'get',
-        AC: activeConnections[0]?.active_connections,
+        AC: activeConnections,
+        IC: idleconnections,
       },
     });
     // Check last modification times from user tables

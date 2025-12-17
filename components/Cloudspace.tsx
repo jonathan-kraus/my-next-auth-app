@@ -28,7 +28,7 @@ type CloudspaceData = {
     latencyMs: number;
     postCount: number;
     logCount: number;
-    activeConnections: number;
+    activeConnections2: number;
   };
   consumption?: {
     activeTimeHours: number;
@@ -256,7 +256,7 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-            activeConnections: dbData.lastActivity?.activeConnections || 0,
+            activeConnections2: activeConnections2 || 0,
           },
           consumption: consumptionData || undefined,
         };
@@ -383,11 +383,7 @@ export default function Cloudspace() {
             </div>
           </InfoRow>
         </InfoCard>
-        <InfoCard title="📈 Resource Consumption (Last 7 Days)">
-          <p>Active Time: {data.consumption?.activeTimeHours}</p>
-          <pre>{JSON.stringify(data.consumption, null, 2)}</pre>
-          <p>Compute Time: {data.consumption?.computeTimeHours}</p>
-        </InfoCard>
+
         {/* Git Commit Info */}
         {data.vercel.commitSha !== 'N/A' && (
           <InfoCard title="📝 Git Commit">
