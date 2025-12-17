@@ -41,9 +41,15 @@ export async function GET() {
   let dbHost = 'N/A';
   let dbName = 'N/A';
   let weatherLogCount = null;
+  console.log('About to parse DATABASE_URL for host and name');
 
   if (process.env.DATABASE_URL) {
     console.log('Parsing DATABASE_URL for host and name');
+
+    console.log(
+      'DATABASE_URL format:',
+      process.env.DATABASE_URL?.substring(0, 20) + '...'
+    ); // Log first 20 chars
     try {
       const url = new URL(process.env.DATABASE_URL);
       dbHost = url.hostname;
