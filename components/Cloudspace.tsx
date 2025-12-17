@@ -256,7 +256,7 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-            activeConnections2: activeConnections2 || 0,
+            activeConnections: activeConnections || 0,
           },
           consumption: consumptionData || undefined,
         };
@@ -306,10 +306,8 @@ export default function Cloudspace() {
   // Derived metrics for extra cards
   const reqRate = Math.max(0, Math.round(data.neon.postCount / Math.max(1, 1))); // simple per-post derived rate
   const avgQueryTime = Math.round(data.neon.latencyMs * 0.8);
-  const poolUsagePercent = data.neon.activeConnections
-    ? Math.round(
-        (data.neon.activeConnections / (data.neon.activeConnections + 10)) * 100
-      )
+  const poolUsagePercent = activeConnections
+    ? Math.round((activeConnections / (activeConnections + 10)) * 100)
     : 0;
   const cacheHitRate = 85; // placeholder / estimated
   console.log('Consumption data:', data.consumption);
@@ -374,12 +372,8 @@ export default function Cloudspace() {
           </InfoRow>
           <InfoRow label="Active Connections" value="">
             <div className="flex items-center">
-              <NumberCounter value={data.neon.activeConnections} />
-              <Sparkline
-                value={data.neon.activeConnections}
-                max={100}
-                color="green"
-              />
+              <NumberCounter value={activeConnections} />
+              <Sparkline value={activeConnections} max={100} color="green" />
             </div>
           </InfoRow>
         </InfoCard>
@@ -416,9 +410,8 @@ export default function Cloudspace() {
           <div className="pt-2 border-t border-gray-200">
             <p className="text-gray-600 text-sm">
               Database is running smoothly with{' '}
-              <NumberCounter value={data.neon.activeConnections} /> active
-              connection
-              {data.neon.activeConnections !== 1 ? 's' : ''}
+              <NumberCounter value={activeConnections} /> active connection
+              {activeConnections !== 1 ? 's' : ''}
             </p>
           </div>
         </InfoCard>

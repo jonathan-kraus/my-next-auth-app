@@ -52,7 +52,7 @@ async function getLastDatabaseActivity() {
       metadata: {
         action: 'get',
         AC: activeConnections,
-        IC: idleconnections,
+        IC: idleConnections,
       },
     });
     // Check last modification times from user tables
