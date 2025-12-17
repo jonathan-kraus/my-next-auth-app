@@ -174,6 +174,7 @@ export default function Cloudspace() {
         let consumptionData = null;
         try {
           const consumptionResponse = await fetch('/api/neon-consumption');
+          console.log('Consumption response:', consumptionResponse);
           if (consumptionResponse.ok) {
             const rawConsumption = await consumptionResponse.json();
             if (rawConsumption.periods && rawConsumption.periods.length > 0) {
