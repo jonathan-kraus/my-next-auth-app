@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
+import { db } from '@/lib/db';
 
 export async function GET(request: Request) {
   const requestId = createRequestId();
@@ -25,7 +26,16 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
+    // Query active and idle connections
+    const activeResult = await db.$queryRaw<{ count: bigint }[]>(
+      `SELECT count(*)::bigint AS count FROM pg_stat_activity WHERE state = 'active'`
+    );
+    const idleResult = await db.$queryRaw<{ count: bigint }[]>(
+      `SELECT count(*)::bigint AS count FROM pg_stat_activity WHERE state = 'idle'`
+    );
 
+    const activeConnections = Number(activeResult[0].count);
+    const idleConnections = Number(idleResult[0].count);
     // Fetch projects (works on free plans)
     const response = await fetch('https://console.neon.tech/api/v2/projects', {
       headers: {
@@ -43,6 +53,8 @@ export async function GET(request: Request) {
           stage: 'error',
           status: response.status,
           details: errorText,
+          activeConnections,
+          idleConnections,
           requestId,
         },
       });
@@ -61,6 +73,9 @@ export async function GET(request: Request) {
       name: p.name,
       activeTimeHours: +(p.active_time / 3600).toFixed(2),
       cpuHours: +(p.cpu_used_sec / 3600).toFixed(2),
+      activeConnections: activeConnections,
+      idleConnections: idleConnections,
+      storageGB: +(p.storage_size / 1024 / 1024 / 1024).toFixed(2),
       storageMB: +(p.synthetic_storage_size / 1024 / 1024).toFixed(2),
       lastActive: p.compute_last_active_at,
     }));
