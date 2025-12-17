@@ -29,7 +29,7 @@ type CloudspaceData = {
     postCount: number;
     logCount: number;
     activeConnections: number;
-    idleConnections?: number;
+    idleConnections: number;
   };
   consumption?: {
     activeTimeHours: number;
@@ -264,7 +264,6 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-
             activeConnections: activeConnections || 0,
             idleConnections: idleConnections || 0,
           },
@@ -386,6 +385,16 @@ export default function Cloudspace() {
               <NumberCounter value={data.neon.activeConnections} />
               <Sparkline
                 value={data.neon.activeConnections}
+                max={100}
+                color="green"
+              />
+            </div>
+          </InfoRow>
+          <InfoRow label="Active Connections" value="">
+            <div className="flex items-center">
+              <NumberCounter value={data.neon.idleConnections} />
+              <Sparkline
+                value={data.neon.idleConnections}
                 max={100}
                 color="green"
               />
