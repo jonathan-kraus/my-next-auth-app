@@ -188,25 +188,23 @@ export default function Cloudspace() {
           if (consumptionResponse.ok) {
             const rawConsumption = await consumptionResponse.json();
             console.log('Parsed consumption data:', rawConsumption);
-            if (rawConsumption.periods && rawConsumption.periods.length > 0) {
-              const period = rawConsumption.periods[0];
+            if (rawConsumption.metrics && rawConsumption.metrics.length > 0) {
+              const m = rawConsumption.metrics[0]; // or pick the one you want
               consumptionData = {
                 activeTimeHours: parseFloat(
-                  (period.active_time_seconds / 3600).toFixed(2)
+                  (m.active_time_seconds / 3600).toFixed(2)
                 ),
                 computeTimeHours: parseFloat(
-                  (period.compute_time_seconds / 3600).toFixed(2)
+                  (m.compute_time_seconds / 3600).toFixed(2)
                 ),
                 dataWrittenMB: parseFloat(
-                  (period.written_data_bytes / 1024 / 1024).toFixed(2)
+                  (m.written_data_bytes / 1024 / 1024).toFixed(2)
                 ),
                 dataTransferMB: parseFloat(
-                  (period.data_transfer_bytes / 1024 / 1024).toFixed(2)
+                  (m.data_transfer_bytes / 1024 / 1024).toFixed(2)
                 ),
                 storageGBHours: parseFloat(
-                  (period.data_storage_bytes_hour / 1024 / 1024 / 1024).toFixed(
-                    4
-                  )
+                  (m.data_storage_bytes_hour / 1024 / 1024 / 1024).toFixed(4)
                 ),
               };
             }
