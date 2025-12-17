@@ -139,4 +139,20 @@ model WeatherCache {
 
   @@schema("public")
 }
-
+model WeatherLog {
+  id          String   @id @default(cuid())
+  location    String
+  temperature Float
+  condition   String?
+  sunrise     DateTime?
+  sunset      DateTime?
+  moonrise    DateTime?
+  moonset     DateTime?
+  moonPhase   Float?
+  data        Json?
+  source      String   // 'cache' or 'live'
+  createdAt   DateTime @default(now())
+  
+  @@index([location, createdAt])
+  @@schema("public")
+}

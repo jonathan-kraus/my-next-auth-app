@@ -119,6 +119,42 @@ export async function saveCachedRaw(locationKey: LocationKey, raw: any) {
   });
 }
 
+// WeatherLog helper
+// Add this helper at the top of the file with other helpers
+async function logWeatherFetch(
+  locationKey: LocationKey,
+  data: WeatherData,
+  source: 'cache' | 'live'
+) {
+  try {
+    await db.weatherLog.create({
+      data: {
+        location: locationKey,
+        temperature: data.current.temperature,
+        condition: data.current.condition,
+        sunrise: data.astronomy?.rawSunrise
+          ? new Date(data.astronomy.rawSunrise)
+          : null,
+        sunset: data.astronomy?.rawSunset
+          ? new Date(data.astronomy.rawSunset)
+          : null,
+        moonrise: data.astronomy?.rawMoonrise
+          ? new Date(data.astronomy.rawMoonrise)
+          : null,
+        moonset: data.astronomy?.rawMoonset
+          ? new Date(data.astronomy.rawMoonset)
+          : null,
+        moonPhase: data.astronomy?.moonPhase ?? null,
+        data: data as any,
+        source: source,
+      },
+    });
+    console.log('[WEATHER LOG] Logged', locationKey, source);
+  } catch (error) {
+    console.error('[WEATHER LOG] Failed to log:', error);
+  }
+}
+
 // ---- External API ----------------------------------------------------------
 
 async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
@@ -295,11 +331,9 @@ export async function getWeather(locationKey: LocationKey) {
   const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
   if (cached) {
-    // ← Opening brace
     const cacheAge = Date.now() - new Date(cached.updatedAt).getTime();
 
     if (cacheAge < CACHE_TTL_MS) {
-      // ← Opening brace
       const mapped = mapTomorrowIOToWeatherData(
         cached.data,
         locationKey,
@@ -327,7 +361,7 @@ export async function getWeather(locationKey: LocationKey) {
           cached.moonset
         );
       }
-
+      await logWeatherFetch(locationKey, mapped, 'cache');
       return mapped;
     }
   }
