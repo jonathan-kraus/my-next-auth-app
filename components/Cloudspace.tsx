@@ -314,6 +314,7 @@ export default function Cloudspace() {
             </h2>
             <InfoCard title="📈 Resource Consumption (Last 7 Days)">
               <p>Active Time: {data.consumption?.activeTimeHours}</p>
+              <pre>{JSON.stringify(data.consumption, null, 2)}</pre>
               <p>Compute Time: {data.consumption?.computeTimeHours}</p>
             </InfoCard>
             <p className="text-gray-600 mt-1">Current deployment environment</p>
