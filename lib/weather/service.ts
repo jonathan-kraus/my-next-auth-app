@@ -1,5 +1,7 @@
 // lib/weather/service.ts
 import { db } from '../db';
+import { appLog } from '@/utils/app-log';
+import { createRequestId } from '@/lib/uuidj';
 
 import {
   LOCATIONS,
@@ -127,6 +129,7 @@ async function logWeatherFetch(
   source: 'cache' | 'live'
 ) {
   try {
+    const requestId = createRequestId();
     await db.weatherLog.create({
       data: {
         location: locationKey,
@@ -147,6 +150,16 @@ async function logWeatherFetch(
         moonPhase: data.astronomy?.moonPhase ?? null,
         data: data as any,
         source: source,
+      },
+    });
+    await appLog({
+      source: 'lib/weather/service.ts',
+      message: 'WeatherLog entry created',
+      metadata: {
+        stage: 'write',
+        source: source,
+        location: locationKey,
+        requestId,
       },
     });
     console.log('[WEATHER LOG] Logged', locationKey, source);
@@ -373,7 +386,8 @@ export async function getWeather(locationKey: LocationKey) {
 
     const nowIso = new Date().toISOString();
     console.log('[weather] served live and cached', { locationKey });
-
+    const mapped = mapTomorrowIOToWeatherData(raw, locationKey, false, nowIso);
+    await logWeatherFetch(locationKey, mapped, 'live');
     return mapTomorrowIOToWeatherData(raw, locationKey, false, nowIso);
   } catch (error) {
     console.error('[weather] live fetch failed, no cache available', {
