@@ -291,37 +291,45 @@ export async function getWeather(locationKey: LocationKey) {
     where: { location: locationKey },
   });
 
+  // ✅ Add TTL check here
+  const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
   if (cached) {
-    // Map the raw Tomorrow.io blob
-    const mapped = mapTomorrowIOToWeatherData(
-      cached.data,
-      locationKey,
-      true,
-      cached.createdAt.toISOString()
-    );
+    // ← Opening brace
+    const cacheAge = Date.now() - new Date(cached.updatedAt).getTime();
 
-    // ✅ Enrich astronomy with Prisma fields
-    if (mapped.astronomy) {
-      mapped.astronomy.rawSunrise = cached.sunrise?.toISOString();
-      mapped.astronomy.rawSunset = cached.sunset?.toISOString();
-      mapped.astronomy.rawMoonrise = cached.moonrise?.toISOString();
-      mapped.astronomy.rawMoonset = cached.moonset?.toISOString();
-      mapped.astronomy.moonPhase = cached.moonPhase ?? 0;
+    if (cacheAge < CACHE_TTL_MS) {
+      // ← Opening brace
+      const mapped = mapTomorrowIOToWeatherData(
+        cached.data,
+        locationKey,
+        true,
+        cached.createdAt.toISOString()
+      );
 
-      const now = new Date();
-      mapped.astronomy.sunIndicator = computeIndicator(
-        now,
-        cached.sunrise,
-        cached.sunset
-      );
-      mapped.astronomy.moonIndicator = computeIndicator(
-        now,
-        cached.moonrise,
-        cached.moonset
-      );
+      // ✅ Enrich astronomy with Prisma fields
+      if (mapped.astronomy) {
+        mapped.astronomy.rawSunrise = cached.sunrise?.toISOString();
+        mapped.astronomy.rawSunset = cached.sunset?.toISOString();
+        mapped.astronomy.rawMoonrise = cached.moonrise?.toISOString();
+        mapped.astronomy.rawMoonset = cached.moonset?.toISOString();
+        mapped.astronomy.moonPhase = cached.moonPhase ?? 0;
+
+        const now = new Date();
+        mapped.astronomy.sunIndicator = computeIndicator(
+          now,
+          cached.sunrise,
+          cached.sunset
+        );
+        mapped.astronomy.moonIndicator = computeIndicator(
+          now,
+          cached.moonrise,
+          cached.moonset
+        );
+      }
+
+      return mapped;
     }
-
-    return mapped;
   }
 
   // If no cache, fetch live from Tomorrow.io and save
