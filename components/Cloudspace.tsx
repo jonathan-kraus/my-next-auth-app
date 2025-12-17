@@ -39,7 +39,7 @@ type CloudspaceData = {
   };
 };
 
-// `NumberCounter` and `Sparkline` moved to shared components
+// `NumberCounter` and `Sparkline` moved to shared components.
 
 function InfoCard({
   title,
