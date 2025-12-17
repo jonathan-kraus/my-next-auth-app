@@ -1,6 +1,6 @@
 // lib/weather/service.ts
 import { db } from '../db';
-import { dbFetch } from '@/lib/db-fetch';
+
 import {
   LOCATIONS,
   LOCATIONS_BY_KEY,
@@ -72,21 +72,23 @@ export async function saveCachedRaw(locationKey: LocationKey, raw: any) {
 
   const sunIndicator = computeIndicator(now, sunrise, sunset);
   const moonIndicator = computeIndicator(now, moonrise, moonset);
-  await dbFetch(({ db }) =>
-    db.log.create({
-      data: {
-        userId: 'cmiz0p9ro000004ldrxgn3a1c',
-        severity: 'info',
-        source: 'weather service',
-        message: 'Invoking service to save cached weather data',
-        requestId,
-        metadata: {
-          action: 'Initializing cache save',
-          timestamp: new Date().toISOString(),
-        },
+  const requestId = `weather-save-${locationKey}-${now.getTime()}`;
+
+  // Log the cache save action
+  await db.log.create({
+    data: {
+      userId: 'cmiz0p9ro000004ldrxgn3a1c',
+      severity: 'info',
+      source: 'weather service',
+      message: 'Invoking service to save cached weather data',
+      requestId,
+      metadata: {
+        action: 'Initializing cache save',
+        timestamp: new Date().toISOString(),
       },
-    })
-  );
+    },
+  });
+  console.log('[weather] saving cached data', { locationKey, requestId });
   await db.weatherCache.upsert({
     where: { location: locationKey },
     update: {
