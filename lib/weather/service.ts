@@ -135,10 +135,10 @@ async function logWeatherFetch(
         location: locationKey,
         temperature: data.current.temperature,
         condition: data.current.condition,
-        sunrise: data.astronomy?.Sunrise
-          ? new Date(data.astronomy.Sunrise)
+        sunrise: data.astronomy?.sunrise
+          ? new Date(data.astronomy.sunrise)
           : null,
-        sunset: data.astronomy?.Sunset ? new Date(data.astronomy.Sunset) : null,
+        sunset: data.astronomy?.sunset ? new Date(data.astronomy.sunset) : null,
         moonrise: data.astronomy?.rawMoonrise
           ? new Date(data.astronomy.rawMoonrise)
           : null,
