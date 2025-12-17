@@ -32,8 +32,8 @@ const requestId = createRequestId();
 async function getLastDatabaseActivity() {
   try {
     // Check current active connections
-    const activeConnections = (await db.$queryRaw`
-      SELECT count(*) as active_connections,
+    const dbActive = (await db.$queryRaw`
+      SELECT count(*) as 
              max(state_change) as last_state_change,
              max(backend_start) as last_backend_start
       FROM pg_stat_activity
@@ -41,17 +41,16 @@ async function getLastDatabaseActivity() {
         AND pid <> pg_backend_pid()
         AND state IS NOT NULL
     `) as {
-      active_connections: bigint;
       last_state_change: Date | null;
       last_backend_start: Date | null;
     }[];
     await appLog({
       source: 'utils/getDbStatus.ts',
-      message: '---DB check AC---',
+      message: '---DB check Activity---',
       requestId: requestId,
       metadata: {
         action: 'get',
-        AC: activeConnections[0]?.active_connections,
+        AC: dbActive[0],
       },
     });
     // Check last modification times from user tables
@@ -72,8 +71,6 @@ async function getLastDatabaseActivity() {
 
     // Get the most recent activity timestamp
     const timestamps = [
-      activeConnections[0]?.last_state_change,
-      activeConnections[0]?.last_backend_start,
       tableActivity[0]?.last_vacuum,
       tableActivity[0]?.last_autovacuum,
       tableActivity[0]?.last_analyze,
@@ -86,7 +83,6 @@ async function getLastDatabaseActivity() {
         : null;
 
     return {
-      activeConnections: Number(activeConnections[0]?.active_connections || 0),
       lastActivity,
       lastVacuum: tableActivity[0]?.last_vacuum,
       lastAutoVacuum: tableActivity[0]?.last_autovacuum,
@@ -96,7 +92,6 @@ async function getLastDatabaseActivity() {
     // Note: Can't use logger here as we're in a nested function without requestId
     console.warn('[getDbStatus] Error getting database activity:', error);
     return {
-      activeConnections: 0,
       lastActivity: null,
       lastVacuum: null,
       lastAutoVacuum: null,

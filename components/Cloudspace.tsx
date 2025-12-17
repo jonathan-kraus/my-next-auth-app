@@ -1,6 +1,6 @@
 // components/Cloudspace.tsx
 'use client';
-import { useEffect, useState } from 'react';
+import { act, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
@@ -29,6 +29,7 @@ type CloudspaceData = {
     postCount: number;
     logCount: number;
     activeConnections: number;
+    idleConnections?: number;
   };
   consumption?: {
     activeTimeHours: number;
@@ -171,7 +172,15 @@ export default function Cloudspace() {
             timestamp: new Date().toISOString(),
           },
         });
-        let consumptionData = null;
+        let consumptionData = {
+          activeTimeHours: 0,
+          computeTimeHours: 0,
+          dataWrittenMB: 0,
+          dataTransferMB: 0,
+          storageGBHours: 0,
+          activeConnections: 0,
+          idleConnections: 0,
+        };
         try {
           const consumptionResponse = await fetch('/api/neon-consumption');
           console.log('Consumption response:', consumptionResponse);
@@ -196,12 +205,27 @@ export default function Cloudspace() {
                 dataWrittenMB: m.dataWrittenMB ?? 0,
                 dataTransferMB: m.dataTransferMB ?? 0,
                 storageGBHours: m.storageGBHours ?? 0,
+
+                activeConnections: m.activeConnections ?? 0,
+                idleConnections: m.idleConnections ?? 0,
               };
             }
           }
         } catch {
           console.log('Consumption metrics not available');
         }
+        if (!consumptionData) {
+          return <div>Loading consumption data...</div>;
+        }
+        const {
+          activeTimeHours,
+          computeTimeHours,
+          dataWrittenMB,
+          dataTransferMB,
+          storageGBHours,
+          activeConnections,
+          idleConnections,
+        } = consumptionData;
         await appLog({
           source: 'components/Cloudspace.tsx',
           message: '---neon-consumption-exit---',
@@ -209,11 +233,13 @@ export default function Cloudspace() {
           metadata: {
             action: 'fetch',
             status: 'completed',
-            activeTimeHours: consumptionData?.activeTimeHours || -9,
-            computeTimeHours: consumptionData?.computeTimeHours || -9,
-            dataWrittenMB: consumptionData?.dataWrittenMB || -9,
-            dataTransferMB: consumptionData?.dataTransferMB || -9,
-            storageGBHours: consumptionData?.storageGBHours || -9,
+            activeTimeHours: activeTimeHours || -9,
+            computeTimeHours: computeTimeHours || -9,
+            dataWrittenMB: dataWrittenMB || -9,
+            dataTransferMB: dataTransferMB || -9,
+            storageGBHours: storageGBHours || -9,
+            activeConnections: activeConnections || -9,
+            idleConnections: idleConnections || -9,
             timestamp: new Date().toISOString(),
           },
         });
@@ -238,9 +264,10 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-            activeConnections: dbData.lastActivity?.activeConnections || 0,
+
+            activeConnections: activeConnections || 0,
+            idleConnections: idleConnections || 0,
           },
-          consumption: consumptionData || undefined,
         };
 
         setData(cloudspaceData);
@@ -288,11 +315,7 @@ export default function Cloudspace() {
   // Derived metrics for extra cards
   const reqRate = Math.max(0, Math.round(data.neon.postCount / Math.max(1, 1))); // simple per-post derived rate
   const avgQueryTime = Math.round(data.neon.latencyMs * 0.8);
-  const poolUsagePercent = data.neon.activeConnections
-    ? Math.round(
-        (data.neon.activeConnections / (data.neon.activeConnections + 10)) * 100
-      )
-    : 0;
+
   const cacheHitRate = 85; // placeholder / estimated
   console.log('Consumption data:', data.consumption);
   return (
@@ -425,13 +448,6 @@ export default function Cloudspace() {
               <Sparkline value={avgQueryTime} max={500} color="purple" />
             </div>
           </InfoRow>
-          <InfoRow label="Pool Usage" value="">
-            <div className="flex items-center">
-              <NumberCounter value={poolUsagePercent} />
-              <span className="ml-2 text-sm text-gray-600">%</span>
-              <Sparkline value={poolUsagePercent} max={100} color="green" />
-            </div>
-          </InfoRow>
         </InfoCard>
 
         {/* Cache & CDN */}
@@ -474,6 +490,7 @@ export default function Cloudspace() {
             >
               <p className="text-xs text-purple-600 font-semibold mb-1">
                 Compute Time
+                {data.neon.activeConnections}
               </p>
               <div className="flex items-center">
                 <NumberCounter value={data.consumption.computeTimeHours} />
