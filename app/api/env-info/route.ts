@@ -62,7 +62,8 @@ export async function GET() {
       const sql = neon(process.env.DATABASE_URL);
 
       console.log('Step 5: Querying WeatherLog count'); // ✅ Add this
-      const result = await sql`SELECT COUNT(*)::int as count FROM "WeatherLog"`;
+      const result =
+        await sql`SELECT COUNT(*)::int as count FROM "WeatherCache"`;
       weatherLogCount = result[0]?.count ?? null;
       console.log('Step 6: Query completed, count:', weatherLogCount); // ✅ Add this
       await appLog({
