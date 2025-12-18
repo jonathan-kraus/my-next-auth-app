@@ -285,7 +285,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
                           <div className="text-xs text-gray-400 mb-1">
                             💧 Humidity
@@ -319,6 +319,61 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Added forecast display for available days */}
+                      {weather.forecast?.daily &&
+                        weather.forecast.daily.length > 0 && (
+                          <div className="border-t border-white/10 pt-4">
+                            <div className="text-xs text-gray-400 font-semibold mb-3">
+                              📅 {weather.forecast.daily.length}-Day Forecast
+                            </div>
+                            <div className="space-y-2">
+                              {weather.forecast.daily
+                                .slice(0, 3)
+                                .map((day, idx) => {
+                                  const date = new Date(day.date);
+                                  const dayName =
+                                    idx === 0
+                                      ? 'Today'
+                                      : date.toLocaleDateString('en-US', {
+                                          weekday: 'short',
+                                        });
+
+                                  return (
+                                    <div
+                                      key={day.date}
+                                      className="flex items-center justify-between bg-white/5 rounded-lg p-2 border border-white/5"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-400 w-10">
+                                          {dayName}
+                                        </span>
+                                        <span className="text-lg">
+                                          {day.condition.includes('Clear')
+                                            ? '☀️'
+                                            : day.condition.includes('Cloud')
+                                              ? '☁️'
+                                              : day.condition.includes('Rain')
+                                                ? '🌧️'
+                                                : day.condition.includes('Snow')
+                                                  ? '❄️'
+                                                  : '🌤️'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-white font-semibold">
+                                          {day.high}°
+                                        </span>
+                                        <span className="text-gray-500">
+                                          {day.low}°
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        )}
 
                       {weather.isCached && (
                         <div className="mt-4 text-xs text-gray-500 italic flex items-center gap-1">
