@@ -177,7 +177,7 @@ export default function Cloudspace() {
           computeTimeHours: 0,
           dataWrittenMB: 0,
           dataTransferMB: 0,
-          storageGBHours: 0,
+          storageGBHours: 720,
           activeConnections: 0,
           idleConnections: 0,
         };
@@ -204,7 +204,7 @@ export default function Cloudspace() {
                 computeTimeHours: m.cpuHours ?? 0,
                 dataWrittenMB: m.dataWrittenMB ?? 0,
                 dataTransferMB: m.dataTransferMB ?? 0,
-                storageGBHours: m.storageGBHours ?? 0,
+                storageGBHours: m.storageGBHours ?? 720,
 
                 activeConnections: m.activeConnections ?? 0,
                 idleConnections: m.idleConnections ?? 0,
@@ -237,7 +237,7 @@ export default function Cloudspace() {
             computeTimeHours: computeTimeHours || -9,
             dataWrittenMB: dataWrittenMB || -9,
             dataTransferMB: dataTransferMB || -9,
-            storageGBHours: storageGBHours || -9,
+            storageGBHours: storageGBHours || 720,
             activeConnections: activeConnections || -9,
             idleConnections: idleConnections || -9,
             timestamp: new Date().toISOString(),
@@ -515,15 +515,9 @@ export default function Cloudspace() {
                 Data Written
               </p>
               <div className="flex items-center">
-                <NumberCounter
-                  value={Math.round(data.consumption.dataWrittenMB)}
-                />
+                <NumberCounter value={cacheHitRate} />
                 <span className="ml-2 text-sm text-gray-600">MB</span>
-                <Sparkline
-                  value={data.consumption.dataWrittenMB}
-                  max={1024}
-                  color="green"
-                />
+                <Sparkline value={cacheHitRate} max={1024} color="green" />
               </div>
             </motion.div>
             <motion.div
