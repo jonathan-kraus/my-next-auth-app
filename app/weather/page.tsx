@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WeatherCard } from '@/components/WeatherCard';
-import { triggerEmail } from '@/utils/triggerEmail';
 import { useLogger } from '@/lib/axiom/client';
 import { appLog } from '@/utils/app-log';
 import toast from 'react-hot-toast';
+import { sendWeather } from './actions';
 import { LocationSelector } from '@/components/LocationSelector';
 import {
   LocationKey,
@@ -301,16 +301,7 @@ export default function WeatherPage() {
     try {
       logger.info('Sending weather email', { location: selectedLocation });
 
-      await triggerEmail(
-        'in weather page',
-        'requestId',
-        `Subject weather`,
-        `Created by \n\ntemperature: ${weatherData.current.temperature}°C\n\nCondition: ${weatherData.current.condition}\n\nLocation: ${selectedLocation}`,
-        `BodyIndicator` as BodyIndicator as string,
-        `WeatherData` as WeatherData as string,
-
-        `https://www.kraus.my.id/weather/${selectedLocation}`
-      );
+      await sendWeather(weatherData, weatherData.location);
 
       console.log('[weather] email sent successfully');
 
