@@ -305,7 +305,11 @@ export default function WeatherPage() {
         'in weather page',
         'requestId',
         `Subject weather`,
-        `Created by \n\nweather content here.`
+        `Created by \n\ntemperature: ${weatherData.current.temperature}°C\n\nCondition: ${weatherData.current.condition}\n\nLocation: ${selectedLocation}`,
+        `BodyIndicator` as BodyIndicator as string,
+        `WeatherData` as WeatherData as string,
+
+        `https://www.kraus.my.id/weather/${selectedLocation}`
       );
 
       console.log('[weather] email sent successfully');
