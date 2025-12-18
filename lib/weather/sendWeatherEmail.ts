@@ -47,12 +47,12 @@ export async function sendWeatherEmail(
 
   const textBody = `Weather update for ${selectedLocation}
 
-Temperature: ${weatherData.current.temperature}°C (Feels like ${weatherData.current.feelsLike}°C)
+Temperature: ${weatherData.current.temperature}°F (Feels like ${weatherData.current.feelsLike}°F)
 Condition: ${weatherData.current.condition}
 Humidity: ${weatherData.current.humidity}%
-Wind: ${weatherData.current.windSpeed} km/h (gust ${weatherData.current.windGust} km/h)
+Wind: ${weatherData.current.windSpeed} mp/h (gust ${weatherData.current.windGust} mp/h)
 UV Index: ${weatherData.current.uvIndex}
-Visibility: ${weatherData.current.visibility} km
+Visibility: ${weatherData.current.visibility} m
 Pressure: ${weatherData.current.pressure} hPa
 
 Sunrise: ${weatherData.astronomy.sunrise}
@@ -93,7 +93,13 @@ Moon phase: ${weatherData.astronomy.moonPhaseDescription ?? 'N/A'}
           <p><strong>Moonrise:</strong> ${weatherData.astronomy.moonrise ?? 'N/A'}</p>
           <p><strong>Moonset:</strong> ${weatherData.astronomy.moonset ?? 'N/A'}</p>
           <p><strong>Moon phase:</strong> ${weatherData.astronomy.moonPhaseDescription ?? 'N/A'}</p>
-          <p class="muted">Sent at ${new Date(weatherData.current.timestamp).toLocaleString()}</p>
+          <p class="muted">
+  Sent at ${new Date(weatherData.current.timestamp).toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    dateStyle: 'short',
+    timeStyle: 'long',
+  })}
+</p>
         </div>
       </body>
     </html>
