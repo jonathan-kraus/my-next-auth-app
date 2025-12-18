@@ -59,9 +59,11 @@ export function ForecastCard({ forecast }: ForecastCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white rounded-3xl p-6 shadow-xl"
+      className="bg-gradient-to-br from-blue-400 via-cyan-400 to-teal-300 rounded-3xl p-6 shadow-xl"
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">7-Day Forecast</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">
+        {forecast.daily.length}-Day Forecast
+      </h2>
 
       <div className="space-y-3">
         {forecast.daily.map((day, index) => (
@@ -70,7 +72,7 @@ export function ForecastCard({ forecast }: ForecastCardProps) {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 * index }}
-            className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl hover:shadow-md transition-shadow"
+            className="flex items-center justify-between p-4 bg-white/90 backdrop-blur-sm rounded-xl hover:shadow-md transition-shadow"
           >
             <div className="flex-1 min-w-[120px]">
               <div className="font-semibold text-gray-800">
