@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WeatherCard } from '@/components/WeatherCard';
+import { ForecastCard } from '@/components/ForecastCard';
 import { useLogger } from '@/lib/axiom/client';
 import { appLog } from '@/utils/app-log';
 import toast from 'react-hot-toast';
@@ -445,7 +446,17 @@ export default function WeatherPage() {
             <WeatherCard data={weatherData} isLoading={loading} />
           </motion.div>
         )}
-
+        {/* Forecast Card */}
+        {weatherData && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="mt-6"
+          >
+            <ForecastCard data={weatherData} />
+          </motion.div>
+        )}
         {/* Loading State */}
         {loading && !weatherData && (
           <motion.div
