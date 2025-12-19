@@ -66,12 +66,43 @@ async function getCachedRaw(locationKey: LocationKey) {
 export async function saveCachedRaw(locationKey: LocationKey, raw: any) {
   const daily = raw?.timelines?.daily?.[0]?.values;
   const now = new Date();
-
+  // Debug log the raw daily data
+  console.log('[weather] raw daily data', {
+    locationKey,
+    daily,
+    hasSunrise: !!daily?.sunriseTime,
+    hasMoonrise: !!daily?.moonriseTime,
+  });
+  await appLog({
+    source: 'lib/weather/service.ts',
+    message: 'Debug raw daily data',
+    metadata: {
+      locationKey: locationKey,
+      daily: daily,
+      hasSunrise: !!daily?.sunriseTime,
+      hasMoonrise: !!daily?.moonriseTime,
+    },
+  });
   const sunrise = daily?.sunriseTime ? new Date(daily.sunriseTime) : null;
   const sunset = daily?.sunsetTime ? new Date(daily.sunsetTime) : null;
   const moonrise = daily?.moonriseTime ? new Date(daily.moonriseTime) : null;
   const moonset = daily?.moonsetTime ? new Date(daily.moonsetTime) : null;
-
+  console.log('[weather] parsed dates', {
+    sunrise: sunrise?.toISOString(),
+    sunset: sunset?.toISOString(),
+    moonrise: moonrise?.toISOString(),
+    moonset: moonset?.toISOString(),
+  });
+  await appLog({
+    source: 'lib/weather/service.ts',
+    message: 'Verify the Date objects are valid',
+    metadata: {
+      sunrise: sunrise?.toISOString(),
+      sunset: sunset?.toISOString(),
+      moonrise: moonrise?.toISOString(),
+      moonset: moonset?.toISOString(),
+    },
+  });
   const sunIndicator = computeIndicator(now, sunrise, sunset);
   const moonIndicator = computeIndicator(now, moonrise, moonset);
   const requestId = `weather-save-${locationKey}-${now.getTime()}`;
