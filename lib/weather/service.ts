@@ -179,6 +179,8 @@ async function fetchFromTomorrowIO(locationKey: LocationKey): Promise<any> {
     location: [location.lat, location.lon],
     fields: [
       'temperature',
+      'temperatureMax', // ✅ Add this
+      'temperatureMin', // ✅ Add this
       'temperatureApparent',
       'humidity',
       'windSpeed',
