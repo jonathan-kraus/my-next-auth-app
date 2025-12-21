@@ -1,6 +1,7 @@
 'use client';
 
 import { Sun, Moon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
 
@@ -36,41 +37,34 @@ function duration(isoStart: string, isoEnd: string) {
 export default function AstroDashboard({ data }: { data: AstroApiData }) {
   const sunDuration = duration(data.sunrise, data.sunset);
   const moonDuration = duration(data.moonrise, data.moonset);
-  let sunInd = 'unknown';
-  if (
-    new Date().getTime() >= new Date(data.sunrise).getTime() &&
-    new Date().getTime() <= new Date(data.sunset).getTime()
-  ) {
-    sunInd = 'up';
-  } else {
-    sunInd = 'down';
-  }
 
-  let moonInd = 'unknown';
-  if (
-    new Date().getTime() >= new Date(data.moonrise).getTime() &&
-    new Date().getTime() <= new Date(data.moonset).getTime()
-  ) {
-    moonInd = 'up';
-  } else {
-    moonInd = 'down';
-  }
+  const [now] = useState(() => Date.now());
+
+  const sunUp =
+    now >= new Date(data.sunrise).getTime() &&
+    now <= new Date(data.sunset).getTime();
+
+  const moonUp =
+    now >= new Date(data.moonrise).getTime() &&
+    now <= new Date(data.moonset).getTime();
+
   appLog({
     source: 'app/astronomy/AstroDashboard.tsx',
     message: 'Rendering AstroDashboard',
     requestId: createRequestId(),
     metadata: {
-      sunIndicator: sunInd,
-      moonIndicator: moonInd,
-      sunDuration: sunDuration,
-      moonDuration: moonDuration,
+      sunIndicator: sunUp ? 'up' : 'down',
+      moonIndicator: moonUp ? 'up' : 'down',
+      sunDuration,
+      moonDuration,
     },
   });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
       {/* Sun card */}
       <div className="bg-slate-800 rounded-2xl p-6 shadow-lg">
-        <h3 className="text-white text-sm mb-4">Sun {sunInd}</h3>
+        <h3 className="text-white text-sm mb-4">Sun {sunUp ? 'up' : 'down'}</h3>
 
         <ArcCard
           gradientId="sunGradient"
@@ -82,12 +76,15 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
           setLabel="Sunset"
           riseTime={toLocal(data.sunrise)}
           setTime={toLocal(data.sunset)}
+          isUp={sunUp}
         />
       </div>
 
       {/* Moon card */}
       <div className="bg-slate-800 rounded-2xl p-6 shadow-lg">
-        <h3 className="text-white text-sm mb-4">Moon {moonInd}</h3>
+        <h3 className="text-white text-sm mb-4">
+          Moon {moonUp ? 'up' : 'down'}
+        </h3>
 
         <ArcCard
           gradientId="moonGradient"
@@ -99,6 +96,7 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
           setLabel="Moonset"
           riseTime={toLocal(data.moonrise)}
           setTime={toLocal(data.moonset)}
+          isUp={moonUp}
         />
       </div>
 
@@ -107,7 +105,6 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
         <h3 className="text-white text-sm mb-4">Moon phase</h3>
         <div className="flex-1 flex items-center">
           <div className="flex items-center gap-6">
-            {/* Simple phase graphic: 0 = new, 0.5 = full */}
             <div className="relative w-28 h-28">
               <div className="absolute inset-0 rounded-full bg-slate-700" />
               <div
@@ -133,6 +130,10 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
   );
 }
 
+/* --------------------------------------------------
+   ArcCard Component
+-------------------------------------------------- */
+
 function ArcCard(props: {
   gradientId: string;
   from: string;
@@ -143,14 +144,55 @@ function ArcCard(props: {
   setLabel: string;
   riseTime: string;
   setTime: string;
+  isUp: boolean;
 }) {
-  const [riseTime, risePeriod] = props.riseTime.split(' ');
-  const [setTime, setPeriod] = props.setTime.split(' ');
+  // Update once per minute
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Parse rise/set into Date objects for today
+  function parseTime(t: string) {
+    const [time, period] = t.split(' ');
+    const [hourStr, minuteStr] = time.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minute = parseInt(minuteStr, 10);
+
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+
+    const d = new Date();
+    d.setHours(hour, minute, 0, 0);
+    return d.getTime();
+  }
+
+  const riseTs = parseTime(props.riseTime);
+  const setTs = parseTime(props.setTime);
+
+  const pct = Math.min(Math.max((now - riseTs) / (setTs - riseTs), 0), 1);
+
+  const startX = 10;
+  const endX = 190;
+  const x = startX + pct * (endX - startX);
+
+  function bezierY(t: number) {
+    const P0 = 90;
+    const P1 = 10;
+    const P2 = 90;
+    return (1 - t) ** 2 * P0 + 2 * (1 - t) * t * P1 + t ** 2 * P2;
+  }
+
+  const y = bezierY(pct);
+
+  const iconStyle = props.isUp ? 'opacity-100' : 'opacity-40 grayscale';
 
   return (
     <>
       <div className="relative h-28 mb-4">
         <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-600" />
+
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 100">
           <defs>
             <linearGradient
@@ -164,6 +206,7 @@ function ArcCard(props: {
               <stop offset="100%" stopColor={props.to} />
             </linearGradient>
           </defs>
+
           <path
             d="M 10 90 Q 100 10, 190 90"
             fill="none"
@@ -171,13 +214,44 @@ function ArcCard(props: {
             strokeWidth="4"
             strokeLinecap="round"
           />
+
+          {/* Glow */}
+          <circle
+            cx={x}
+            cy={y}
+            r="10"
+            fill="white"
+            opacity="0.25"
+            filter="blur(4px)"
+          />
+
+          {/* Icon marker */}
+          <foreignObject x={x - 10} y={y - 10} width="20" height="20">
+            <div
+              className={`w-5 h-5 flex items-center justify-center ${iconStyle}`}
+            >
+              {props.icon}
+            </div>
+          </foreignObject>
+
+          {/* Baseline tick */}
+          <rect
+            x={x - 1}
+            y={90}
+            width="2"
+            height="6"
+            fill="white"
+            opacity="0.6"
+          />
         </svg>
+
         {/* left marker */}
         <div className="absolute bottom-0 left-3">
           <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow">
             {props.icon}
           </div>
         </div>
+
         {/* right marker */}
         <div className="absolute bottom-0 right-3">
           <div className="w-7 h-7 bg-white rounded-full shadow" />
@@ -190,16 +264,12 @@ function ArcCard(props: {
 
       <div className="flex justify-between items-end">
         <div>
-          <p className="text-2xl font-semibold text-white">{riseTime}</p>
-          <p className="text-xs text-slate-300">
-            {risePeriod} {props.riseLabel}
-          </p>
+          <p className="text-2xl font-semibold text-white">{props.riseTime}</p>
+          <p className="text-xs text-slate-300">{props.riseLabel}</p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-semibold text-white">{setTime}</p>
-          <p className="text-xs text-slate-300">
-            {setPeriod} {props.setLabel}
-          </p>
+          <p className="text-2xl font-semibold text-white">{props.setTime}</p>
+          <p className="text-xs text-slate-300">{props.setLabel}</p>
         </div>
       </div>
     </>
