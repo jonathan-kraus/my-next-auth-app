@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
 import { db } from '@/lib/db';
-import { number } from 'zod';
 
 export async function GET(request: Request) {
   const requestId = createRequestId();
@@ -12,7 +11,8 @@ export async function GET(request: Request) {
     await appLog({
       source: 'app/api/neon-basic/route.ts',
       message: 'Basic Neon route invoked',
-      metadata: { stage: 'init', request: request, requestId: requestId },
+      requestId: requestId,
+      metadata: { stage: 'init', request: request },
     });
 
     const apiKey = process.env.NEON_API_KEY;
@@ -20,7 +20,8 @@ export async function GET(request: Request) {
       await appLog({
         source: 'app/api/neon-basic/route.ts',
         message: 'Missing NEON_API_KEY',
-        metadata: { stage: 'error', requestId },
+        requestId: requestId,
+        metadata: { stage: 'error', lastUpdatedIso: new Date().toISOString() },
       });
       return NextResponse.json(
         { error: 'NEON_API_KEY not configured' },
@@ -97,6 +98,7 @@ export async function GET(request: Request) {
     await appLog({
       source: 'app/api/neon-basic/route.ts',
       message: 'Fetched basic Neon project metrics',
+      requestId: requestId,
       metadata: {
         stage: 'success',
         requestId,
@@ -111,6 +113,7 @@ export async function GET(request: Request) {
     await appLog({
       source: 'app/api/neon-basic/route.ts',
       message: 'Unhandled error',
+      requestId: requestId,
       metadata: {
         stage: 'error',
         error: error instanceof Error ? error.message : String(error),
