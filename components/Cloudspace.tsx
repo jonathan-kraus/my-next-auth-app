@@ -457,11 +457,11 @@ export default function Cloudspace() {
 
         {/* Cache & CDN */}
         <InfoCard title="🧰 Cache & CDN">
-          <InfoRow label="Cache Hit Rate" value="">
+          <InfoRow label="Active Hours" value="">
             <div className="flex items-center">
-              <NumberCounter value={cacheHitRate} />
+              <NumberCounter value={activeTimeHours} />
               <span className="ml-2 text-sm text-gray-600">%</span>
-              <Sparkline value={cacheHitRate} max={100} color="green" />
+              <Sparkline value={activeTimeHours} max={100} color="green" />
             </div>
           </InfoRow>
           <InfoRow label="Edge Responses" value="1200" />
