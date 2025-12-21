@@ -1,10 +1,22 @@
 'use client';
 
 import { Sun, Moon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
+import CelestialClock from '../../components/CelestialClock';
 
+/* --------------------------------------------------
+   Utility Functions
+-------------------------------------------------- */
+
+function clamp(value: number, min = 0, max = 1) {
+  return Math.min(Math.max(value, min), max);
+}
+
+/* --------------------------------------------------
+   AstroDashboard Component
+-------------------------------------------------- */
 type AstroApiData = {
   sunrise: string;
   sunset: string;
@@ -126,6 +138,13 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
           </div>
         </div>
       </div>
+      <CelestialClock
+        sunrise={data.sunrise}
+        sunset={data.sunset}
+        moonrise={data.moonrise}
+        moonset={data.moonset}
+        moonPhase={data.moonPhase}
+      />
     </div>
   );
 }
