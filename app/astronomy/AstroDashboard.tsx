@@ -1,6 +1,8 @@
 'use client';
 
 import { Sun, Moon } from 'lucide-react';
+import { createRequestId } from '@/lib/uuidj';
+import { appLog } from '@/utils/app-log';
 
 type AstroApiData = {
   sunrise: string;
@@ -53,6 +55,17 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
   } else {
     moonInd = 'down';
   }
+  appLog({
+    source: 'app/astronomy/AstroDashboard.tsx',
+    message: 'Rendering AstroDashboard',
+    requestId: createRequestId(),
+    metadata: {
+      sunIndicator: sunInd,
+      moonIndicator: moonInd,
+      sunDuration: sunDuration,
+      moonDuration: moonDuration,
+    },
+  });
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
       {/* Sun card */}
