@@ -32,18 +32,22 @@ const requestId = createRequestId();
 async function getLastDatabaseActivity() {
   try {
     // Check current active connections
-    const dbActive = (await db.$queryRaw`
-      SELECT count(*) as 
-             max(state_change) as last_state_change,
-             max(backend_start) as last_backend_start
-      FROM pg_stat_activity
-      WHERE datname = current_database()
-        AND pid <> pg_backend_pid()
-        AND state IS NOT NULL
-    `) as {
-      last_state_change: Date | null;
-      last_backend_start: Date | null;
-    }[];
+    const dbActive = await db.$queryRaw<
+      {
+        active_connections: number;
+        last_state_change: Date | null;
+        last_backend_start: Date | null;
+      }[]
+    >`
+  SELECT
+    count(*) AS active_connections,
+    max(state_change) AS last_state_change,
+    max(backend_start) AS last_backend_start
+  FROM pg_stat_activity
+  WHERE datname = current_database()
+    AND pid <> pg_backend_pid()
+    AND state IS NOT NULL
+`;
     await appLog({
       source: 'utils/getDbStatus.ts',
       message: '---DB check Activity---',
@@ -56,10 +60,10 @@ async function getLastDatabaseActivity() {
     // Check last modification times from user tables
     const tableActivity = (await db.$queryRaw`
       SELECT max(last_vacuum) as last_vacuum,
-             max(last_autovacuum) as last_autovacuum,
-             max(last_analyze) as last_analyze,
-             max(last_autoanalyze) as last_autoanalyze,
-             max(n_tup_ins + n_tup_upd + n_tup_del) as total_operations
+              max(last_autovacuum) as last_autovacuum,
+              max(last_analyze) as last_analyze,
+              max(last_autoanalyze) as last_autoanalyze,
+max(n_tup_ins + n_tup_upd + n_tup_del) as total_operations
       FROM pg_stat_user_tables
     `) as {
       last_vacuum: Date | null;
