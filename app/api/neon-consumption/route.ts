@@ -45,6 +45,7 @@ export async function GET(request: Request) {
     await appLog({
       source: 'app/api/neon-basic/route.ts',
       message: 'Neon connection data fetched',
+      requestId: requestId,
       metadata: {
         activeConnections: activeConnections,
         idleConnections: idleConnections,

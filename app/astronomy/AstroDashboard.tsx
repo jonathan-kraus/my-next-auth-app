@@ -34,12 +34,30 @@ function duration(isoStart: string, isoEnd: string) {
 export default function AstroDashboard({ data }: { data: AstroApiData }) {
   const sunDuration = duration(data.sunrise, data.sunset);
   const moonDuration = duration(data.moonrise, data.moonset);
+  let sunInd = 'unknown';
+  if (
+    new Date().getTime() >= new Date(data.sunrise).getTime() &&
+    new Date().getTime() <= new Date(data.sunset).getTime()
+  ) {
+    sunInd = 'up';
+  } else {
+    sunInd = 'down';
+  }
 
+  let moonInd = 'unknown';
+  if (
+    new Date().getTime() >= new Date(data.moonrise).getTime() &&
+    new Date().getTime() <= new Date(data.moonset).getTime()
+  ) {
+    moonInd = 'up';
+  } else {
+    moonInd = 'down';
+  }
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
       {/* Sun card */}
       <div className="bg-slate-800 rounded-2xl p-6 shadow-lg">
-        <h3 className="text-white text-sm mb-4">Sun</h3>
+        <h3 className="text-white text-sm mb-4">Sun {sunInd}</h3>
 
         <ArcCard
           gradientId="sunGradient"
@@ -56,7 +74,7 @@ export default function AstroDashboard({ data }: { data: AstroApiData }) {
 
       {/* Moon card */}
       <div className="bg-slate-800 rounded-2xl p-6 shadow-lg">
-        <h3 className="text-white text-sm mb-4">Moon</h3>
+        <h3 className="text-white text-sm mb-4">Moon {moonInd}</h3>
 
         <ArcCard
           gradientId="moonGradient"
