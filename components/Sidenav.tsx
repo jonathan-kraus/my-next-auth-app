@@ -39,6 +39,12 @@ export const Sidenav = () => {
       protected: false,
     },
     { name: 'Weather', href: '/weather', icon: CloudIcon, protected: false },
+    {
+      name: 'Astronomy',
+      href: '/astronomy',
+      icon: CloudIcon,
+      protected: false,
+    },
     { name: 'Notes', href: '/notes', icon: PencilSquareIcon, protected: true },
     {
       name: 'Jtemp',
