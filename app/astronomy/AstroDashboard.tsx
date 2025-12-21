@@ -146,14 +146,14 @@ function ArcCard(props: {
   setTime: string;
   isUp: boolean;
 }) {
-  // Update once per minute
+  // Time state (purity‑safe)
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  // Parse rise/set into Date objects for today
+  // Parse rise/set into timestamps
   function parseTime(t: string) {
     const [time, period] = t.split(' ');
     const [hourStr, minuteStr] = time.split(':');
@@ -171,8 +171,10 @@ function ArcCard(props: {
   const riseTs = parseTime(props.riseTime);
   const setTs = parseTime(props.setTime);
 
+  // Progress percentage
   const pct = Math.min(Math.max((now - riseTs) / (setTs - riseTs), 0), 1);
 
+  // Arc coordinates
   const startX = 10;
   const endX = 190;
   const x = startX + pct * (endX - startX);
@@ -186,11 +188,44 @@ function ArcCard(props: {
 
   const y = bezierY(pct);
 
+  // Tooltip poetic text
+  const percent = Math.round(pct * 100);
+  const msRemaining = setTs - now;
+  const hrs = Math.max(0, Math.floor(msRemaining / 3_600_000));
+  const mins = Math.max(0, Math.floor((msRemaining % 3_600_000) / 60_000));
+
+  const poeticTooltip =
+    pct < 0.5
+      ? `The day is still young.\n${percent}% of light has passed.\nTwilight arrives in ${hrs}h ${mins}m.`
+      : `The sun is past its peak.\n${percent}% of daylight has passed.\nTwilight arrives in ${hrs}h ${mins}m.`;
+
+  // Icon style (grayscale + opacity when down)
   const iconStyle = props.isUp ? 'opacity-100' : 'opacity-40 grayscale';
+
+  // Pulse animation only when up
+  const pulseClass = props.isUp ? 'animate-pulse-slow' : '';
 
   return (
     <>
-      <div className="relative h-28 mb-4">
+      <style jsx>{`
+        .animate-pulse-slow {
+          animation: pulseSlow 4s ease-in-out infinite;
+        }
+        @keyframes pulseSlow {
+          0% {
+            opacity: 0.25;
+          }
+          50% {
+            opacity: 0.45;
+          }
+          100% {
+            opacity: 0.25;
+          }
+        }
+      `}</style>
+
+      <div className="relative h-28 mb-4 group">
+        {/* baseline */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-600" />
 
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 100">
@@ -207,13 +242,26 @@ function ArcCard(props: {
             </linearGradient>
           </defs>
 
+          {/* Arc */}
           <path
             d="M 10 90 Q 100 10, 190 90"
             fill="none"
             stroke={`url(#${props.gradientId})`}
             strokeWidth="4"
             strokeLinecap="round"
+            className="transition-all duration-700 ease-in-out"
           />
+
+          {/* Night shading */}
+          {!props.isUp && (
+            <path
+              d="M 10 90 Q 100 10, 190 90"
+              fill="none"
+              stroke="rgba(0,0,0,0.4)"
+              strokeWidth="6"
+              strokeLinecap="round"
+            />
+          )}
 
           {/* Glow */}
           <circle
@@ -221,12 +269,17 @@ function ArcCard(props: {
             cy={y}
             r="10"
             fill="white"
-            opacity="0.25"
-            filter="blur(4px)"
+            className={`transition-all duration-700 ease-in-out ${pulseClass}`}
           />
 
           {/* Icon marker */}
-          <foreignObject x={x - 10} y={y - 10} width="20" height="20">
+          <foreignObject
+            x={x - 10}
+            y={y - 10}
+            width="20"
+            height="20"
+            className="transition-all duration-700 ease-in-out"
+          >
             <div
               className={`w-5 h-5 flex items-center justify-center ${iconStyle}`}
             >
@@ -242,8 +295,16 @@ function ArcCard(props: {
             height="6"
             fill="white"
             opacity="0.6"
+            className="transition-all duration-700 ease-in-out"
           />
         </svg>
+
+        {/* Tooltip */}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <div className="bg-slate-900 text-slate-200 text-xs whitespace-pre-line px-3 py-2 rounded-lg shadow-lg border border-slate-700">
+            {poeticTooltip}
+          </div>
+        </div>
 
         {/* left marker */}
         <div className="absolute bottom-0 left-3">
