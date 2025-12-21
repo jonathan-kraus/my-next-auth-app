@@ -80,7 +80,19 @@ max(n_tup_ins + n_tup_upd + n_tup_del) as total_operations
       tableActivity[0]?.last_analyze,
       tableActivity[0]?.last_autoanalyze,
     ].filter(Boolean) as Date[];
-
+    await appLog({
+      source: 'utils/getDbStatus.ts',
+      message: '---Table Activity---',
+      requestId: requestId,
+      metadata: {
+        action: 'get',
+        last_vacuum: tableActivity[0]?.last_vacuum,
+        lastauto: tableActivity[0]?.last_autovacuum,
+        lastanalyze: tableActivity[0]?.last_analyze,
+        last_autoanalyze: tableActivity[0]?.last_autoanalyze,
+        AC: dbActive[0],
+      },
+    });
     const lastActivity =
       timestamps.length > 0
         ? new Date(Math.max(...timestamps.map((d) => d.getTime())))
