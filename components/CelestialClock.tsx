@@ -1,8 +1,83 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
+function StarField() {
+  const [stars] = useState(() =>
+    Array.from({ length: 60 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      opacity: Math.random() * 0.8 + 0.2,
+    }))
+  );
 
+  return (
+    <svg className="w-full h-full">
+      {stars.map((s) => (
+        <circle
+          key={s.id}
+          cx={`${s.x}%`}
+          cy={`${s.y}%`}
+          r={s.size}
+          fill="white"
+          opacity={s.opacity}
+        />
+      ))}
+    </svg>
+  );
+}
+
+function SkyLayer({
+  children,
+  sunPct,
+}: {
+  children: React.ReactNode;
+  sunPct: number;
+}) {
+  // sunPct = 0 at sunrise, 1 at sunset
+  // We’ll use it to blend between gradients
+
+  // Day → Sunset → Twilight → Night
+  const gradient = (() => {
+    if (sunPct < 0.25) {
+      return 'from-sky-300 via-sky-200 to-sky-100'; // bright morning
+    }
+    if (sunPct < 0.5) {
+      return 'from-sky-200 via-amber-200 to-rose-200'; // golden hour
+    }
+    if (sunPct < 0.75) {
+      return 'from-indigo-300 via-purple-400 to-rose-300'; // twilight
+    }
+    return 'from-slate-900 via-slate-800 to-slate-900'; // night
+  })();
+
+  // Stars fade in after sunset
+  const starOpacity = sunPct < 0.75 ? 0 : (sunPct - 0.75) / 0.25;
+
+  return (
+    <div className="relative w-[320px] h-[320px] rounded-full overflow-hidden shadow-xl">
+      {/* Dynamic sky gradient */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-b ${gradient} transition-all duration-700`}
+      />
+
+      {/* Stars */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-1000"
+        style={{ opacity: starOpacity }}
+      >
+        <StarField />
+      </div>
+
+      {/* Clock content */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        {children}
+      </div>
+    </div>
+  );
+}
 export default function CelestialClock({
   sunrise,
   sunset,
@@ -50,24 +125,7 @@ export default function CelestialClock({
   const moonMask = moonPhase <= 0.5 ? 'inset(0 50% 0 0)' : 'inset(0 0 0 50%)';
 
   return (
-    <div className="relative w-[320px] h-[320px] mx-auto group">
-      <style jsx>{`
-        .animate-pulse-slow {
-          animation: pulseSlow 4s ease-in-out infinite;
-        }
-        @keyframes pulseSlow {
-          0% {
-            opacity: 0.25;
-          }
-          50% {
-            opacity: 0.45;
-          }
-          100% {
-            opacity: 0.25;
-          }
-        }
-      `}</style>
-
+    <SkyLayer sunPct={pctSun}>
       <svg viewBox="0 0 300 300" className="w-full h-full">
         {/* Horizon shading */}
         <circle
@@ -95,17 +153,6 @@ export default function CelestialClock({
           fill="none"
           className="transition-all duration-700 ease-in-out"
         />
-
-        <defs>
-          <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff6b6b" />
-            <stop offset="100%" stopColor="#c06cff" />
-          </linearGradient>
-          <linearGradient id="moonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ff9f43" />
-            <stop offset="100%" stopColor="#f97316" />
-          </linearGradient>
-        </defs>
 
         {/* Sun glow */}
         <circle
@@ -166,54 +213,54 @@ export default function CelestialClock({
         </foreignObject>
       </svg>
 
-      {/* Tooltip */}
+      {/* Tooltip — now correctly inside SkyLayer */}
       <div className="absolute left-1/2 -translate-x-1/2 -top-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
         <div className="bg-slate-900 text-slate-200 text-xs whitespace-pre-line px-3 py-2 rounded-lg shadow-lg border border-slate-700">
           {poetic}
         </div>
       </div>
-    </div>
+    </SkyLayer>
   );
-}
 
-/* --------------------------------------------------
+  /* --------------------------------------------------
    Helpers
 -------------------------------------------------- */
 
-function clamp(n: number) {
-  return Math.min(Math.max(n, 0), 1);
-}
-
-function polar(angle: number, r: number, cx: number, cy: number) {
-  const rad = ((angle - 90) * Math.PI) / 180;
-  return {
-    x: cx + r * Math.cos(rad),
-    y: cy + r * Math.sin(rad),
-  };
-}
-
-function describeArc(
-  cx: number,
-  cy: number,
-  r: number,
-  start: number,
-  end: number
-) {
-  const s = polar(start, r, cx, cy);
-  const e = polar(end, r, cx, cy);
-  const large = end - start <= 180 ? 0 : 1;
-  return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`;
-}
-
-function buildPoeticTooltip(pct: number, now: number, setTs: number) {
-  const percent = Math.round(pct * 100);
-  const msRemaining = setTs - now;
-  const hrs = Math.max(0, Math.floor(msRemaining / 3_600_000));
-  const mins = Math.max(0, Math.floor((msRemaining % 3_600_000) / 60_000));
-
-  if (pct < 0.5) {
-    return `The day is still young.\n${percent}% of light has passed.\nTwilight arrives in ${hrs}h ${mins}m.`;
+  function clamp(n: number) {
+    return Math.min(Math.max(n, 0), 1);
   }
 
-  return `The sun is past its peak.\n${percent}% of daylight has passed.\nTwilight arrives in ${hrs}h ${mins}m.`;
+  function polar(angle: number, r: number, cx: number, cy: number) {
+    const rad = ((angle - 90) * Math.PI) / 180;
+    return {
+      x: cx + r * Math.cos(rad),
+      y: cy + r * Math.sin(rad),
+    };
+  }
+
+  function describeArc(
+    cx: number,
+    cy: number,
+    r: number,
+    start: number,
+    end: number
+  ) {
+    const s = polar(start, r, cx, cy);
+    const e = polar(end, r, cx, cy);
+    const large = end - start <= 180 ? 0 : 1;
+    return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y}`;
+  }
+
+  function buildPoeticTooltip(pct: number, now: number, setTs: number) {
+    const percent = Math.round(pct * 100);
+    const msRemaining = setTs - now;
+    const hrs = Math.max(0, Math.floor(msRemaining / 3_600_000));
+    const mins = Math.max(0, Math.floor((msRemaining % 3_600_000) / 60_000));
+
+    if (pct < 0.5) {
+      return `The day is still young.\n${percent}% of light has passed.\nTwilight arrives in ${hrs}h ${mins}m.`;
+    }
+
+    return `The sun is past its peak.\n${percent}% of daylight has passed.\nTwilight arrives in ${hrs}h ${mins}m.`;
+  }
 }
