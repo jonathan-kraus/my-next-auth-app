@@ -45,7 +45,13 @@ export async function GET() {
   const data = await res.json();
   const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values ?? null;
   const next = data?.data?.timelines?.[1]?.intervals?.[1]?.values ?? null;
-  const moonset = daily?.moonsetTime ?? next?.moonsetTime ?? null;
+  const moonset = daily?.moonsetTime;
+  console.log('Moonset time:', moonset);
+  if (!moonset) {
+    console.log('Moonset time not found in daily data, checking next data');
+  }
+  const moonsetFinal = next?.moonsetTime;
+  console.log('Final moonset time:', moonsetFinal);
   const moonrise = daily?.moonriseTime ?? next?.moonriseTime ?? null;
   const sunrise = daily?.sunriseTime ?? next?.sunriseTime ?? null;
   const sunset = daily?.sunsetTime ?? next?.sunsetTime ?? null;
