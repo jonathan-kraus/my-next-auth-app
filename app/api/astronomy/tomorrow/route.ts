@@ -42,31 +42,24 @@ export async function GET() {
   });
 
   const json = await res.json();
-
   const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
 
-  for (const interval of intervals) {
+  const days = intervals.map((interval) => {
     const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
       interval.values ?? {};
 
-    console.log('DAY:', interval.startTime);
-    console.log('ASTRO NORMALIZED', {
+    return {
+      date: interval.startTime,
       sunrise: sunriseTime,
       sunset: sunsetTime,
       moonrise: moonriseTime,
       moonset: moonsetTime,
       moonPhase,
-    });
-  }
+    };
+  });
 
   return NextResponse.json({
     success: true,
-    data: {
-      sunrise: sunriseTime,
-      sunset: sunsetTime,
-      moonrise: moonriseTime,
-      moonset: moonsetTime,
-      moonPhase,
-    },
+    data: days,
   });
 }
