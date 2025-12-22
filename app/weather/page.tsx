@@ -174,16 +174,16 @@ export default function WeatherPage() {
   useEffect(() => {
     async function loadAstronomy() {
       try {
-        //const res = await fetch('/api/astronomy/tomorrow');
-        const res = await fetch(
-          'https://api.tomorrow.io/v4/weather/forecast?location=king%20of%20prussia&timesteps=1d&apikey=CR97UqteIZC1gKXDeZqUgYUNfeL3B130'
-        );
+        const res = await fetch('/api/astronomy/tomorrow');
         const json = await res.json();
         console.log('Astronomy data:', json);
 
         if (!json.success || !json.data) return;
 
-        const { sunrise, sunset, moonrise, moonset } = json.data;
+        let { sunrise, sunset, moonrise, moonset } = json.data;
+        if (!moonset) {
+          moonset = json.data.moonrise + 100000;
+        }
         appLog({
           source: 'app/weather/page.tsx',
           message: 'Astronomy data fetched',
