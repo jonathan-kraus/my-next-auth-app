@@ -1,13 +1,44 @@
 // components/Cloudspace.tsx
 'use client';
-import { act, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
 import NumberCounter from './NumberCounter';
 import Sparkline from './Sparkline';
-import { title } from 'node:process';
 
+let data: CloudspaceData = {
+  consumption: {
+    activeTimeHours: 0,
+    computeTimeHours: 0,
+    dataWrittenMB: 0,
+    dataTransferMB: 0,
+    storageGBHours: 0,
+  },
+  vercel: {
+    deploymentUrl: '',
+    environment: '',
+    region: '',
+    deploymentId: '',
+    gitProvider: '',
+    gitRepo: '',
+    gitOwner: '',
+    commitSha: '',
+    commitMessage: '',
+    commitAuthor: '',
+  },
+  neon: {
+    databaseHost: '',
+    databaseName: '',
+    region: '',
+    version: '',
+    latencyMs: 0,
+    postCount: 0,
+    logCount: 0,
+    activeConnections: 0,
+    idleConnections: 0,
+  },
+};
 type CloudspaceData = {
   vercel: {
     deploymentUrl: string;
@@ -40,7 +71,7 @@ type CloudspaceData = {
     storageGBHours: number;
   };
 };
-let jkat = 0;
+
 // `NumberCounter` and `Sparkline` moved to shared components.
 
 function InfoCard({
@@ -178,35 +209,24 @@ export default function Cloudspace() {
           computeTimeHours: 0,
           dataWrittenMB: 0,
           dataTransferMB: 0,
-          storageGBHours: 720,
+          storageGBHours: 0,
           activeConnections: 0,
           idleConnections: 0,
         };
+
         try {
           const consumptionResponse = await fetch('/api/neon-consumption');
-          console.log('Consumption response:', consumptionResponse);
-          await appLog({
-            source: 'components/Cloudspace.tsx',
-            message: '---right after fetch api/neon---',
-            requestId: requestId,
-            metadata: {
-              consumptionResponse: consumptionResponse,
-              status: consumptionResponse.ok ? 'ok' : 'not ok',
-              timestamp: new Date().toISOString(),
-            },
-          });
           if (consumptionResponse.ok) {
             const rawConsumption = await consumptionResponse.json();
-            console.log('Parsed consumption data:', rawConsumption);
             if (rawConsumption.metrics && rawConsumption.metrics.length > 0) {
               const m = rawConsumption.metrics[0];
+
               consumptionData = {
                 activeTimeHours: m.activeTimeHours ?? 0,
                 computeTimeHours: m.cpuHours ?? 0,
                 dataWrittenMB: m.dataWrittenMB ?? 0,
                 dataTransferMB: m.dataTransferMB ?? 0,
                 storageGBHours: m.storageGBHours ?? 720,
-
                 activeConnections: m.activeConnections ?? 0,
                 idleConnections: m.idleConnections ?? 0,
               };
@@ -215,9 +235,11 @@ export default function Cloudspace() {
         } catch {
           console.log('Consumption metrics not available');
         }
+
         if (!consumptionData) {
           return <div>Loading consumption data...</div>;
         }
+
         const {
           activeTimeHours,
           computeTimeHours,
@@ -265,7 +287,7 @@ export default function Cloudspace() {
           },
         });
         // Assemble final data
-        let jkat = data!.consumption.activeTimeHours;
+
         const cloudspaceData: CloudspaceData = {
           vercel: {
             deploymentUrl: envData.deploymentUrl || 'N/A',
@@ -476,9 +498,13 @@ export default function Cloudspace() {
         <InfoCard title="🧰 Cache & CDN">
           <InfoRow label="Active Hours" value="">
             <div className="flex items-center">
-              <NumberCounter value={jkat} />
+              <NumberCounter value={data?.consumption?.activeTimeHours ?? 7} />
               <span className="ml-2 text-sm text-gray-600"></span>
-              <Sparkline value={jkat} max={100} color="green" />
+              <Sparkline
+                value={data?.consumption?.activeTimeHours ?? 7}
+                max={100}
+                color="green"
+              />
             </div>
           </InfoRow>
           <InfoRow label="Edge Responses" value="1200" />
