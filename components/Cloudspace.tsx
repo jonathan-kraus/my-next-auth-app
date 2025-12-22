@@ -6,6 +6,7 @@ import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
 import NumberCounter from './NumberCounter';
 import Sparkline from './Sparkline';
+import { title } from 'node:process';
 
 type CloudspaceData = {
   vercel: {
@@ -326,7 +327,6 @@ export default function Cloudspace() {
           Your cloud infrastructure overview - Vercel + Neon
         </p>
       </div>
-
       {/* Environment Status */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="flex items-center justify-between">
@@ -340,7 +340,6 @@ export default function Cloudspace() {
           <EnvironmentBadge environment={data.vercel.environment} />
         </div>
       </div>
-
       {/* Grid Layout for Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Vercel Deployment Info */}
@@ -360,7 +359,6 @@ export default function Cloudspace() {
             />
           )}
         </InfoCard>
-
         {/* Neon Database Info */}
         <InfoCard title="🐘 Neon Database">
           <InfoRow label="Host" value={data.neon.databaseHost} />
@@ -397,7 +395,6 @@ export default function Cloudspace() {
             </div>
           </InfoRow>
         </InfoCard>
-
         {/* Git Commit Info */}
         {data.vercel.commitSha !== 'N/A' && (
           <InfoCard title="📝 Git Commit">
@@ -418,7 +415,6 @@ export default function Cloudspace() {
             )}
           </InfoCard>
         )}
-
         {/* Database Statistics */}
         <InfoCard title="📊 Database Statistics">
           <InfoRow label="Total Posts" value="">
@@ -436,7 +432,6 @@ export default function Cloudspace() {
             </p>
           </div>
         </InfoCard>
-
         {/* Performance Metrics */}
         <InfoCard title="⚡ Performance Metrics">
           <InfoRow label="Reqs / Day" value="">
@@ -454,21 +449,25 @@ export default function Cloudspace() {
             </div>
           </InfoRow>
         </InfoCard>
-
         {/* Cache & CDN */}
+
         <InfoCard title="🧰 Cache & CDN">
           <InfoRow label="Active Hours" value="">
             <div className="flex items-center">
-              <NumberCounter value={activeTimeHours} />
+              <NumberCounter value={data.consumption?.activeTimeHours ?? 0} />
               <span className="ml-2 text-sm text-gray-600">%</span>
-              <Sparkline value={activeTimeHours} max={100} color="green" />
+              <Sparkline
+                value={data.consumption?.activeTimeHours ?? 0}
+                max={100}
+                color="green"
+              />
             </div>
           </InfoRow>
           <InfoRow label="Edge Responses" value="1200" />
         </InfoCard>
       </div>
-
       {/* Consumption Metrics (if available) */}
+      if{' '}
       {data.consumption && (
         <InfoCard title="📈 Resource Consumption (Last 7 Days)">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -561,7 +560,6 @@ export default function Cloudspace() {
           </div>
         </InfoCard>
       )}
-
       {/* Footer Info */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
         <p className="text-gray-600 text-sm">
