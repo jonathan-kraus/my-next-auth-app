@@ -44,19 +44,20 @@ export async function GET() {
   const json = await res.json();
 
   const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
-  const today = intervals[0]; // or choose by date string
 
-  const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
-    today?.values ?? {};
+  for (const interval of intervals) {
+    const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
+      interval.values ?? {};
 
-  console.log('ASTRO RAW', JSON.stringify(today, null, 2));
-  console.log('ASTRO NORMALIZED', {
-    sunrise: sunriseTime,
-    sunset: sunsetTime,
-    moonrise: moonriseTime,
-    moonset: moonsetTime,
-    moonPhase,
-  });
+    console.log('DAY:', interval.startTime);
+    console.log('ASTRO NORMALIZED', {
+      sunrise: sunriseTime,
+      sunset: sunsetTime,
+      moonrise: moonriseTime,
+      moonset: moonsetTime,
+      moonPhase,
+    });
+  }
 
   return NextResponse.json({
     success: true,
