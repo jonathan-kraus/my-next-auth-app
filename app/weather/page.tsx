@@ -182,7 +182,7 @@ export default function WeatherPage() {
 
         let { sunrise, sunset, moonrise, moonset } = json.data;
         if (!moonset) {
-          moonset = json.data.moonrise + 100000;
+          moonset = moonrise + 1000;
         }
         appLog({
           source: 'app/weather/page.tsx',
