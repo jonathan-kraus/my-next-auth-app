@@ -40,11 +40,20 @@ export async function GET() {
     },
     body: JSON.stringify(body),
   });
-
+  type AstroInterval = {
+    startTime: string;
+    values: {
+      sunriseTime?: string | null;
+      sunsetTime?: string | null;
+      moonriseTime?: string | null;
+      moonsetTime?: string | null;
+      moonPhase?: number | null;
+    };
+  };
   const json = await res.json();
   const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
 
-  const days = intervals.map((interval) => {
+  const days = intervals.map((interval: AstroInterval) => {
     const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
       interval.values ?? {};
 
