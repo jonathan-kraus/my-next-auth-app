@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import {
@@ -13,6 +14,7 @@ import {
   CloudIcon,
 } from '@heroicons/react/24/outline';
 import versionInfo from '../version.json';
+import { Interface } from 'readline/promises';
 
 interface NavItem {
   name: string;
@@ -22,6 +24,13 @@ interface NavItem {
 }
 
 export const Sidenav = () => {
+  // 🔥 Render counter
+  const renderCount = useRef(0);
+
+  useEffect(() => {
+    renderCount.current++;
+    console.log('Sidenav rendered:', renderCount.current);
+  });
   const { data: session } = useSession();
 
   const navItems: NavItem[] = [
