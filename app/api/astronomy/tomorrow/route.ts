@@ -40,35 +40,32 @@ export async function GET() {
     },
     body: JSON.stringify(body),
   });
-  type AstroInterval = {
-    startTime: string;
-    values: {
-      sunriseTime?: string | null;
-      sunsetTime?: string | null;
-      moonriseTime?: string | null;
-      moonsetTime?: string | null;
-      moonPhase?: number | null;
-    };
-  };
-  const json = await res.json();
-  const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
-  console.log('ALL INTERVALS:', JSON.stringify(intervals, null, 2));
-  const days = intervals.map((interval: AstroInterval) => {
-    const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
-      interval.values ?? {};
 
-    return {
-      date: interval.startTime,
+  const json = await res.json();
+
+  const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
+  const today = intervals[0]; // or choose by date string
+
+  const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
+    today?.values ?? {};
+
+  console.log('ASTRO RAW', JSON.stringify(today, null, 2));
+  console.log('ASTRO NORMALIZED', {
+    sunrise: sunriseTime,
+    sunset: sunsetTime,
+    moonrise: moonriseTime,
+    moonset: moonsetTime,
+    moonPhase,
+  });
+
+  return NextResponse.json({
+    success: true,
+    data: {
       sunrise: sunriseTime,
       sunset: sunsetTime,
       moonrise: moonriseTime,
       moonset: moonsetTime,
       moonPhase,
-    };
-  });
-
-  return NextResponse.json({
-    success: true,
-    data: days,
+    },
   });
 }
