@@ -52,7 +52,7 @@ export async function GET() {
   };
   const json = await res.json();
   const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
-
+  console.log('ALL INTERVALS:', JSON.stringify(intervals, null, 2));
   const days = intervals.map((interval: AstroInterval) => {
     const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
       interval.values ?? {};
