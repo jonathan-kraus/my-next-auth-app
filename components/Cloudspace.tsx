@@ -227,6 +227,9 @@ export default function Cloudspace() {
           activeConnections,
           idleConnections,
         } = consumptionData;
+        const data = {
+          consumption: consumptionData,
+        };
         await appLog({
           source: 'components/Cloudspace.tsx',
           message: '---neon-consumption-exit---',

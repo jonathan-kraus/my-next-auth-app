@@ -48,7 +48,6 @@
     "@axiomhq/nextjs": "^0.1.6",
     "@axiomhq/react": "^0.1.6",
     "@heroicons/react": "^2.2.0",
-    "@neondatabase/neon-auth-next": "0.1.0-alpha.24",
     "@neondatabase/neon-auth-ui": "0.1.0-alpha.2",
     "@neondatabase/serverless": "^1.0.2",
     "@next-auth/prisma-adapter": "^1.0.7",
