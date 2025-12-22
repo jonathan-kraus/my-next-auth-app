@@ -26,33 +26,46 @@ export async function GET() {
     timezone: 'America/New_York',
   };
 
-  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
+  // const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(body),
+  //   cache: 'no-store',
+  // });
+  const res = await fetch(BASE_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: TOMORROW_API_KEY!,
+    },
     body: JSON.stringify(body),
-    cache: 'no-store',
   });
 
-  if (!res.ok) {
-    return NextResponse.json(
-      { error: `Tomorrow.io API error: ${res.status} ${res.statusText}` },
-      { status: 500 }
-    );
-  }
+  const json = await res.json();
 
-  const data = await res.json();
-  const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values ?? null;
+  const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
+  const today = intervals[0]; // or choose by date string
+
+  const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
+    today?.values ?? {};
+
+  console.log('ASTRO RAW', JSON.stringify(today, null, 2));
+  console.log('ASTRO NORMALIZED', {
+    sunrise: sunriseTime,
+    sunset: sunsetTime,
+    moonrise: moonriseTime,
+    moonset: moonsetTime,
+    moonPhase,
+  });
 
   return NextResponse.json({
-    success: !!daily,
-    data: daily
-      ? {
-          sunrise: daily.sunriseTime,
-          sunset: daily.sunsetTime,
-          moonrise: daily.moonriseTime,
-          moonset: daily.moonsetTime,
-          moonPhase: daily.moonPhase,
-        }
-      : null,
+    success: true,
+    data: {
+      sunrise: sunriseTime,
+      sunset: sunsetTime,
+      moonrise: moonriseTime,
+      moonset: moonsetTime,
+      moonPhase,
+    },
   });
 }
