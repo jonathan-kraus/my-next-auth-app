@@ -269,7 +269,7 @@ export default function Cloudspace() {
             timestamp: new Date().toISOString(),
           },
         });
-        data!.consumption = consumptionData;
+
         appLog({
           source: 'components/Cloudspace.tsx',
           message: '---cloudspace-data-assembled---',
@@ -312,6 +312,7 @@ export default function Cloudspace() {
             activeConnections: activeConnections || 0,
             idleConnections: idleConnections || 0,
           },
+          consumption: consumptionData,
         };
 
         setData(cloudspaceData);
