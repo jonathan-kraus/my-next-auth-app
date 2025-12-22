@@ -1,5 +1,7 @@
 // app/api/astronomy/route.ts
+import { appLog } from '@/utils/app-log';
 import { NextResponse } from 'next/server';
+import { meta } from 'zod/v4/core';
 
 const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
 const BASE_URL = 'https://api.tomorrow.io/v4/timelines';
@@ -42,11 +44,24 @@ export async function GET() {
 
   const data = await res.json();
   const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values ?? null;
-  const today = intervals[0];
-  const next = intervals[1];
+  const next = data?.data?.timelines?.[1]?.intervals?.[1]?.values ?? null;
+  const moonset = daily?.moonsetTime ?? next?.moonsetTime ?? null;
+  const moonrise = daily?.moonriseTime ?? next?.moonriseTime ?? null;
+  const sunrise = daily?.sunriseTime ?? next?.sunriseTime ?? null;
+  const sunset = daily?.sunsetTime ?? next?.sunsetTime ?? null;
 
-  const moonset = today.values?.moonsetTime ?? next.values?.moonsetTime ?? null;
-
+  await appLog({
+    source: 'app/api/env-info/route.ts',
+    message: '---astro times received/fixed---',
+    metadata: {
+      daily: daily,
+      next: next,
+      moonset: moonset,
+      sunset: sunset,
+      moonrise: moonrise,
+      sunrise: sunrise,
+    },
+  });
   return NextResponse.json({
     success: !!daily,
     data: daily
