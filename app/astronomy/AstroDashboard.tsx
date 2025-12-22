@@ -29,21 +29,15 @@ function toLocal(iso: string) {
   });
 }
 
-function duration(isoStart: string, isoEnd: string) {
+function duration(isoStart: string | null, isoEnd: string | null) {
+  if (!isoStart || !isoEnd) return '—'; // or "0 hrs 0 mins"
+
   const start = new Date(isoStart).getTime();
   const end = new Date(isoEnd).getTime();
-  const diff = end - start;
-  appLog({
-    source: 'app/astronomy/AstroDashboard.tsx',
-    message: 'Dashboard start',
-    requestId: createRequestId(),
-    metadata: {
-      timezone: TZ,
-      isoStart: isoStart,
-      isoEnd: isoEnd,
-      diff: diff,
-    },
-  });
+
+  if (Number.isNaN(start) || Number.isNaN(end)) return '—'; // handles 'Invalid Date' [web:50][web:57]
+
+  const diff = Math.abs(end - start);
   const h = Math.floor(diff / 3_600_000);
   const m = Math.floor((diff % 3_600_000) / 60_000);
   return `${h} hrs ${m} mins`;
