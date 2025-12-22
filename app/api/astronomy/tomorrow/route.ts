@@ -26,46 +26,37 @@ export async function GET() {
     timezone: 'America/New_York',
   };
 
-  // const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(body),
-  //   cache: 'no-store',
-  // });
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}?apikey=${TOMORROW_API_KEY}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: TOMORROW_API_KEY!,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    cache: 'no-store',
   });
 
-  const json = await res.json();
+  if (!res.ok) {
+    return NextResponse.json(
+      { error: `Tomorrow.io API error: ${res.status} ${res.statusText}` },
+      { status: 500 }
+    );
+  }
 
-  const intervals = json?.data?.timelines?.[0]?.intervals ?? [];
-  const today = intervals[0]; // or choose by date string
+  const data = await res.json();
+  const daily = data?.data?.timelines?.[0]?.intervals?.[0]?.values ?? null;
+  const today = intervals[0];
+  const next = intervals[1];
 
-  const { sunriseTime, sunsetTime, moonriseTime, moonsetTime, moonPhase } =
-    today?.values ?? {};
-
-  console.log('ASTRO RAW', JSON.stringify(today, null, 2));
-  console.log('ASTRO NORMALIZED', {
-    sunrise: sunriseTime,
-    sunset: sunsetTime,
-    moonrise: moonriseTime,
-    moonset: moonsetTime,
-    moonPhase,
-  });
+  const moonset = today.values?.moonsetTime ?? next.values?.moonsetTime ?? null;
 
   return NextResponse.json({
-    success: true,
-    data: {
-      sunrise: sunriseTime,
-      sunset: sunsetTime,
-      moonrise: moonriseTime,
-      moonset: moonsetTime,
-      moonPhase,
-    },
+    success: !!daily,
+    data: daily
+      ? {
+          sunrise: daily.sunriseTime,
+          sunset: daily.sunsetTime,
+          moonrise: daily.moonriseTime,
+          moonset: daily.moonsetTime,
+          moonPhase: daily.moonPhase,
+        }
+      : null,
   });
 }
