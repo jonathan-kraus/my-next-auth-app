@@ -7,14 +7,6 @@ import { appLog } from '@/utils/app-log';
 import CelestialClock from '../../components/CelestialClock';
 
 /* --------------------------------------------------
-   Utility Functions
--------------------------------------------------- */
-
-function clamp(value: number, min = 0, max = 1) {
-  return Math.min(Math.max(value, min), max);
-}
-
-/* --------------------------------------------------
    AstroDashboard Component
 -------------------------------------------------- */
 type AstroApiData = {
@@ -41,6 +33,17 @@ function duration(isoStart: string, isoEnd: string) {
   const start = new Date(isoStart).getTime();
   const end = new Date(isoEnd).getTime();
   const diff = end - start;
+  appLog({
+    source: 'app/astronomy/AstroDashboard.tsx',
+    message: 'Dashboard start',
+    requestId: createRequestId(),
+    metadata: {
+      timezone: TZ,
+      isoStart: isoStart,
+      isoEnd: isoEnd,
+      diff: diff,
+    },
+  });
   const h = Math.floor(diff / 3_600_000);
   const m = Math.floor((diff % 3_600_000) / 60_000);
   return `${h} hrs ${m} mins`;
@@ -49,9 +52,22 @@ function duration(isoStart: string, isoEnd: string) {
 export default function AstroDashboard({ data }: { data: AstroApiData }) {
   const sunDuration = duration(data.sunrise, data.sunset);
   const moonDuration = duration(data.moonrise, data.moonset);
-
+  appLog({
+    source: 'app/astronomy/AstroDashboard.tsx',
+    message: 'Dashboard start',
+    requestId: createRequestId(),
+    metadata: {
+      timezone: TZ,
+      sunDuration,
+      moonDuration,
+    },
+  });
   const [now] = useState(() => Date.now());
-
+  console.log('NOW:', new Date(now).toISOString());
+  console.log('SUNRISE:', data.sunrise);
+  console.log('SUNSET:', data.sunset);
+  console.log('MOONRISE:', data.moonrise);
+  console.log('MOONSET:', data.moonset);
   const sunUp =
     now >= new Date(data.sunrise).getTime() &&
     now <= new Date(data.sunset).getTime();
