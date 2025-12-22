@@ -338,7 +338,10 @@ export default function Cloudspace() {
 
   const reqRate = Math.max(0, Math.round(data.neon.postCount));
   const avgQueryTime = Math.round(data.neon.latencyMs * 0.8);
-  const cacheHitRate = 85; // placeholder / estimated
+  const neonRequests = data.neon.postCount + data.neon.logCount;
+  const totalRequests = Math.max(neonRequests, reqRate); // avoid divide-by-zero
+
+  const cacheHitRate = Math.round((1 - neonRequests / totalRequests) * 100);
 
   console.log('Consumption data:', data.consumption);
 
