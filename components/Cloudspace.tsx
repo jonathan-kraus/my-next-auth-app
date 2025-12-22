@@ -244,6 +244,24 @@ export default function Cloudspace() {
             timestamp: new Date().toISOString(),
           },
         });
+        data!.consumption = consumptionData;
+        appLog({
+          source: 'components/Cloudspace.tsx',
+          message: '---cloudspace-data-assembled---',
+          requestId: requestId,
+          metadata: {
+            dataconsumption: data!.consumption,
+            activetimehours: data!.consumption.activeTimeHours,
+            computetimehours: data!.consumption.computeTimeHours,
+            datawrittenmb: data!.consumption.dataWrittenMB,
+            datatransfermb: data!.consumption.dataTransferMB,
+            storagegbhours: data!.consumption.storageGBHours,
+            action: 'assemble',
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+          },
+        });
+        // Assemble final data
         const cloudspaceData: CloudspaceData = {
           vercel: {
             deploymentUrl: envData.deploymentUrl || 'N/A',
