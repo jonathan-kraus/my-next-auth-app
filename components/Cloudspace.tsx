@@ -40,7 +40,7 @@ type CloudspaceData = {
     storageGBHours: number;
   };
 };
-
+let jkat = 0;
 // `NumberCounter` and `Sparkline` moved to shared components.
 
 function InfoCard({
@@ -265,6 +265,7 @@ export default function Cloudspace() {
           },
         });
         // Assemble final data
+        let jkat = data!.consumption.activeTimeHours;
         const cloudspaceData: CloudspaceData = {
           vercel: {
             deploymentUrl: envData.deploymentUrl || 'N/A',
@@ -475,20 +476,16 @@ export default function Cloudspace() {
         <InfoCard title="🧰 Cache & CDN">
           <InfoRow label="Active Hours" value="">
             <div className="flex items-center">
-              <NumberCounter value={data.consumption?.activeTimeHours ?? 0} />
-              <span className="ml-2 text-sm text-gray-600">%</span>
-              <Sparkline
-                value={data.consumption?.activeTimeHours ?? 0}
-                max={100}
-                color="green"
-              />
+              <NumberCounter value={jkat} />
+              <span className="ml-2 text-sm text-gray-600"></span>
+              <Sparkline value={jkat} max={100} color="green" />
             </div>
           </InfoRow>
           <InfoRow label="Edge Responses" value="1200" />
         </InfoCard>
       </div>
       {/* Consumption Metrics (if available) */}
-      if{' '}
+
       {data.consumption && (
         <InfoCard title="📈 Resource Consumption (Last 7 Days)">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
