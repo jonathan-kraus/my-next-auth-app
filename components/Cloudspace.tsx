@@ -1,44 +1,13 @@
 // components/Cloudspace.tsx
 'use client';
-import { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
 import NumberCounter from './NumberCounter';
 import Sparkline from './Sparkline';
 
-let data: CloudspaceData = {
-  consumption: {
-    activeTimeHours: 0,
-    computeTimeHours: 0,
-    dataWrittenMB: 0,
-    dataTransferMB: 0,
-    storageGBHours: 0,
-  },
-  vercel: {
-    deploymentUrl: '',
-    environment: '',
-    region: '',
-    deploymentId: '',
-    gitProvider: '',
-    gitRepo: '',
-    gitOwner: '',
-    commitSha: '',
-    commitMessage: '',
-    commitAuthor: '',
-  },
-  neon: {
-    databaseHost: '',
-    databaseName: '',
-    region: '',
-    version: '',
-    latencyMs: 0,
-    postCount: 0,
-    logCount: 0,
-    activeConnections: 0,
-    idleConnections: 0,
-  },
-};
 type CloudspaceData = {
   vercel: {
     deploymentUrl: string;
@@ -63,16 +32,16 @@ type CloudspaceData = {
     activeConnections: number;
     idleConnections: number;
   };
-  consumption?: {
+  consumption: {
     activeTimeHours: number;
     computeTimeHours: number;
     dataWrittenMB: number;
     dataTransferMB: number;
     storageGBHours: number;
+    activeConnections: number;
+    idleConnections: number;
   };
 };
-
-// `NumberCounter` and `Sparkline` moved to shared components.
 
 function InfoCard({
   title,
@@ -144,33 +113,42 @@ function EnvironmentBadge({ environment }: { environment: string }) {
   );
 }
 
-await appLog({
-  source: 'components/Cloudspace.tsx',
-  message: '---init---',
-  requestId: 'requestId',
-  metadata: {
-    action: 'create',
-    status: 'started',
-  },
-});
-export default function Cloudspace() {
+/**
+ * Hook: fetches env-info, db-status, and neon-consumption,
+ * assembles CloudspaceData, and handles logging.
+ */
+function useCloudspaceData() {
   const [data, setData] = useState<CloudspaceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const requestId = createRequestId();
+  const requestIdRef = useRef<string>(createRequestId());
 
   useEffect(() => {
     async function fetchCloudspaceData() {
+      const requestId = requestIdRef.current;
+
+      await appLog({
+        source: 'components/Cloudspace.tsx',
+        message: '---init---',
+        requestId,
+        metadata: {
+          action: 'create',
+          status: 'started',
+          timestamp: new Date().toISOString(),
+        },
+      });
+
       try {
-        // Fetch environment info
+        // 1) Environment info
         const envResponse = await fetch('/api/env-info');
         if (!envResponse.ok)
           throw new Error('Failed to fetch environment info');
         const envData = await envResponse.json();
+
         await appLog({
           source: 'components/Cloudspace.tsx',
           message: '---env-info---',
-          requestId: requestId,
+          requestId,
           metadata: {
             action: 'fetch',
             status: 'completed',
@@ -178,46 +156,62 @@ export default function Cloudspace() {
             timestamp: new Date().toISOString(),
           },
         });
-        // Fetch database status
+
+        // 2) Database status
         const dbResponse = await fetch('/api/db-status');
         if (!dbResponse.ok) throw new Error('Failed to fetch database status');
         const dbData = await dbResponse.json();
+
         await appLog({
           source: 'components/Cloudspace.tsx',
           message: '---db-status---',
-          requestId: requestId,
+          requestId,
           metadata: {
             action: 'fetch',
             status: 'completed',
-            dbData: dbData.region,
+            dbRegion: dbData.region,
             timestamp: new Date().toISOString(),
           },
         });
-        // Try to fetch consumption metrics (may not be available)
+
+        // 3) Consumption metrics (Neon)
         await appLog({
           source: 'components/Cloudspace.tsx',
           message: '---neon-consumption-entry---',
-          requestId: requestId,
+          requestId,
           metadata: {
             action: 'entry',
             status: 'started',
             timestamp: new Date().toISOString(),
           },
         });
-        let consumptionData = {
+
+        let consumptionData: CloudspaceData['consumption'] = {
           activeTimeHours: 0,
           computeTimeHours: 0,
           dataWrittenMB: 0,
           dataTransferMB: 0,
-          storageGBHours: 0,
+          storageGBHours: 720,
           activeConnections: 0,
           idleConnections: 0,
         };
 
         try {
           const consumptionResponse = await fetch('/api/neon-consumption');
+          await appLog({
+            source: 'components/Cloudspace.tsx',
+            message: '---right after fetch api/neon---',
+            requestId,
+            metadata: {
+              status: consumptionResponse.ok ? 'ok' : 'not ok',
+              timestamp: new Date().toISOString(),
+            },
+          });
+
           if (consumptionResponse.ok) {
             const rawConsumption = await consumptionResponse.json();
+            console.log('Parsed consumption data:', rawConsumption);
+
             if (rawConsumption.metrics && rawConsumption.metrics.length > 0) {
               const m = rawConsumption.metrics[0];
 
@@ -232,61 +226,27 @@ export default function Cloudspace() {
               };
             }
           }
-        } catch {
-          console.log('Consumption metrics not available');
+        } catch (e) {
+          console.log('Consumption metrics not available', e);
         }
 
-        if (!consumptionData) {
-          return <div>Loading consumption data...</div>;
-        }
-
-        const {
-          activeTimeHours,
-          computeTimeHours,
-          dataWrittenMB,
-          dataTransferMB,
-          storageGBHours,
-          activeConnections,
-          idleConnections,
-        } = consumptionData;
-        const data = {
-          consumption: consumptionData,
-        };
         await appLog({
           source: 'components/Cloudspace.tsx',
           message: '---neon-consumption-exit---',
-          requestId: requestId,
+          requestId,
           metadata: {
             action: 'fetch',
             status: 'completed',
-            activeTimeHours: activeTimeHours || -9,
-            computeTimeHours: computeTimeHours || -9,
-            dataWrittenMB: dataWrittenMB || -9,
-            dataTransferMB: dataTransferMB || -9,
-            storageGBHours: storageGBHours || 720,
-            activeConnections: activeConnections || -9,
-            idleConnections: idleConnections || -9,
+            activeTimeHours: consumptionData.activeTimeHours || -9,
+            computeTimeHours: consumptionData.computeTimeHours || -9,
+            dataWrittenMB: consumptionData.dataWrittenMB || -9,
+            dataTransferMB: consumptionData.dataTransferMB || -9,
+            storageGBHours: consumptionData.storageGBHours || 720,
+            activeConnections: consumptionData.activeConnections || -9,
+            idleConnections: consumptionData.idleConnections || -9,
             timestamp: new Date().toISOString(),
           },
         });
-
-        appLog({
-          source: 'components/Cloudspace.tsx',
-          message: '---cloudspace-data-assembled---',
-          requestId: requestId,
-          metadata: {
-            dataconsumption: data!.consumption,
-            activetimehours: data!.consumption.activeTimeHours,
-            computetimehours: data!.consumption.computeTimeHours,
-            datawrittenmb: data!.consumption.dataWrittenMB,
-            datatransfermb: data!.consumption.dataTransferMB,
-            storagegbhours: data!.consumption.storageGBHours,
-            action: 'assemble',
-            status: 'completed',
-            timestamp: new Date().toISOString(),
-          },
-        });
-        // Assemble final data
 
         const cloudspaceData: CloudspaceData = {
           vercel: {
@@ -309,11 +269,28 @@ export default function Cloudspace() {
             latencyMs: dbData.latencyMs || 0,
             postCount: dbData.postCount || 0,
             logCount: dbData.logCount || 0,
-            activeConnections: activeConnections || 0,
-            idleConnections: idleConnections || 0,
+            activeConnections: consumptionData.activeConnections || 0,
+            idleConnections: consumptionData.idleConnections || 0,
           },
           consumption: consumptionData,
         };
+
+        await appLog({
+          source: 'components/Cloudspace.tsx',
+          message: '---cloudspace-data-assembled---',
+          requestId,
+          metadata: {
+            dataconsumption: cloudspaceData.consumption,
+            activetimehours: cloudspaceData.consumption.activeTimeHours,
+            computetimehours: cloudspaceData.consumption.computeTimeHours,
+            datawrittenmb: cloudspaceData.consumption.dataWrittenMB,
+            datatransfermb: cloudspaceData.consumption.dataTransferMB,
+            storagegbhours: cloudspaceData.consumption.storageGBHours,
+            action: 'assemble',
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+          },
+        });
 
         setData(cloudspaceData);
       } catch (err) {
@@ -327,6 +304,17 @@ export default function Cloudspace() {
     fetchCloudspaceData();
   }, []);
 
+  return {
+    data,
+    loading,
+    error,
+    requestId: requestIdRef.current,
+  };
+}
+
+export default function Cloudspace() {
+  const { data, loading, error, requestId } = useCloudspaceData();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -338,31 +326,22 @@ export default function Cloudspace() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-red-800 mb-2">
-          Error Loading Cloudspace
-        </h2>
-        <p className="text-red-700">{error}</p>
-      </div>
-    );
-  }
-
-  if (!data) {
+  if (error || !data) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <p className="text-yellow-800">No cloudspace data available</p>
+        <p className="text-yellow-800">
+          {error || 'No cloudspace data available'}
+        </p>
       </div>
     );
   }
 
-  // Derived metrics for extra cards
-  const reqRate = Math.max(0, Math.round(data.neon.postCount / Math.max(1, 1))); // simple per-post derived rate
+  const reqRate = Math.max(0, Math.round(data.neon.postCount));
   const avgQueryTime = Math.round(data.neon.latencyMs * 0.8);
-
   const cacheHitRate = 85; // placeholder / estimated
+
   console.log('Consumption data:', data.consumption);
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -372,6 +351,7 @@ export default function Cloudspace() {
           Your cloud infrastructure overview - Vercel + Neon
         </p>
       </div>
+
       {/* Environment Status */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="flex items-center justify-between">
@@ -379,12 +359,12 @@ export default function Cloudspace() {
             <h2 className="text-2xl font-bold text-gray-800">
               Environment Status
             </h2>
-
             <p className="text-gray-600 mt-1">Current deployment environment</p>
           </div>
           <EnvironmentBadge environment={data.vercel.environment} />
         </div>
       </div>
+
       {/* Grid Layout for Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Vercel Deployment Info */}
@@ -404,6 +384,7 @@ export default function Cloudspace() {
             />
           )}
         </InfoCard>
+
         {/* Neon Database Info */}
         <InfoCard title="🐘 Neon Database">
           <InfoRow label="Host" value={data.neon.databaseHost} />
@@ -440,6 +421,7 @@ export default function Cloudspace() {
             </div>
           </InfoRow>
         </InfoCard>
+
         {/* Git Commit Info */}
         {data.vercel.commitSha !== 'N/A' && (
           <InfoCard title="📝 Git Commit">
@@ -460,6 +442,7 @@ export default function Cloudspace() {
             )}
           </InfoCard>
         )}
+
         {/* Database Statistics */}
         <InfoCard title="📊 Database Statistics">
           <InfoRow label="Total Posts" value="">
@@ -477,6 +460,7 @@ export default function Cloudspace() {
             </p>
           </div>
         </InfoCard>
+
         {/* Performance Metrics */}
         <InfoCard title="⚡ Performance Metrics">
           <InfoRow label="Reqs / Day" value="">
@@ -494,16 +478,16 @@ export default function Cloudspace() {
             </div>
           </InfoRow>
         </InfoCard>
-        {/* Cache & CDN */}
 
+        {/* Cache & CDN */}
         <InfoCard title="🧰 Cache & CDN">
           <InfoRow label="Active Hours" value="">
             <div className="flex items-center">
-              <NumberCounter value={data?.consumption?.activeTimeHours ?? 7} />
-              <span className="ml-2 text-sm text-gray-600"></span>
+              <NumberCounter value={data.consumption.activeTimeHours} />
+              <span className="ml-2 text-sm text-gray-600">hrs</span>
               <Sparkline
-                value={data?.consumption?.activeTimeHours ?? 7}
-                max={100}
+                value={data.consumption.activeTimeHours}
+                max={168}
                 color="green"
               />
             </div>
@@ -511,101 +495,101 @@ export default function Cloudspace() {
           <InfoRow label="Edge Responses" value="1200" />
         </InfoCard>
       </div>
-      {/* Consumption Metrics (if available) */}
 
-      {data.consumption && (
-        <InfoCard title="📈 Resource Consumption (Last 7 Days)">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-blue-50 rounded p-3"
-            >
-              <p className="text-xs text-blue-600 font-semibold mb-1">
-                Active Time
-              </p>
-              <div className="flex items-center">
-                <NumberCounter value={data.consumption.activeTimeHours} />
-                <span className="ml-2 text-sm text-gray-600">hrs</span>
-                <Sparkline
-                  value={data.consumption.activeTimeHours}
-                  max={168}
-                  color="blue"
-                />
-              </div>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-purple-50 rounded p-3"
-            >
-              <p className="text-xs text-purple-600 font-semibold mb-1">
-                Compute Time
-                {data.neon.activeConnections}
-              </p>
-              <div className="flex items-center">
-                <NumberCounter value={data.consumption.computeTimeHours} />
-                <span className="ml-2 text-sm text-gray-600">hrs</span>
-                <Sparkline
-                  value={data.consumption.computeTimeHours}
-                  max={168}
-                  color="purple"
-                />
-              </div>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-green-50 rounded p-3"
-            >
-              <p className="text-xs text-green-600 font-semibold mb-1">
-                Data Written
-              </p>
-              <div className="flex items-center">
-                <NumberCounter value={cacheHitRate} />
-                <span className="ml-2 text-sm text-gray-600">MB</span>
-                <Sparkline value={cacheHitRate} max={1024} color="green" />
-              </div>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-orange-50 rounded p-3"
-            >
-              <p className="text-xs text-orange-600 font-semibold mb-1">
-                Data Transfer
-              </p>
-              <div className="flex items-center">
-                <NumberCounter
-                  value={Math.round(data.consumption.dataTransferMB)}
-                />
-                <span className="ml-2 text-sm text-gray-600">MB</span>
-                <Sparkline
-                  value={data.consumption.dataTransferMB}
-                  max={1024}
-                  color="orange"
-                />
-              </div>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-pink-50 rounded p-3"
-            >
-              <p className="text-xs text-pink-600 font-semibold mb-1">
-                Storage
-              </p>
-              <div className="flex items-center">
-                <NumberCounter
-                  value={Math.round(data.consumption.storageGBHours)}
-                />
-                <span className="ml-2 text-sm text-gray-600">GB-hrs</span>
-                <Sparkline
-                  value={data.consumption.storageGBHours}
-                  max={500}
-                  color="pink"
-                />
-              </div>
-            </motion.div>
-          </div>
-        </InfoCard>
-      )}
-      {/* Footer Info */}
+      {/* Consumption Metrics */}
+      <InfoCard title="📈 Resource Consumption (Last 7 Days)">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-blue-50 rounded p-3"
+          >
+            <p className="text-xs text-blue-600 font-semibold mb-1">
+              Active Time
+            </p>
+            <div className="flex items-center">
+              <NumberCounter value={data.consumption.activeTimeHours} />
+              <span className="ml-2 text-sm text-gray-600">hrs</span>
+              <Sparkline
+                value={data.consumption.activeTimeHours}
+                max={168}
+                color="blue"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-purple-50 rounded p-3"
+          >
+            <p className="text-xs text-purple-600 font-semibold mb-1">
+              Compute Time
+            </p>
+            <div className="flex items-center">
+              <NumberCounter value={data.consumption.computeTimeHours} />
+              <span className="ml-2 text-sm text-gray-600">hrs</span>
+              <Sparkline
+                value={data.consumption.computeTimeHours}
+                max={168}
+                color="purple"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-green-50 rounded p-3"
+          >
+            <p className="text-xs text-green-600 font-semibold mb-1">
+              Data Written
+            </p>
+            <div className="flex items-center">
+              <NumberCounter value={cacheHitRate} />
+              <span className="ml-2 text-sm text-gray-600">MB</span>
+              <Sparkline value={cacheHitRate} max={1024} color="green" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-orange-50 rounded p-3"
+          >
+            <p className="text-xs text-orange-600 font-semibold mb-1">
+              Data Transfer
+            </p>
+            <div className="flex items-center">
+              <NumberCounter
+                value={Math.round(data.consumption.dataTransferMB)}
+              />
+              <span className="ml-2 text-sm text-gray-600">MB</span>
+              <Sparkline
+                value={data.consumption.dataTransferMB}
+                max={1024}
+                color="orange"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-pink-50 rounded p-3"
+          >
+            <p className="text-xs text-pink-600 font-semibold mb-1">Storage</p>
+            <div className="flex items-center">
+              <NumberCounter
+                value={Math.round(data.consumption.storageGBHours)}
+              />
+              <span className="ml-2 text-sm text-gray-600">GB-hrs</span>
+              <Sparkline
+                value={data.consumption.storageGBHours}
+                max={500}
+                color="pink"
+              />
+            </div>
+          </motion.div>
+        </div>
+      </InfoCard>
+
+      {/* Footer */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
         <p className="text-gray-600 text-sm">
           🔄 Data refreshed at {new Date().toLocaleString()} · Request ID:{' '}
