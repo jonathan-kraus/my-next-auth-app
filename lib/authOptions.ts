@@ -38,6 +38,8 @@ export const authOptions: NextAuthOptions = {
             provider: account?.provider,
             providerAccountId: account?.providerAccountId,
             email: user?.email,
+            userId: user?.id,
+            accountRaw: account ?? null,
           },
         });
       } catch (e) {
@@ -93,6 +95,25 @@ export const authOptions: NextAuthOptions = {
       }
 
       return true;
+    },
+  },
+  events: {
+    async error(message) {
+      try {
+        await appLog({
+          source: 'auth.error',
+          message: 'NextAuth error event',
+          metadata: {
+            name: (message as any)?.error?.name,
+            message: (message as any)?.error?.message,
+            stack: (message as any)?.error?.stack,
+            details: message,
+          },
+          severity: 'error',
+        });
+      } catch (e) {
+        console.error('[auth] events.error appLog failed', e);
+      }
     },
   },
 };
