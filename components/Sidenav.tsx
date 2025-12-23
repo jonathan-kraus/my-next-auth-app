@@ -14,7 +14,6 @@ import {
   CloudIcon,
 } from '@heroicons/react/24/outline';
 import versionInfo from '../version.json';
-import { Interface } from 'readline/promises';
 
 interface NavItem {
   name: string;
@@ -29,6 +28,7 @@ export const Sidenav = () => {
 
   useEffect(() => {
     renderCount.current++;
+    let jcount = renderCount.current;
     console.log('Sidenav rendered:', renderCount.current);
   });
   const { data: session } = useSession();
@@ -92,7 +92,7 @@ export const Sidenav = () => {
 
       <div className="text-sm text-gray-400 flex flex-col leading-tight">
         <span className="inline-block bg-indigo-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-          v{versionInfo.version}
+          v{versionInfo.version} Count {jcount}
         </span>
         <span className="text-gray-500">released {versionInfo.date}</span>
       </div>
