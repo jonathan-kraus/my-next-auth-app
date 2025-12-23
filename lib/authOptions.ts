@@ -2,6 +2,7 @@
 import type { NextAuthOptions } from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
+import { appLog } from '@/utils/app-log';
 
 const providers = [
   GitHubProvider({
@@ -29,13 +30,18 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       try {
-        console.log('[auth] signIn callback:', {
-          provider: account?.provider,
-          providerAccountId: account?.providerAccountId,
-          email: user?.email,
+        // lightweight DB log for sign-in attempts
+        await appLog({
+          source: 'auth.signIn',
+          message: 'signIn callback invoked',
+          metadata: {
+            provider: account?.provider,
+            providerAccountId: account?.providerAccountId,
+            email: user?.email,
+          },
         });
       } catch (e) {
-        console.log('[auth] signIn logging error', e);
+        console.error('[auth] appLog error', e);
       }
       // If no account or no email, nothing to link
       if (!account || !user?.email) return true;
