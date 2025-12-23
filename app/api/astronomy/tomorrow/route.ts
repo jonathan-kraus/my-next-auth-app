@@ -1,7 +1,7 @@
 // app/api/astronomy/route.ts
 import { appLog } from '@/utils/app-log';
 import { NextResponse } from 'next/server';
-import { meta } from 'zod/v4/core';
+import { createRequestId } from '@/lib/uuidj';
 
 const TOMORROW_API_KEY = process.env.TOMORROW_API_KEY;
 const BASE_URL = 'https://api.tomorrow.io/v4/timelines';
@@ -59,6 +59,7 @@ export async function GET() {
   await appLog({
     source: 'app/api/env-info/route.ts',
     message: '---astro times received/fixed---',
+    requestId: createRequestId(),
     metadata: {
       daily: daily,
       next: next,
