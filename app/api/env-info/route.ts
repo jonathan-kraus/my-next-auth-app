@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { createRequestId } from '@/lib/uuidj';
 import { appLog } from '@/utils/app-log';
 import { neon } from '@neondatabase/serverless';
-import { env } from 'node:process';
 
 console.log('DB module loaded');
 

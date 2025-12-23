@@ -29,21 +29,21 @@ export const Sidenav = () => {
   const renderCount = useRef(0);
   const [jcount, setJcount] = useState(0);
   const requestId = createRequestId();
+  const { data: session } = useSession();
   useEffect(() => {
     renderCount.current++;
     setJcount(renderCount.current);
-  });
+  }, [session]);
   appLog({
     source: 'components/Sidenav.tsx',
     message: '---sidenav---',
     requestId: requestId,
     metadata: {
       action: 'initialize',
+      count: jcount,
       timestamp: new Date().toISOString(),
     },
   });
-
-  const { data: session } = useSession();
 
   const navItems: NavItem[] = [
     { name: 'Home', href: '/', icon: HomeIcon, protected: false },
