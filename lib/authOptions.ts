@@ -11,7 +11,6 @@ const providers = [
   }),
 ];
 
-// Add Google provider only when credentials are configured
 if (process.env.GOOGLE_ID && process.env.GOOGLE_SECRET) {
   providers.push(
     GoogleProvider({
@@ -23,22 +22,27 @@ if (process.env.GOOGLE_ID && process.env.GOOGLE_SECRET) {
 }
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET, // make sure this is set in env
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: 'jwt', // <-- important
+    strategy: 'jwt',
   },
   providers,
+
   callbacks: {
     async signIn({ user, account }) {
+      // If no account or no email, nothing to do
       if (!account || !user?.email) return true;
 
+      // Only handle Google linking
       if (account.provider === 'google') {
         const { prisma } = await import('./prisma');
 
+        // Find the existing user by email
         const existing = await prisma.user.findUnique({
           where: { email: user.email },
         });
 
+        // If the Google sign-in created a temporary user, link it
         if (existing && existing.id !== user.id) {
           const existingAccount = await prisma.account.findUnique({
             where: {
@@ -49,23 +53,28 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
+          // If no Google account exists yet, create it
           if (!existingAccount) {
             await prisma.account.create({
               data: {
                 userId: existing.id,
                 provider: account.provider,
                 providerAccountId: account.providerAccountId!,
-                type: account.type,
+                type: account.type ?? 'oauth',
                 access_token: account.access_token,
-                id_token: account.id_token,
-                expires_at: account.expires_at,
-                token_type: account.token_type,
-                scope: account.scope,
                 refresh_token: account.refresh_token,
-                session_state: account.session_state,
+                expires_at: account.expires_at
+                  ? Number(account.expires_at)
+                  : null,
+                token_type: (account as any).token_type,
+                scope: (account as any).scope,
+                id_token: (account as any).id_token,
               },
             });
           }
+
+          // IMPORTANT: Do NOT delete the temporary user.
+          // NextAuth handles merging automatically.
 
           return true;
         }
@@ -87,8 +96,6 @@ export const authOptions: NextAuthOptions = {
       } catch (e) {
         console.error('[auth] logger.error appLog failed', e);
       }
-      // Also surface to server console for visibility
-
       console.error('[NextAuth][error]', code, metadata);
     },
     warn(code: unknown) {
@@ -102,7 +109,6 @@ export const authOptions: NextAuthOptions = {
       } catch (e) {
         console.error('[auth] logger.warn appLog failed', e);
       }
-
       console.warn('[NextAuth][warn]', code);
     },
     debug(code: unknown) {
@@ -112,10 +118,7 @@ export const authOptions: NextAuthOptions = {
           message: 'NextAuth logger.debug',
           metadata: { code },
         }).catch(() => {});
-      } catch (e) {
-        // ignore logging errors
-      }
-
+      } catch (e) {}
       console.debug('[NextAuth][debug]', code);
     },
   },
