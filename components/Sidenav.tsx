@@ -5,7 +5,6 @@ import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import {
   HomeIcon,
@@ -140,15 +139,12 @@ export const Sidenav = () => {
             </svg>
             Sign in with GitHub
           </button>
-
-          <button className="flex items-center gap-2">
-            <Image
-              src="/google.svg"
-              alt="Google"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
+          {/* Google sign-in (shows even if provider not enabled; signIn will fail if not configured) */}
+          <button
+            onClick={() => signIn('google')}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-white hover:bg-gray-100 text-gray-800 rounded-lg font-semibold transition-colors duration-200 border"
+          >
+            <img src="/google.svg" alt="Google" className="w-5 h-5" />
             Sign in with Google
           </button>
         </div>
