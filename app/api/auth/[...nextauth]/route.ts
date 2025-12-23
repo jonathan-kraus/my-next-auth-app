@@ -1,10 +1,11 @@
-// app/api/auth/[...nextauth]/route.ts
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from '@/lib/prisma';
 import NextAuth from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
-import type { NextAuthOptions } from 'next-auth';
-
-// Define your auth options
+import { NextAuthOptions } from 'next-auth';
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
   providers: [
@@ -15,18 +16,19 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id; // <-- NOW this is your DB ID
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.id as string; // <-- DB ID flows into session
       }
       return session;
     },
   },
 };
-
 // Create the handler
 const handler = NextAuth(authOptions);
 
