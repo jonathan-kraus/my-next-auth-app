@@ -17,6 +17,7 @@ if (process.env.GOOGLE_ID && process.env.GOOGLE_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }) as any
   );
 }
