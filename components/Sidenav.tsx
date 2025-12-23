@@ -33,7 +33,7 @@ export const Sidenav = () => {
     renderCount.current++;
     setJcount(renderCount.current);
   });
-  await appLog({
+  appLog({
     source: 'components/Sidenav.tsx',
     message: '---sidenav---',
     requestId: requestId,
