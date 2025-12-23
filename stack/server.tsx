@@ -1,9 +1,2 @@
-import 'server-only';
-
-import { StackServerApp } from '@stackframe/stack';
-import { stackClientApp } from './client';
-
-export const stackServerApp = new StackServerApp({
-  inheritsFrom: stackClientApp,
-  secretServerKey: process.env.STACK_SECRET_SERVER_KEY, // <— add this line
-});
+// Stack server removed — placeholder retained during migration
+export const stackServerApp: any = null;

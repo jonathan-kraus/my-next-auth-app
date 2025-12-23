@@ -1,5 +1,8 @@
-import { StackHandler } from '@stackframe/stack';
 export const runtime = 'nodejs';
 export default function Handler() {
-  return <StackHandler fullPage />;
+  return (
+    <div style={{ padding: '2rem' }}>
+      Handler removed — Stack Auth is disabled.
+    </div>
+  );
 }
