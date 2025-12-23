@@ -6,13 +6,16 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Audit, lint, test, and build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      actions: write
+      contents: read
       checks: write
       
     steps:
@@ -22,6 +25,22 @@ jobs:
           fetch-depth: 0
       - name: Clean workspace
         run: git clean -fdx
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Cache .next cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-next-cache-
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -38,7 +57,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
-          # 🎯 NEW STEP: Generate the Prisma Client explicitly
+      # 🎯 Ensure Prisma client is generated before type-check/build
       - name: Run Prisma Generate for Type-Check
         run: pnpm prisma generate --no-hints
         env:
@@ -60,7 +79,7 @@ jobs:
           sed -n '1,200p' .prettierignore || true
 
       - name: Prettier check
-        run: pnpm run prettier:check || true
+        run: pnpm run prettier:check
         
       - name: Build
         # This checks if the project compiles.
