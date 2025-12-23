@@ -97,23 +97,48 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
   },
-  events: {
-    async error(message) {
+  logger: {
+    error(code: unknown, metadata?: unknown) {
       try {
-        await appLog({
+        appLog({
           source: 'auth.error',
-          message: 'NextAuth error event',
-          metadata: {
-            name: (message as any)?.error?.name,
-            message: (message as any)?.error?.message,
-            stack: (message as any)?.error?.stack,
-            details: message,
-          },
+          message: 'NextAuth logger.error',
+          metadata: { code, metadata },
           severity: 'error',
-        });
+        }).catch(() => {});
       } catch (e) {
-        console.error('[auth] events.error appLog failed', e);
+        console.error('[auth] logger.error appLog failed', e);
       }
+      // Also surface to server console for visibility
+
+      console.error('[NextAuth][error]', code, metadata);
+    },
+    warn(code: unknown) {
+      try {
+        appLog({
+          source: 'auth.warn',
+          message: 'NextAuth logger.warn',
+          metadata: { code },
+          severity: 'warn',
+        }).catch(() => {});
+      } catch (e) {
+        console.error('[auth] logger.warn appLog failed', e);
+      }
+
+      console.warn('[NextAuth][warn]', code);
+    },
+    debug(code: unknown) {
+      try {
+        appLog({
+          source: 'auth.debug',
+          message: 'NextAuth logger.debug',
+          metadata: { code },
+        }).catch(() => {});
+      } catch (e) {
+        // ignore logging errors
+      }
+
+      console.debug('[NextAuth][debug]', code);
     },
   },
 };
