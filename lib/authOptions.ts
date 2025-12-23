@@ -30,34 +30,16 @@ export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
     async signIn({ user, account }) {
-      try {
-        // lightweight DB log for sign-in attempts
-        await appLog({
-          source: 'auth.signIn',
-          message: 'signIn callback invoked',
-          metadata: {
-            provider: account?.provider,
-            providerAccountId: account?.providerAccountId,
-            email: user?.email,
-            userId: user?.id,
-            accountRaw: account ?? null,
-          },
-        });
-      } catch (e) {
-        console.error('[auth] appLog error', e);
-      }
-      // If no account or no email, nothing to link
       if (!account || !user?.email) return true;
 
-      // Only attempt linking for OAuth providers (e.g., google)
       if (account.provider === 'google') {
         const { prisma } = await import('./prisma');
 
         const existing = await prisma.user.findUnique({
           where: { email: user.email },
         });
+
         if (existing && existing.id !== user.id) {
-          // If the provider account doesn't already exist, attach it to the existing user
           const existingAccount = await prisma.account.findUnique({
             where: {
               provider_providerAccountId: {
@@ -71,33 +53,28 @@ export const authOptions: NextAuthOptions = {
             await prisma.account.create({
               data: {
                 userId: existing.id,
-                type: account.type ?? 'oauth',
                 provider: account.provider,
                 providerAccountId: account.providerAccountId!,
+                type: account.type,
                 access_token: account.access_token,
+                id_token: account.id_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
                 refresh_token: account.refresh_token,
-                expires_at: account.expires_at
-                  ? Number(account.expires_at)
-                  : null,
-                token_type: (account as any).token_type,
-                scope: (account as any).scope,
-                id_token: (account as any).id_token,
+                session_state: account.session_state,
               },
             });
           }
 
-          // Delete the duplicate user record that NextAuth may have created for this sign-in
-          try {
-            await prisma.user.delete({ where: { id: user.id } });
-          } catch (e) {
-            // ignore deletion errors
-          }
+          return true;
         }
       }
 
       return true;
     },
   },
+
   logger: {
     error(code: unknown, metadata?: unknown) {
       try {
