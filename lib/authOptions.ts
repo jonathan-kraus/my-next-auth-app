@@ -28,6 +28,15 @@ export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
     async signIn({ user, account }) {
+      try {
+        console.log('[auth] signIn callback:', {
+          provider: account?.provider,
+          providerAccountId: account?.providerAccountId,
+          email: user?.email,
+        });
+      } catch (e) {
+        console.log('[auth] signIn logging error', e);
+      }
       // If no account or no email, nothing to link
       if (!account || !user?.email) return true;
 
