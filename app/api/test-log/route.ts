@@ -1,7 +1,5 @@
 // app/api/test-log/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/requireAuth';
 
 export async function GET(request: NextRequest) {
