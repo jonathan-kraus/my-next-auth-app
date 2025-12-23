@@ -1,6 +1,8 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { appLog } from '@/utils/app-log';
+import { createRequestId } from '@/lib/uuidj';
 import Link from 'next/link';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import {
@@ -25,12 +27,22 @@ interface NavItem {
 export const Sidenav = () => {
   // 🔥 Render counter
   const renderCount = useRef(0);
-
+  const [jcount, setJcount] = useState(0);
+  const requestId = createRequestId();
   useEffect(() => {
     renderCount.current++;
-    let jcount = renderCount.current;
-    console.log('Sidenav rendered:', renderCount.current);
+    setJcount(renderCount.current);
   });
+  await appLog({
+    source: 'components/Sidenav.tsx',
+    message: '---sidenav---',
+    requestId: requestId,
+    metadata: {
+      action: 'initialize',
+      timestamp: new Date().toISOString(),
+    },
+  });
+
   const { data: session } = useSession();
 
   const navItems: NavItem[] = [
@@ -80,7 +92,6 @@ export const Sidenav = () => {
   const displayName = session?.user?.name ?? 'Unknown User';
   const email = session?.user?.email ?? '';
 
-  // Filter items based on authentication - safely check protected property
   const visibleItems = navItems.filter((item) => !item.protected || !!session);
 
   return (
