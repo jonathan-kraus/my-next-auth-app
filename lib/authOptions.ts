@@ -76,7 +76,7 @@ export const authOptions: NextAuthOptions = {
           // IMPORTANT: Do NOT delete the temporary user.
           // NextAuth handles merging automatically.
 
-          return true;
+          return existing;
         }
       }
 
