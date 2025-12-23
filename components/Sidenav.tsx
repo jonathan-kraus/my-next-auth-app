@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { appLog } from '@/utils/app-log';
 import { createRequestId } from '@/lib/uuidj';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import {
@@ -25,6 +26,7 @@ interface NavItem {
 }
 
 export const Sidenav = () => {
+  const pathname = usePathname();
   // 🔥 Render counter
   const renderCount = useRef(0);
   const [jcount, setJcount] = useState(0);
@@ -33,7 +35,7 @@ export const Sidenav = () => {
   useEffect(() => {
     renderCount.current++;
     setJcount(renderCount.current);
-  }, [session]);
+  }, [pathname]);
   appLog({
     source: 'components/Sidenav.tsx',
     message: '---sidenav---',
