@@ -144,7 +144,24 @@ export const Sidenav = () => {
             onClick={() => signIn('google')}
             className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-white hover:bg-gray-100 text-gray-800 rounded-lg font-semibold transition-colors duration-200 border"
           >
-            <img src="/google.svg" alt="Google" className="w-5 h-5" />
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#EA4335"
+                d="M12 10.2v3.6h5.1c-.2 1.2-.9 2.8-2.1 3.9l3.3 2.6c1.9-1.8 3-4.5 3-7.7 0-.7-.1-1.4-.2-2H12z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 21c2.7 0 5-1 6.6-2.7l-3.3-2.6c-.9.6-2.1 1-3.3 1-2.6 0-4.8-1.8-5.6-4.2l-3.4 2.7C4.3 18.8 7.8 21 12 21z"
+              />
+              <path
+                fill="#4A90E2"
+                d="M6.4 12.5c-.2-.6-.4-1.3-.4-2s.1-1.4.4-2L3 5.8C2.3 7.3 2 8.9 2 10.5s.3 3.2 1 4.7l3.4-2.7z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M12 4.5c1.5 0 2.8.5 3.8 1.4l2.8-2.8C16.9 1.8 14.6 1 12 1 7.8 1 4.3 3.2 3 6.3l3.4 2.7C7.2 6.3 9.4 4.5 12 4.5z"
+              />
+            </svg>
             Sign in with Google
           </button>
         </div>

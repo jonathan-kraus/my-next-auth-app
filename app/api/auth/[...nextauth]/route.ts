@@ -2,6 +2,9 @@
 import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { appLog } from '@/utils/app-log';
+console.log('authOptions:', authOptions);
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
 
 // Log incoming auth route invocations for debugging
 try {
@@ -13,8 +16,3 @@ try {
 } catch (e) {
   // ignore logging errors
 }
-
-// Use the shared NextAuth options defined in `lib/authOptions`
-const handler = NextAuth(authOptions as any);
-
-export { handler as GET, handler as POST };
