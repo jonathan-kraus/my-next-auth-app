@@ -1,18 +1,17 @@
 // lib/db.ts
 import { PrismaClient } from '@/src/generated';
-import { PrismaNeon } from '@prisma/adapter-neon';
-
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 
 declare global {
+  // allow global `db` to survive hot reloads in dev
   var db: PrismaClient | undefined;
 }
 
+// No adapter. Prisma reads DATABASE_URL automatically.
+// This is the correct, build‑safe, Neon‑compatible setup.
 export const db =
   global.db ||
   new PrismaClient({
-    adapter,
-    log: ['query', 'error', 'warn'],
+    log: ['info', 'error', 'warn'],
   });
 
 if (process.env.NODE_ENV !== 'production') {

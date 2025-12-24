@@ -1,6 +1,6 @@
+// utils/app-log.ts
 import { PrismaClient } from '@/src/generated';
 import { Prisma } from '@prisma/client';
-import { PrismaNeonHttp } from '@prisma/adapter-neon';
 import { safeMetadata } from './safe-metadata';
 
 export type AppLogInput = {
@@ -11,24 +11,25 @@ export type AppLogInput = {
   requestId?: string;
 };
 
-// Pass DATABASE_URL directly as a string
-const adapter = new PrismaNeonHttp(process.env.DATABASE_URL!, {});
-
+// --- GLOBAL PRISMA CLIENT (build-safe, no Neon adapter) ---
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    adapter,
     log: ['error'],
   });
+
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
+// --- HYBRID LOGGER (server + client) ---
 export async function appLog(input: AppLogInput) {
   try {
     if (typeof window === 'undefined') {
+      // SERVER: write directly to DB
       await prisma.log.create({
         data: {
-          userId: 'cmiz0p9ro000004ldrxgn3a1c', // ✅ always attached
+          userId: 'cmiz0p9ro000004ldrxgn3a1c', // keep your current behavior
           source: input.source,
           message: input.message,
           metadata: input.metadata
@@ -40,6 +41,7 @@ export async function appLog(input: AppLogInput) {
         },
       });
     } else {
+      // CLIENT: send to API route
       await fetch('/api/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
