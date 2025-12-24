@@ -73,6 +73,7 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      console.log('Sign in successful for user:', user.email);
       return true;
     },
   },
