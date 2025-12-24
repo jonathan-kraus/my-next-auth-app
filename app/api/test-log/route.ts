@@ -4,7 +4,8 @@ import { createRequestId } from '@/lib/uuidj';
 import { timeStamp } from 'node:console';
 
 export async function GET() {
-  const session = await auth();
+  //const session = await auth();
+  const session = ' a';
   const requestId = createRequestId();
   if (!session) {
     await appLog({
@@ -23,10 +24,11 @@ export async function GET() {
     requestId: requestId,
     metadata: {
       action: 'check',
-      user: session?.user.email,
+      //user: session?.user.email,
       timeStamp: timeStamp(),
     },
   });
 
-  return Response.json({ user: session?.user });
+  //return Response.json({ user: session?.user });
+  return Response.json({ user: session });
 }
