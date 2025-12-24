@@ -1,10 +1,8 @@
-// lib/requireAuth.ts
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
 export async function requireAuth() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session) {
     return {
