@@ -87,6 +87,11 @@ export const authOptions: NextAuthOptions = {
 
   logger: {
     error(code: unknown, metadata?: unknown) {
+      console.error(
+        '🔥 [NextAuth][error] code + metadata',
+        JSON.stringify({ code, metadata }, null, 2)
+      );
+
       try {
         appLog({
           source: 'auth.error',
@@ -97,7 +102,6 @@ export const authOptions: NextAuthOptions = {
       } catch (e) {
         console.error('[auth] logger.error appLog failed', e);
       }
-      console.error('[NextAuth][error]', code, metadata);
     },
     warn(code: unknown) {
       try {
