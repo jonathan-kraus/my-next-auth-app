@@ -74,7 +74,8 @@ export const authOptions: NextAuthOptions = {
               },
             });
           }
-
+          console.log('Linking Google account to existing user:');
+          console.log('Linking Google account to existing user:', user.email);
           // ⭐ IMPORTANT: Always return true — never return a user object
           return true;
         }
