@@ -1,4 +1,4 @@
-// app/lib/authOptions.ts
+// lib/authOptions.ts
 import type { NextAuthOptions } from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
@@ -10,7 +10,14 @@ const providers = [
     clientSecret: process.env.GITHUB_SECRET!,
   }),
 ];
-
+await appLog({
+  source: 'lib/authOptions.ts',
+  message: '---in auth---',
+  requestId: 'requestId',
+  metadata: {
+    action: 'check',
+  },
+});
 if (process.env.GOOGLE_ID && process.env.GOOGLE_SECRET) {
   providers.push(
     GoogleProvider({
