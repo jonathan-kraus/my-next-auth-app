@@ -30,19 +30,15 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }) {
-      // If no account or no email, nothing to do
       if (!account || !user?.email) return true;
 
-      // Only handle Google linking
       if (account.provider === 'google') {
         const { prisma } = await import('./prisma');
 
-        // Find the existing user by email
         const existing = await prisma.user.findUnique({
           where: { email: user.email },
         });
 
-        // If the Google sign-in created a temporary user, link it
         if (existing && existing.id !== user.id) {
           const existingAccount = await prisma.account.findUnique({
             where: {
@@ -53,7 +49,6 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
-          // If no Google account exists yet, create it
           if (!existingAccount) {
             await prisma.account.create({
               data: {
@@ -73,9 +68,7 @@ export const authOptions: NextAuthOptions = {
             });
           }
 
-          // IMPORTANT: Do NOT delete the temporary user.
-          // NextAuth handles merging automatically.
-
+          // ⭐ IMPORTANT: Always return true — never return a user object
           return true;
         }
       }
