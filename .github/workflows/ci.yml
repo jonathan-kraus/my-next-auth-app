@@ -27,7 +27,7 @@ jobs:
         run: git clean -fdx
 
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Cache .next cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .next/cache
           key: ${{ runner.os }}-next-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
