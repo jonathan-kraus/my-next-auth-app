@@ -1,7 +1,7 @@
 // app/api/jtemp/route.ts
 
 import { NextResponse } from 'next/server';
-// Ensure this path points to your correctly configured database client (db)
+// Ensure this path points to your correctly configured db client (db)
 import { db } from '@/lib/db';
 export const runtime = 'nodejs';
 export async function GET() {
