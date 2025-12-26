@@ -1,14 +1,11 @@
-// lib/server/requireAuth.ts
-
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/auth.config';
+import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 
 export async function requireAuth() {
-  const session = await getServerSession(authConfig);
+  const session = await auth();
 
   if (!session) {
-    return NextResponse.redirect('/api/auth/signin');
+    return NextResponse.redirect('/login');
   }
 
   return session;
